@@ -12,6 +12,6 @@ idx - number of the h5 file you want to read
 Duration - how many seconds to plot (<10 to fit on screen)
 Offset - How many seconds from the beginning of the signal to splice from
 
-ex. $python3 h5_interface.py 1  
+ex. $python3 h5_interface.py 1 --Duration 4 --Offset 3
 
 ![Example Plot](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/blob/master/images/idx1d4o3.png)
