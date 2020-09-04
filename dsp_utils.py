@@ -14,16 +14,13 @@ def raise_dim(data, dim):
 '''
 Inputs: ECG Signal
 Outputs: Indicies of peaks
-Scans across the signal in 2 second windows, collects maximums. Clears the maximums of outliers
-and looks for peaks above the minimum maximum value
+Scans across the signal in minute intervals. Within each interval finds peaks close to the magnitude of local maximum
 '''
 def get_peaks(data):
-	maxes = np.zeros((len(data)//480,))
-	for i in range(len(data) // 480):
-		maxes[i] = max(data[i*480:(i+1)*480])
-
-	maxes = maxes[abs(maxes - np.mean(maxes)) < .5 * np.std(maxes)]
-	peak_height = min(maxes)
-	#print("finding peaks above : " + str(peak_height))
-	peaks, properties = find_peaks(data, height = 1.3, distance = 80)
+	peaks = np.zeros((0,))
+	maxes = np.zeros((len(data)//14400,))
+	for i in range(len(data) // 14400):
+		maxi = max(data[i*14400:(i+1)*14400])
+		local_peaks, properties = find_peaks(data[i*14400:(i+1)*14400], height = maxi * .75, distance = 80)
+		peaks = np.concatenate((peaks, local_peaks))
 	return peaks
