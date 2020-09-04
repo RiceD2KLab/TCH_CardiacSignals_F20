@@ -22,5 +22,6 @@ def get_peaks(data):
 	for i in range(len(data) // 14400):
 		maxi = max(data[i*14400:(i+1)*14400])
 		local_peaks, properties = find_peaks(data[i*14400:(i+1)*14400], height = maxi * .75, distance = 80)
+		local_peaks = local_peaks + (i * 14400)
 		peaks = np.concatenate((peaks, local_peaks))
 	return peaks
