@@ -22,10 +22,8 @@ def get_peaks(data):
 	for i in range(len(data) // 480):
 		maxes[i] = max(data[i*480:(i+1)*480])
 
-	print(np.average(maxes))
 	maxes = maxes[abs(maxes - np.mean(maxes)) < .5 * np.std(maxes)]
 	peak_height = min(maxes)
-	print(np.average(maxes))
-	print("finding peaks above : " + str(peak_height))
+	#print("finding peaks above : " + str(peak_height))
 	peaks, properties = find_peaks(data, height = 1.3, distance = 80)
 	return peaks
