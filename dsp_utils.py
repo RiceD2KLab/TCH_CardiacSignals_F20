@@ -6,22 +6,33 @@ Inputs: ECG Signal, desired dimensions
 Outputs: ECG Signal in desired dimension
 Map a signal to a specific dimension, linearly interpolating
 '''
-def raise_dim(data, dim):
-	samp_times = np.arange(start = 0, stop = dim-.99, step = (dim - 1) / (len(data) - 1))
+def change_dim(data, dim):
+	samp_times = np.arange(start = 0, stop = dim-.999999999, step = (dim - 1) / (len(data) - 1))
 	resamp_times = np.arange(dim)
 
+	if not (len(samp_times) == len(data)):
+		print(len(samp_times), len(data))
 	return np.interp(resamp_times, samp_times, data)
 '''
 Inputs: ECG Signal
 Outputs: Indicies of peaks
-Scans across the signal in minute intervals. Within each interval finds peaks close to the magnitude of local maximum
+Scans across the signal in intervals. Within each interval finds peaks close to the magnitude of local maximum
 '''
 def get_peaks(data):
+	interval = 240 #sample rate is ~240hz, so interval / 240 = time (seconds)
 	peaks = np.zeros((0,))
-	maxes = np.zeros((len(data)//14400,))
-	for i in range(len(data) // 14400):
-		maxi = max(data[i*14400:(i+1)*14400])
-		local_peaks, properties = find_peaks(data[i*14400:(i+1)*14400], height = maxi * .75, distance = 80)
-		local_peaks = local_peaks + (i * 14400)
+	for i in range(len(data) // interval):
+		maxi = max(data[i*interval:(i+1)*interval])
+		local_peaks, properties = find_peaks(data[i*interval:(i+1)*interval], height = maxi * .5, distance = 70)
+		local_peaks = local_peaks + (i * interval)
 		peaks = np.concatenate((peaks, local_peaks))
 	return peaks
+'''
+Inputs : 4 x n numpy array, each row is an ECG signal lead
+Outputs : Indicies of peaks from the absolute sum of the four signal leads
+'''
+def four_lead_peaks(data):
+	pos_sum = np.zeros((data.shape[1],))
+	for i in range(4):
+		pos_sum += np.clip(data[i,:], 0, None)
+	return get_peaks(pos_sum)

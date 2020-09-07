@@ -19,7 +19,24 @@ Ouputs : h5py "dataset", similar to a dictionary of {labels : numpy array of dat
 def readh5(filename):
 	filepath = os.path.join("Data_H5_Files", filename)
 	return h5py.File(filepath, 'r')
+'''
+Inputs : h5py dataset of TCH ECG file
+Outpus : 4 x n numpy array representing the four lead signals
+		 1 x n np array time axis
+		 1 x n np array heartrate
 
+Convert h5py dataset to numpy arrays
+'''
+def ecg_np(dataset):
+	lead_one = (dataset['GE_WAVE_ECG_1_ID'] [()])
+	lead_two = (dataset['GE_WAVE_ECG_2_ID'] [()])
+	lead_three = (dataset['GE_WAVE_ECG_3_ID'] [()])
+	lead_four = (dataset['GE_WAVE_ECG_4_ID'] [()]) 
+
+	try:
+		return np.vstack((lead_one, lead_two, lead_three, lead_four)), dataset['time'][()], dataset['PARM_HR'][()]
+	except:
+		return np.vstack((lead_one, lead_two, lead_three, lead_four)), dataset['time'][()], None
 '''
 Inputs : h5py dataset from one of the TCH files, time length to be plotted (seconds), time offset (seconds)
 Outputs : 4 x time_length * 240 numpy array which are the 4 lead signals stacked vertically
