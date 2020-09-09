@@ -31,21 +31,18 @@ def get_peaks(data):
 '''
 Inputs: ECG Signal
 Outputs: Indices of peaks
-Scans across the entire signal and finds peaks based on their prominence and distance to neighbors
+Gets peaks via prominence
 '''
 def get_peaks_prominence(data):
-	interval = 240*3 #sample rate is ~240hz, so interval / 240 = time (seconds)
-	peaks = np.zeros((0,))
-	local_peaks, properties = find_peaks(data, distance = 70, prominence=0.5, wlen=50)
-	peaks = np.concatenate((peaks, local_peaks))
+	peaks, properties = find_peaks(data, distance = 70, prominence=1.0, wlen=50)
 	return peaks
 
 '''
 Inputs : 4 x n numpy array, each row is an ECG signal lead
-Outputs : Indicies of peaks from the absolute sum of the four signal leads
+Outputs : Sum of the 4 signals with clipped negative values (set to 0)
 '''
-def four_lead_peaks(data):
+def combine_four_lead(data):
 	pos_sum = np.zeros((data.shape[1],))
 	for i in range(4):
 		pos_sum += np.clip(data[i,:], 0, None)
-	return get_peaks(pos_sum)
+	return pos_sum

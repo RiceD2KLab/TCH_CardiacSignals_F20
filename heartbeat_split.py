@@ -17,14 +17,15 @@ if __name__ == "__main__":
 
 		four_lead, time, heartrate = h5_interface.ecg_np(h5f)
 
-		peaks = dsp_utils.four_lead_peaks(four_lead)
+		pos_sum = dsp_utils.combine_four_lead(four_lead)
+		peaks = dsp_utils.get_peaks_prominence(pos_sum)
 		peaks = peaks.astype(int)
 		heartbeat_timestamps = time[peaks]
 
 		'''
 		#Visual Test for R-Peak identification
-		plt.plot(four_lead[0,:])
-		plt.vlines(x = peaks, ymin = 0, ymax = 6, colors = "red", linewidth = 2)
+		plt.plot(pos_sum)
+		plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
 		plt.show()
 		'''
 		log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
@@ -69,12 +70,12 @@ if __name__ == "__main__":
 			for hb_num, peak in enumerate(peaks[1:-1], start = 1):
 				individual_hb = four_lead[lead_num,peaks[hb_num]:peaks[hb_num+1]]
 				fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, maximum_hb_len)
-				'''
+				"""
 				#Periodic Visual inspection of dimension fixed heartbeat
 				if hb_num % 15000 == 0:
 					plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
 					plt.show()
-				'''
+				"""
 
 
 
@@ -86,3 +87,4 @@ if __name__ == "__main__":
 		np.save(timestamps_savename, heartbeat_timestamps)
 		np.save(outliers_savename, hb_outliers)
 		log.close()
+		
