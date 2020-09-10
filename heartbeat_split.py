@@ -1,3 +1,6 @@
+"""
+"""
+
 import numpy as np
 import os
 
@@ -18,7 +21,7 @@ if __name__ == "__main__":
 		four_lead, time, heartrate = h5_interface.ecg_np(h5f)
 
 		pos_sum = dsp_utils.combine_four_lead(four_lead)
-		peaks = dsp_utils.get_peaks_prominence(pos_sum)
+		peaks = dsp_utils.get_peaks_prominence(pos_sum) # indices on the signal where we found a peak
 		peaks = peaks.astype(int)
 		heartbeat_timestamps = time[peaks]
 
@@ -81,11 +84,13 @@ if __name__ == "__main__":
 
 		data_savename = os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
 		timestamps_savename = os.path.join("Working_Data", "HB_Timestamps_Idx" + curr_index + ".npy")
+		peaks_savename = os.path.join("Working_Data", "HB_Peaks_Idx" + curr_index + ".npy")
 		outliers_savename = os.path.join("Working_Data", "HB_Outliers_Idx" + curr_index + ".npy")
 		HB_lens_savename = os.path.join("Working_Data", "HB_Lens_Idx" + curr_index + ".npy")
 		
 		np.save(data_savename, fixed_dimension_hbs)
 		np.save(timestamps_savename, heartbeat_timestamps)
+		np.save(peaks_savename, peaks)
 		np.save(outliers_savename, hb_outliers)
 		np.save(HB_lens_savename, hb_lengths)
 		log.close()
