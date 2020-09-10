@@ -42,7 +42,7 @@ if __name__ == "__main__":
 		hb_superoutliers = np.nonzero( (hb_lengths - np.average(hb_lengths) ) > 3 * np.std(hb_lengths) )[0]
 
 		#Identify outliers (skipped beats where R-peak identification failed)
-		hb_outliers = np.nonzero( (hb_lengths - np.average(hb_lengths) ) > .75 * np.std(np.delete(hb_lengths, hb_superoutliers) ) )[0]
+		hb_outliers = np.nonzero( (hb_lengths - np.average(hb_lengths) ) > 1 * np.std(np.delete(hb_lengths, hb_superoutliers) ) )[0]
 
 		#Delete the outliers
 		consistant_hb_lens = np.delete(hb_lengths, hb_outliers)
@@ -82,9 +82,11 @@ if __name__ == "__main__":
 		data_savename = os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
 		timestamps_savename = os.path.join("Working_Data", "HB_Timestamps_Idx" + curr_index + ".npy")
 		outliers_savename = os.path.join("Working_Data", "HB_Outliers_Idx" + curr_index + ".npy")
-		os.makedirs(os.path.dirname(data_savename), exist_ok=True)
+		HB_lens_savename = os.path.join("Working_Data", "HB_Lens_Idx" + curr_index + ".npy")
+		
 		np.save(data_savename, fixed_dimension_hbs)
 		np.save(timestamps_savename, heartbeat_timestamps)
 		np.save(outliers_savename, hb_outliers)
+		np.save(HB_lens_savename, hb_lengths)
 		log.close()
 		
