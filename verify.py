@@ -25,7 +25,7 @@ for i in range(1,60):
             true_rate = true_heartrate[peak_idx]
             diff = (60 / true_rate) - (heartbeat_lens[j] / 240)
             diff_list.append(diff)
-        plt.hist(diff_list, bins = np.arange(-0.5, 0.5, 0.05), density = True)
+        plt.hist(diff_list, bins = np.arange(-0.5, 0.5, 0.05))
         plt.title("Difference in recorded and detected {}".format(i))
         plt.xlabel("Time (sec)")
         plt.ylabel("Number of Heartbeats")
