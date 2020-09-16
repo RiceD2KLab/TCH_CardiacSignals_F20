@@ -21,16 +21,17 @@ if __name__ == "__main__":
 		h5f = h5_interface.readh5(filename)
 
 		four_lead, time, heartrate = h5_interface.ecg_np(h5f)
-
+		
 		pos_sum = dsp_utils.combine_four_lead(four_lead)
-		peaks = dsp_utils.get_peaks_prominence(pos_sum) # indices on the signal where we found a peak
+		peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
 		peaks = peaks.astype(int)
 		heartbeat_timestamps = time[peaks]
 
 		'''
 		#Visual Test for R-Peak identification
 		plt.plot(pos_sum)
-		plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
+		# plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
+		plt.plot(peaks, pos_sum[peaks], "x")
 		plt.show()
 		'''
 		log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
