@@ -14,7 +14,7 @@ indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20'
 
 if __name__ == "__main__":
 	
-	for curr_index in indicies:
+	for curr_index in indicies[20:]:
 		print("Starting on index : " + str(curr_index))
 		filename = "Reference_idx_" + curr_index + "_Time_block_1.h5"
 
@@ -23,7 +23,10 @@ if __name__ == "__main__":
 		four_lead, time, heartrate = h5_interface.ecg_np(h5f)
 		
 		pos_sum = dsp_utils.combine_four_lead(four_lead)
-		peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
+		if heartrate is not None:
+			peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
+		else:
+			peaks =  dsp_utils.get_peaks_prominence(pos_sum)
 		peaks = peaks.astype(int)
 		heartbeat_timestamps = time[peaks]
 
