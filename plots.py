@@ -38,7 +38,7 @@ def plot_heartbeat_on_signal(i):
     filename = "Reference_idx_" + str(i) + "_Time_block_1.h5"
     h5f = h5_interface.readh5(filename)
 
-    four_lead, time, heartrate = h5_interface.ecg_np(h5f)
+    four_lead, time, heartrate = h5_interface.ecg_np(h5f) 
     pos_sum = dsp_utils.combine_four_lead(four_lead)
     print(np.size(pos_sum))
     #############
@@ -51,6 +51,7 @@ def plot_heartbeat_on_signal(i):
     # off by one error somewhere in these arrays
     plt.scatter(time[heartbeat_peaks], pos_sum[heartbeat_peaks], c='r')
     plt.title("Peak Detection for ECG Signal {} on Lead 1".format(i))
+    
     plt.xlabel("time (sec)")
     plt.ylabel("voltage (mV)")
     plt.show()

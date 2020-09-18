@@ -57,7 +57,7 @@ if __name__ == "__main__":
 		consistant_hb_lens = np.delete(hb_lengths, hb_outliers)
 
 		#Find the maximum length
-		maximum_hb_len = int(np.max(consistant_hb_lens))
+		maximum_hb_len = 100
 		
 		log.write("Average heartbeat length before outlier removal : " + str(np.average(hb_lengths)) + "\n")
 		log.write("Total heartbeats : " + str(len(peaks))+ "\n")
