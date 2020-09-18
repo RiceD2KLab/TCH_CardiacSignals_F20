@@ -14,7 +14,7 @@ indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20'
 
 if __name__ == "__main__":
 	
-	for curr_index in indicies[20:]:
+	for curr_index in indicies:
 		print("Starting on index : " + str(curr_index))
 		filename = "Reference_idx_" + curr_index + "_Time_block_1.h5"
 
