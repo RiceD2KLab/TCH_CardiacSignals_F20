@@ -5,7 +5,7 @@ This is used as an assessment of the accuracy of our peak detection algorithm
 '''
 
 import numpy as np
-import h5_interface
+from src.preprocess import h5_interface
 import os
 import matplotlib.pyplot as plt
 

@@ -4,10 +4,7 @@
 import numpy as np
 import os
 
-import h5_interface
-import dsp_utils
-
-import matplotlib.pyplot as plt
+from src.preprocess import dsp_utils, h5_interface
 
 indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
 				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
@@ -72,9 +69,9 @@ if __name__ == "__main__":
 		fixed_dimension_hbs = np.zeros((len(peaks), maximum_hb_len, 4))
 		for lead_num in range(4):
 			#First heartbeat in data
-			fixed_dimension_hbs[0,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num,0:peaks[0]], maximum_hb_len) 
+			fixed_dimension_hbs[0,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, 0:peaks[0]], maximum_hb_len)
 			#Last heartbeat in data
-			fixed_dimension_hbs[len(peaks) - 1,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num,peaks[-1]:], maximum_hb_len)
+			fixed_dimension_hbs[len(peaks) - 1,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, peaks[-1]:], maximum_hb_len)
 			#iterate through the rest of heartbeats
 			for hb_num, peak in enumerate(peaks[1:-1], start = 1):
 				individual_hb = four_lead[lead_num,peaks[hb_num]:peaks[hb_num+1]]

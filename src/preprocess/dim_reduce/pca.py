@@ -5,8 +5,6 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import matplotlib
 import sys
-import heartbeat_split
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
 

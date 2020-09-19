@@ -1,8 +1,5 @@
 import matplotlib.pyplot as plt
-import numpy as np
-import h5_interface
-import dsp_utils
-import heartbeat_split
+from src.preprocess import dsp_utils, h5_interface
 
 import numpy as np
 import os
