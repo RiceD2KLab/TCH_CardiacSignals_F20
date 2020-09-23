@@ -72,9 +72,6 @@ def plot_first_2(file_index, lead_num):
     plt.colorbar(sc)
     plt.show()
     
-
-
-
 def plot_3d(file_index, lead_num):
     """
     Plots 3-dimensional representation of the PCA matrix for a particular lead of the ith file
@@ -108,10 +105,47 @@ def plot_3d(file_index, lead_num):
 
     plt.show()
 
+def save_pca_reconstructions(dim):
+    '''
+    Inputs: dimension to reduce to with PCA
+    Returns: nothing -> saves an array of (# of heartbeats) x (100) x (4) for each patient index, containing reconstructed heartbeats after PCA
+    '''
+    indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
+            '33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
+
+    for file_index in indices:
+        print("Starting on index : " + str(file_index))
+        raw_hbs = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
+        reconstructed_hbs = np.zeros(raw_hbs.shape) # to store the reconstructed heartbeats after reduction to dim dimensions
+
+        for lead_num in range(4): # do pca once for each lead (might try to vectorize this later)
+            lead_data = raw_hbs[:, :, lead_num] # matrix of hbs for current lead, shape is (# of hearbeats) x (100)
+
+            # Normalize to zero mean and unit covariance
+            scaler = StandardScaler()
+            scaler.fit(lead_data)
+            lead_data = scaler.transform(lead_data)
+
+            # Perform PCA and reconstruct
+            pca = PCA(n_components=dim)
+            pca.fit(lead_data) 
+            lowered_dim_data = pca.transform(lead_data) # transform to lower dimensional space
+            reconstructed_data = pca.inverse_transform(lowered_dim_data) # inverse transform back to n=100
+
+            # Undo scaling transform
+            reconstructed_data = scaler.inverse_transform(reconstructed_data)
+
+
+            reconstructed_hbs[:, :, lead_num] = reconstructed_data
+
+        data_savename = os.path.join("Working_Data", "reconstructed_pca_Idx" + file_index  + ".npy") # filename to save 
+        np.save(data_savename, reconstructed_hbs)
 
 if __name__ == "__main__":
     sys.path.insert(0, os.getcwd()) # lmao "the tucker hack"
-    plot_pca_eigenvalues(1,1)
+    # plot_pca_eigenvalues(1,1)
+    save_pca_reconstructions(dim=10)
+
     # for file_index in heartbeat_split.indicies:
     #     plot_first_2(file_index, 1)
 
