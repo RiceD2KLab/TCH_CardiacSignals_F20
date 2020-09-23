@@ -4,6 +4,8 @@
 import numpy as np
 import os
 
+import matplotlib.pyplot as plt
+
 from src.preprocess import dsp_utils, h5_interface
 
 indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
@@ -25,6 +27,13 @@ if __name__ == "__main__":
 		else:
 			peaks =  dsp_utils.get_peaks_prominence(pos_sum)
 		peaks = peaks.astype(int)
+		for i in range(1, len(peaks)):
+			vals = np.unique(pos_sum[peaks[i-1]:peaks[i]])
+			if len(vals) < .05 * (peaks[i] - peaks[i-1]):
+				print(peaks[i-1], peaks[i])
+				print(peaks[i] - peaks[i-1], len(vals))
+				plt.plot(np.arange(start = peaks[i-1]-50, stop = peaks[i] + 50), pos_sum[peaks[i-1]-50:peaks[i] + 50])
+				plt.show()
 		heartbeat_timestamps = time[peaks]
 
 		'''
@@ -33,6 +42,7 @@ if __name__ == "__main__":
 		# plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
 		plt.plot(peaks, pos_sum[peaks], "x")
 		plt.show()
+		'''
 		'''
 		log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
 		os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
@@ -97,4 +107,4 @@ if __name__ == "__main__":
 		np.save(outliers_savename, hb_outliers)
 		np.save(HB_lens_savename, hb_lengths)
 		log.close()
-		
+		'''
