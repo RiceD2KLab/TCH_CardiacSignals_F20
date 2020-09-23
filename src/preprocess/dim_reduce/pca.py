@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import sys
 from matplotlib import cm
+import sys
 
 
 
@@ -24,7 +25,7 @@ def plot_pca_eigenvalues(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     # create a PCA object that will compute on the full n components
@@ -52,7 +53,7 @@ def plot_first_2(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     first_two_pca = PCA(n_components=2)
@@ -76,7 +77,7 @@ def plot_first_2(file_index, lead_num):
 
 def plot_3d(file_index, lead_num):
     """
-    Plots 2-dimensional representation of the PCA matrix for a particular lead of the ith file
+    Plots 3-dimensional representation of the PCA matrix for a particular lead of the ith file
     :param file_index: index of the file (1-indexed)
     :param lead_num: lead number (1-indexed)
     :return: nothing ->
@@ -88,7 +89,7 @@ def plot_3d(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     first_three_pca = PCA(n_components=3)
@@ -107,10 +108,11 @@ def plot_3d(file_index, lead_num):
 
     plt.show()
 
-# plot_pca_eigenvalues(30, 1)
 
-plot_pca_eigenvalues(1,1)
-# for file_index in heartbeat_split.indicies:
-#     plot_first_2(file_index, 1)
+if __name__ == "__main__":
+    sys.path.insert(0, os.getcwd()) # lmao "the tucker hack"
+    plot_pca_eigenvalues(1,1)
+    # for file_index in heartbeat_split.indicies:
+    #     plot_first_2(file_index, 1)
 
-# plot_3d(16,1)
+    # plot_3d(16,1)
