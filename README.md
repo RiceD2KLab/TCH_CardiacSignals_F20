@@ -1,7 +1,9 @@
 # TCH_CardiacSignals_F20
 
 **Ensure that the working directory of any python files are set to the project root**\
-This will ensure that package imports work inside the project
+This will ensure that package imports work inside the project\
+*Pycharm*: Edit the run configuration and set the working directory to the project root\
+*Terminal*: From the project root, run `export PYTHONPATH=$PYTHONPATH:'pwd'` to set the working directory, then run the script from the project root (i.e. `python3 src/<package_name>/.../<scriptname>.py`
 
 
 ## Installation
