@@ -13,8 +13,10 @@ from sklearn.preprocessing import minmax_scale
 Frank Yang
 Last edited: 9/24/2020, by Frank Yang
 
-This code imports data for a single patient and performs VAE on the four leads.
-It then outputs...?
+Input:  patient data! Further down, you can specify which patients, which leads, 
+        and what values of lower-dimension in the latent space (this should be 1,2,3...15)
+        
+Output: The (1) reduced dimension latent space and (2) the reconstructed data
 """
 
 class Sampling(layers.Layer):
@@ -122,8 +124,8 @@ for file_index in [1]:
             log_filepath = os.path.join("Working_data", "")
             os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 
-            reconstruction_savename = os.path.join("Working_data", "reconstructed_vae_Idx" + str(file_index) + "_Lead" + str(lead_num) + "_ReducedDim" + str(latent_dim) + ".npy")
-            z_savename = os.path.join("Working_data", "latentdata_vae_Index" + str(file_index) + "_Lead" + str(lead_num) + "_ReducedDim" + str(latent_dim) + ".npy")
+            reconstruction_savename = os.path.join("Working_data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "_Lead" + str(lead_num) + ".npy")
+            z_savename = os.path.join("Working_data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "_Lead" + str(lead_num) + ".npy")
             np.save(reconstruction_savename, reconstruction)
             np.save(z_savename, z)
 
