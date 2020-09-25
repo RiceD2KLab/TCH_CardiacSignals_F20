@@ -73,4 +73,4 @@ def combine_four_lead(data):
 	pos_sum = np.zeros((data.shape[1],))
 	for i in range(4):
 		pos_sum += np.clip(data[i,:], 0, None)
-	return pos_sum
+	return np.clip(pos_sum, 0, 10)

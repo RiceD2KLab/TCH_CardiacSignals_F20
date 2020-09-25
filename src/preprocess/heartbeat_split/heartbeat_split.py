@@ -22,28 +22,48 @@ if __name__ == "__main__":
 		four_lead, time, heartrate = h5_interface.ecg_np(h5f)
 		
 		pos_sum = dsp_utils.combine_four_lead(four_lead)
+		
 		if heartrate is not None:
 			peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
 		else:
 			peaks =  dsp_utils.get_peaks_prominence(pos_sum)
 		peaks = peaks.astype(int)
+
+		#Look for gaps (based of unique values)
+		bad_hbs = []
+		vals = np.unique(pos_sum[0:peaks[0]])
+		#leading heartbeat
+		if len(vals) < .05 * (peaks[0]):
+			bad_hbs = [(0, peaks[0])]
+		#scan heartbeats
 		for i in range(1, len(peaks)):
 			vals = np.unique(pos_sum[peaks[i-1]:peaks[i]])
 			if len(vals) < .05 * (peaks[i] - peaks[i-1]):
-				print(peaks[i-1], peaks[i])
-				print(peaks[i] - peaks[i-1], len(vals))
-				plt.plot(np.arange(start = peaks[i-1]-50, stop = peaks[i] + 50), pos_sum[peaks[i-1]-50:peaks[i] + 50])
-				plt.show()
+				bad_hbs.append((peaks[i-1], peaks[i]))
+		vals = np.unique(pos_sum[peaks[-1]:])
+		#Trailing heartbeat
+		if len(vals) < .05 * (len(pos_sum) - peaks[-1]):
+			bad_hbs.append( (peaks[-1], len(pos_sum) - 1) )
 		heartbeat_timestamps = time[peaks]
-
-		'''
+		#Delete the bad heartbeats
+		for i in range(len(bad_hbs) - 1, -1, -1):
+			pos_sum = np.delete(pos_sum, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
+		
+		#refind peaks
+		if heartrate is not None:
+			peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
+		else:
+			peaks =  dsp_utils.get_peaks_prominence(pos_sum)
+		peaks = peaks.astype(int)
+	
+		"""
 		#Visual Test for R-Peak identification
 		plt.plot(pos_sum)
 		# plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
 		plt.plot(peaks, pos_sum[peaks], "x")
 		plt.show()
-		'''
-		'''
+		"""
+		
 		log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
 		os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 		log = open(log_filepath, 'w')
@@ -54,14 +74,6 @@ if __name__ == "__main__":
 		hb_lengths = hb_lengths[1:] 				#remove the leading 0
 		np.concatenate( (hb_lengths,np.array([four_lead.shape[1]-peaks[-1]]) ) ) #append the last length
 
-		#Remove extreme outliers (Some data has gaps, etc...)
-		hb_superoutliers = np.nonzero( (hb_lengths - np.average(hb_lengths) ) > 3 * np.std(hb_lengths) )[0]
-
-		#Identify outliers (skipped beats where R-peak identification failed)
-		hb_outliers = np.nonzero( (hb_lengths - np.average(hb_lengths) ) > 1 * np.std(np.delete(hb_lengths, hb_superoutliers) ) )[0]
-
-		#Delete the outliers
-		consistant_hb_lens = np.delete(hb_lengths, hb_outliers)
 
 		#Find the maximum length
 		maximum_hb_len = 100
@@ -107,4 +119,4 @@ if __name__ == "__main__":
 		np.save(outliers_savename, hb_outliers)
 		np.save(HB_lens_savename, hb_lengths)
 		log.close()
-		'''
+		
