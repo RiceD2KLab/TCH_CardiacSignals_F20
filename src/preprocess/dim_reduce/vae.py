@@ -7,6 +7,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
+
 from sklearn.preprocessing import minmax_scale
 
 """
@@ -52,7 +53,7 @@ class VAE(keras.Model):
                 mse(data, reconstruction)
             )
 
-            reconstruction_loss *= 100
+            reconstruction_loss *= 1
             kl_loss = 1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var)
             kl_loss = tf.reduce_mean(kl_loss)
             kl_loss *= -0.5
@@ -79,33 +80,35 @@ learning_rate: rate of gradient descent, 0.01 is a good number
 """
 
 for file_index in [1]:
-    for lead_num in [0,1,2,3]:
-        for latent_dim in [2]:
-            num_epoch = 200
-            learning_rate = 0.01
+    # Load heartbeat data
+    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+
+    for latent_dim in [1,2,3,4,5,6,7,8,9,10]:
+        # Construct empty matrices for output data
+        reconstruction_total = np.empty([len(data), 100, 4])
+        z_total = np.empty([len(data), latent_dim, 4])
+
+        for lead_num in [0, 1, 2, 3]:
+
+            num_epoch = 250
+            learning_rate = 0.001 # this is the default
 
             if lead_num < 0 or lead_num > 3:
                 sys.stderr.write("bad lead number - check for 1-indexing\n")
 
             # Build the encoder
             encoder_inputs = keras.Input(shape=(100,))
-            x = layers.Dense(16, activation="relu")(encoder_inputs)
-            x = layers.Dense(16, activation="relu")(x)
-            z_mean = layers.Dense(latent_dim, name="z_mean")(x)
-            z_log_var = layers.Dense(latent_dim, name="z_log_var")(x)
+            z_mean = layers.Dense(latent_dim, activation="tanh", name="z_mean")(encoder_inputs)
+            z_log_var = layers.Dense(latent_dim, activation="tanh", name="z_log_var")(encoder_inputs)
             z = Sampling()([z_mean, z_log_var])
             encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
             encoder.summary()
 
             # Build the decoder
             latent_inputs = keras.Input(shape=(latent_dim,))
-            x = layers.Dense(32, activation="relu")(latent_inputs)
-            decoder_outputs = layers.Dense(100, activation="relu")(x)
+            decoder_outputs = layers.Dense(100, activation="tanh")(latent_inputs)
             decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
             decoder.summary()
-
-            # Load heartbeat data
-            data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
             # Select a lead (0,1,2,3)
             lead_data = data[:, :, lead_num]
@@ -116,20 +119,46 @@ for file_index in [1]:
 
             vae = VAE(encoder, decoder)
             vae.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate))
-            vae.fit(lead_data, epochs=num_epoch, batch_size=len(lead_data))
+            vaefit = vae.fit(lead_data, epochs=num_epoch, batch_size=len(lead_data))
+
+            # visualize the loss convergence as we iterate
+            """
+            plt.plot(vaefit.history['loss'])
+            plt.plot(vaefit.history['reconstruction_loss'])
+            plt.plot(vaefit.history['kl_loss'])
+            plt.title('model loss')
+            plt.ylabel('loss')
+            plt.xlabel('epoch')
+            plt.legend(['loss','reconstruction loss','KL loss'], loc='upper left')
+            plt.show()
+            """
+
+            # visualize the first heartbeat
+            """
+            plt.plot([i for i in range(len(lead_data[0, :]))], lead_data[0, :])
+            plt.plot([i for i in range(len(reconstruction[0, :]))], reconstruction[0, :])
+            plt.legend(['original', 'reconstructed'], loc='upper left')
+            plt.title("VAE output comparison (heartbeat 1)")
+            plt.xlabel('Index')
+            plt.show()
+            """
 
             z = encoder.predict(lead_data)
+            print(type(z[2]))
+            print(np.shape(z[2]))
+
+            # save the z parameter? Do not save the z-mean or z-variance? --> this is what got sampled
+            z_total[:, :, lead_num] = z[2]
+            print(np.shape(z_total))
+
             reconstruction = decoder.predict(z)
+            reconstruction_total[:, :, lead_num] = reconstruction
 
-            log_filepath = os.path.join("Working_data", "")
-            os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
+        log_filepath = os.path.join("Working_data", "")
+        os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 
-            reconstruction_savename = os.path.join("Working_data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "_Lead" + str(lead_num) + ".npy")
-            z_savename = os.path.join("Working_data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "_Lead" + str(lead_num) + ".npy")
-            np.save(reconstruction_savename, reconstruction)
-            np.save(z_savename, z)
+        reconstruction_savename = os.path.join("Working_data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
+        z_savename = os.path.join("Working_data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
+        np.save(reconstruction_savename, reconstruction_total)
+        np.save(z_savename, z_total)
 
-plt.plot([i for i in range(len(lead_data[0, :]))], lead_data[0, :])
-plt.plot([i for i in range(len(reconstruction[0, :]))], reconstruction[0, :])
-plt.title("Real data (blue), VAE reconstruction (red)")
-plt.show()
