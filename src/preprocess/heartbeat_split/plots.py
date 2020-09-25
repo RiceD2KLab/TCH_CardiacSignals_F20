@@ -43,7 +43,7 @@ def plot_heartbeat_on_signal(i):
     # turn h5 file into numpy array -> this is the interpolated vector of heartrate vs time
 
     plt.plot(time, pos_sum)
-    plt.xlim((1000, 1005))
+    plt.xlim((4400, 4550))
     plt.ylim((-1, 10))
     # off by one error somewhere in these arrays
     plt.scatter(time[heartbeat_peaks], pos_sum[heartbeat_peaks], c='r')
@@ -61,6 +61,19 @@ if __name__ == "__main__":
     #         plot_heartbeat_on_signal(i)
     #     except():
     #         continue
-    plot_heartbeat_on_signal("21")
+    #plot_heartbeat_on_signal("33")
+    
+    import argparse
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("FileIdx", help="index number of the TCH h5 ECG file to be plotted")
+    args = parser.parse_args()
+    i = 11
+    filename = "Reference_idx_" + args.FileIdx + "_Time_block_1.h5"
+    h5f = h5_interface.readh5(filename)
+    four_lead, time, heartrate = h5_interface.ecg_np(h5f) 
+    pos_sum = dsp_utils.combine_four_lead(four_lead)
+    plt.plot(time, pos_sum)
+    plt.show()
+    
     # plot_heartbeat_on_signal(21)

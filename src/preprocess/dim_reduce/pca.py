@@ -6,10 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 import sys
 from matplotlib import cm
-import seaborn as sns
+import sys
 
-
-ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 
 
 """
@@ -27,7 +25,7 @@ def plot_pca_eigenvalues(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     # create a PCA object that will compute on the full n components
@@ -37,14 +35,10 @@ def plot_pca_eigenvalues(file_index, lead_num):
     lead_data = StandardScaler().fit_transform(lead_data)
     # print(np.shape())
     full_pca_lead.fit(lead_data)
-    plt.style.use('ggplot')
-
     sorted_eigenvalues = full_pca_lead.explained_variance_ # get the eigenvalues of the covariance matrix
     print(sum(sorted_eigenvalues[:2]) / np.var(sorted_eigenvalues))
-    plt.plot([i for i in range(len(sorted_eigenvalues))], 100*sorted_eigenvalues/np.sum(sorted_eigenvalues))
-    plt.title("Variance Explained by each Principal Component\n for Patient {}, EKG lead {}".format(file_index, lead_num))
-    plt.xlabel('Dimension')
-    plt.ylabel('Variance Explained (%)')
+    plt.plot([i for i in range(len(sorted_eigenvalues))], sorted_eigenvalues)
+    plt.title("Covariance Matrix Eigenvalues for the {}th file on lead {}".format(file_index, lead_num))
     plt.show()
     plt.savefig(os.path.join("images", "pca_eigenvalues_{}.png".format(file_index)))
     return full_pca_lead
@@ -59,7 +53,7 @@ def plot_first_2(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     first_two_pca = PCA(n_components=2)
@@ -71,24 +65,16 @@ def plot_first_2(file_index, lead_num):
     # coordinates = np.matmul(lead_data, components.transpose())
 
     print(coordinates)
-    cm = matplotlib.cm.get_cmap('viridis')
-    plt.style.use('ggplot')
-
+    cm = matplotlib.cm.get_cmap('RdYlBu')
     colors = [cm(1. * i / len(coordinates)) for i in range(len(coordinates))]
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
-    plt.title("Evolution of 2-Dimensional PCA over time\n for Patient {}, EKG lead {}".format(file_index, lead_num))
-    plt.xlabel('First Principal Component')
-    plt.ylabel('Second Principal Component')
-    plt.clim(0,len(colors))
+    plt.title("2-Dimensional PCA for the {}th file for lead {}".format(file_index, lead_num))
     plt.colorbar(sc)
     plt.show()
     
-
-
-
 def plot_3d(file_index, lead_num):
     """
-    Plots 2-dimensional representation of the PCA matrix for a particular lead of the ith file
+    Plots 3-dimensional representation of the PCA matrix for a particular lead of the ith file
     :param file_index: index of the file (1-indexed)
     :param lead_num: lead number (1-indexed)
     :return: nothing ->
@@ -100,7 +86,7 @@ def plot_3d(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     first_three_pca = PCA(n_components=3)
@@ -110,8 +96,8 @@ def plot_3d(file_index, lead_num):
     coordinates = first_three_pca.fit_transform(lead_data)
     ax.scatter(coordinates[:,0], coordinates[:, 1], coordinates[:,2], zdir='z', c=np.arange(len(coordinates[:,0])), s=10, depthshade=True, cmap=cm.get_cmap(name='RdYlBu'))
 
-    # ax.set_xlabel('First Principal Component')
-    # ax.set_ylabel('Second Principal Component')
+    # ax.set_xlabel('LONGITUDE')
+    # ax.set_ylabel('LATITUDE')
     # ax.set_zlabel('Time')
     #
     # ax2.scatter(longi[labeled], lati[labeled], dat_mat[labeled, 0], zdir='z', s=10, c=labels[labeled], depthshade=True,
@@ -119,10 +105,78 @@ def plot_3d(file_index, lead_num):
 
     plt.show()
 
-# plot_pca_eigenvalues(30, 1)
+def save_pca_reconstructions(dim):
+    '''
+    Inputs: dimension to reduce to with PCA
+    Returns: nothing -> saves an array of (# of heartbeats) x (100) x (4) for each patient index, containing reconstructed heartbeats after PCA
+    '''
+    indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
+            '33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
 
-plot_pca_eigenvalues(1,1)
-# for file_index in heartbeat_split.indicies:
-#     plot_first_2(file_index, 1)
+    for file_index in indices:
+        print("Starting on index : " + str(file_index))
+        raw_hbs = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
+        reconstructed_hbs = np.zeros(raw_hbs.shape) # to store the reconstructed heartbeats after reduction to dim dimensions
 
-# plot_3d(16,1)
+        for lead_num in range(4): # do pca once for each lead (might try to vectorize this later)
+            lead_data = raw_hbs[:, :, lead_num] # matrix of hbs for current lead, shape is (# of hearbeats) x (100)
+
+            # Normalize to zero mean and unit covariance
+            scaler = StandardScaler()
+            scaler.fit(lead_data)
+            lead_data = scaler.transform(lead_data)
+
+            # Perform PCA and reconstruct
+            pca = PCA(n_components=dim)
+            pca.fit(lead_data) 
+            lowered_dim_data = pca.transform(lead_data) # transform to lower dimensional space
+            reconstructed_data = pca.inverse_transform(lowered_dim_data) # inverse transform back to n=100
+
+            # Undo scaling transform
+            reconstructed_data = scaler.inverse_transform(reconstructed_data)
+
+
+            reconstructed_hbs[:, :, lead_num] = reconstructed_data
+
+        data_savename = os.path.join("Working_Data", "reconstructed_pca_Idx" + file_index  + ".npy") # filename to save 
+        np.save(data_savename, reconstructed_hbs)
+
+def save_pca_reduced(dim):
+    '''
+    Inputs: dimension to reduce to with PCA
+    Returns: nothing -> saves an array of (# of heartbeats) x (dim) x (4) for each patient index, containing reduced dimension after PCA
+    '''
+    indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
+            '33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
+
+    for file_index in indices:
+        print("Starting on index : " + str(file_index))
+        raw_hbs = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
+        lowered_dim_hbs = np.zeros((raw_hbs.shape[0], dim, 4)) # to store the reduced heartbeats after reduction to dim dimensions
+
+        for lead_num in range(4): # do pca once for each lead (might try to vectorize this later)
+            lead_data = raw_hbs[:, :, lead_num] # matrix of hbs for current lead, shape is (# of hearbeats) x (100)
+
+            # Normalize to zero mean and unit covariance
+            scaler = StandardScaler()
+            scaler.fit(lead_data)
+            lead_data = scaler.transform(lead_data)
+
+            # Perform PCA and reconstruct
+            pca = PCA(n_components=dim)
+            pca.fit(lead_data) 
+            lowered_dim_data = pca.transform(lead_data) # transform to lower dimensional space
+
+            lowered_dim_hbs[:, :, lead_num] = lowered_dim_data
+        data_savename = os.path.join("Working_Data", "reduced_pca_" + str(dim) + "d_Idx" + file_index  + ".npy") # filename to save 
+        np.save(data_savename, lowered_dim_hbs)
+
+if __name__ == "__main__":
+    sys.path.insert(0, os.getcwd()) # lmao "the tucker hack"
+    # plot_pca_eigenvalues(1,1)
+    # save_pca_reconstructions(dim=10)
+    save_pca_reduced(1)
+    # for file_index in heartbeat_split.indicies:
+    #     plot_first_2(file_index, 1)
+
+    # plot_3d(16,1)

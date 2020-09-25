@@ -43,7 +43,7 @@ Outputs: Indices of peaks
 Gets peaks via prominence, using known heart-rate information to choose parameters dynamically
 '''
 def get_peaks_dynamic(data, heartrate):
-	interval = 240*60*5 # Use a five minute window of heartrate information
+	interval = 240 * 2 # Use a 2 second window of heartrate information
 	peaks = np.zeros((0,))
 	for i in range(len(data) // interval):
 		avg_hr = np.mean(heartrate[i*interval:(i+1)*interval]) # average heart rate (beats/minute) in current window
@@ -51,7 +51,16 @@ def get_peaks_dynamic(data, heartrate):
 			avg_dist = (60*240)/avg_hr # average samples/heartbeat in current window
 		else: # If we don't have HR data for most of that window, use a default value
 			avg_dist = 140
-		local_peaks, properties = find_peaks(data[i*interval:(i+1)*interval], distance = 0.5*avg_dist, prominence=1.0, wlen=0.25*avg_dist)
+		dat_window = data[i*interval:(i+1)*interval]
+
+		#avoid dividing by 0 if the window is all 0
+		if np.max(np.abs(dat_window)) == 0:
+			continue
+		#normalize the window between 0-1
+		normed_window = dat_window / np.max(np.abs(dat_window))
+		#find peaks
+		local_peaks, properties = find_peaks( normed_window, distance = 0.5*avg_dist, prominence= .5, wlen=0.25*avg_dist)
+		#Add peaks
 		local_peaks = local_peaks + (i * interval)
 		peaks = np.concatenate((peaks, local_peaks))
 	return peaks
