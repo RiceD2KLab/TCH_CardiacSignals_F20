@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 import matplotlib
 import sys
 from matplotlib import cm
+import seaborn as sns
 
+
+ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 
 
 """
@@ -34,10 +37,14 @@ def plot_pca_eigenvalues(file_index, lead_num):
     lead_data = StandardScaler().fit_transform(lead_data)
     # print(np.shape())
     full_pca_lead.fit(lead_data)
+    plt.style.use('ggplot')
+
     sorted_eigenvalues = full_pca_lead.explained_variance_ # get the eigenvalues of the covariance matrix
     print(sum(sorted_eigenvalues[:2]) / np.var(sorted_eigenvalues))
-    plt.plot([i for i in range(len(sorted_eigenvalues))], sorted_eigenvalues)
-    plt.title("Covariance Matrix Eigenvalues for the {}th file on lead {}".format(file_index, lead_num))
+    plt.plot([i for i in range(len(sorted_eigenvalues))], 100*sorted_eigenvalues/np.sum(sorted_eigenvalues))
+    plt.title("Variance Explained by each Principal Component\n for Patient {}, EKG lead {}".format(file_index, lead_num))
+    plt.xlabel('Dimension')
+    plt.ylabel('Variance Explained (%)')
     plt.show()
     plt.savefig(os.path.join("images", "pca_eigenvalues_{}.png".format(file_index)))
     return full_pca_lead
@@ -64,10 +71,15 @@ def plot_first_2(file_index, lead_num):
     # coordinates = np.matmul(lead_data, components.transpose())
 
     print(coordinates)
-    cm = matplotlib.cm.get_cmap('RdYlBu')
+    cm = matplotlib.cm.get_cmap('viridis')
+    plt.style.use('ggplot')
+
     colors = [cm(1. * i / len(coordinates)) for i in range(len(coordinates))]
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
-    plt.title("2-Dimensional PCA for the {}th file for lead {}".format(file_index, lead_num))
+    plt.title("Evolution of 2-Dimensional PCA over time\n for Patient {}, EKG lead {}".format(file_index, lead_num))
+    plt.xlabel('First Principal Component')
+    plt.ylabel('Second Principal Component')
+    plt.clim(0,len(colors))
     plt.colorbar(sc)
     plt.show()
     
@@ -98,8 +110,8 @@ def plot_3d(file_index, lead_num):
     coordinates = first_three_pca.fit_transform(lead_data)
     ax.scatter(coordinates[:,0], coordinates[:, 1], coordinates[:,2], zdir='z', c=np.arange(len(coordinates[:,0])), s=10, depthshade=True, cmap=cm.get_cmap(name='RdYlBu'))
 
-    # ax.set_xlabel('LONGITUDE')
-    # ax.set_ylabel('LATITUDE')
+    # ax.set_xlabel('First Principal Component')
+    # ax.set_ylabel('Second Principal Component')
     # ax.set_zlabel('Time')
     #
     # ax2.scatter(longi[labeled], lati[labeled], dat_mat[labeled, 0], zdir='z', s=10, c=labels[labeled], depthshade=True,
