@@ -138,7 +138,7 @@ def save_pca_reconstructions(dim):
 
             reconstructed_hbs[:, :, lead_num] = reconstructed_data
 
-        data_savename = os.path.join("Working_Data", "reconstructed_pca_Idx" + file_index  + ".npy") # filename to save 
+        data_savename = os.path.join("Working_Data", "reconstructed_pca_" + str(dim) + "d_Idx" + file_index  + ".npy") # filename to save 
         np.save(data_savename, reconstructed_hbs)
 
 def save_pca_reduced(dim):
