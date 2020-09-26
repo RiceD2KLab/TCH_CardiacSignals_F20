@@ -27,12 +27,25 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
+    print("original normalized signal")
+    # print(original_signals[0, :,:])
+    # print(np.mean(original_signals[0,:,:]))
+    # print(np.var(original_signals[0, :, :]))
+    # print(np.linalg.norm(original_signals[0,:,:]))
+    # print([np.linalg.norm(i) for i in original_signals[0,:,:].flatten()])
+
+
     reconstructed_signals = np.load(os.path.join("Working_Data",
                                                  "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
                                                                                          patient_num)))
     # compute mean squared error for each heartbeat
-    mse = (np.square(original_signals - reconstructed_signals) / (
-                np.square(original_signals) + np.square(reconstructed_signals))).mean(axis=1).mean(axis=1)
+    # mse = (np.square(original_signals - reconstructed_signals) / (np.linalg.norm(original_signals))).mean(axis=1).mean(axis=1)
+    # mse = (np.square(original_signals - reconstructed_signals) / (np.square(original_signals) + np.square(reconstructed_signals))).mean(axis=1).mean(axis=1)
+
+    mse = np.zeros(np.shape(original_signals)[0])
+    for i in range(np.shape(original_signals)[0]):
+        mse[i] = (np.linalg.norm(original_signals[i,:,:] - reconstructed_signals[i,:,:]) ** 2) / (np.linalg.norm(original_signals[i,:,:]) ** 2)
+        # mse[i] /= 400
 
     # plt.plot([i for i in range(np.shape(mse)[0])], mse)
     # plt.show()
@@ -40,6 +53,9 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     if save_errors:
         np.save(
             os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)))
+    # print(list(mse))
+
+    return np.array([err for err in mse if 1 == 1 and err < 5 and 0 == 0 and 3 < 4])
     return mse
 
 
@@ -71,7 +87,7 @@ def compare_patients(model_name, reduced_dimensions, save_errors=False):
     errors = {}
     for file_index in heartbeat_split.indicies:
         errors[file_index] = float(mean_squared_error(reduced_dimensions, model_name, file_index, save_errors).mean())
-    print(errors)
+    # print(errors)
     return errors
 
 
@@ -92,7 +108,7 @@ def compare_dimensions(model_name, patient_num, save_errors=False):
 
     plt.plot(dimensions, [np.mean(mse_list) for mse_list in dimension_errors.values()])
     plt.title(
-        "Mean Squared Error for Reconstructed Signal for Lead 1 of Patient 1 using the {} model".format((model_name)))
+        "Mean Squared Error for Reconstructed Signal of Patient {} using the {} model".format(patient_num, model_name))
     plt.xlabel("Initial Dimension Reduction")
     plt.ylabel("Mean Squared Error on Reconstruction")
     plt.show()
@@ -104,7 +120,28 @@ if __name__ == "__main__":
     # generate_reduction_test_files()
     #
     # compare_patients("pca", 10)
-    print(compare_dimensions("pca", 1))
+    print(compare_dimensions("pca", "4"))
+
+    # errors = mean_squared_error(1, "pca", "1")
+
+    # errors = [err for err in errors if err < 5]
+    # print(list(errors))
+    # # print(errors.mean())
+    # # print(np.mean(errors))
+    # plt.plot(errors)
+    # plt.show()
+    # print(mean_squared_error(10, "pca", "1").mean())
+
+    # compare_dimensions("pca", "1")
+
+    # original_signals = np.array([10,10,10])
+    # reconstructed_signals = np.array([11,14,12])
+    #
+    # mse = (np.linalg.norm(original_signals - reconstructed_signals) ** 2) / (np.linalg.norm(original_signals) ** 2)
+    # print(mse)
+
+
+
 
     # ####### FRANK AND KUNAL
     # compare_dimensions("ae", 1)
