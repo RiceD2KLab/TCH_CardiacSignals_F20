@@ -115,28 +115,14 @@ def save_pca_reconstructions(dim):
 
     for file_index in indices:
         print("Starting on index : " + str(file_index))
-        raw_hbs = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
-        reconstructed_hbs = np.zeros(raw_hbs.shape) # to store the reconstructed heartbeats after reduction to dim dimensions
-
-        for lead_num in range(4): # do pca once for each lead (might try to vectorize this later)
-            lead_data = raw_hbs[:, :, lead_num] # matrix of hbs for current lead, shape is (# of hearbeats) x (100)
-
-            # Normalize to zero mean and unit covariance
-            scaler = StandardScaler()
-            scaler.fit(lead_data)
-            lead_data = scaler.transform(lead_data)
-
-            # Perform PCA and reconstruct
-            pca = PCA(n_components=dim)
-            pca.fit(lead_data) 
-            lowered_dim_data = pca.transform(lead_data) # transform to lower dimensional space
-            reconstructed_data = pca.inverse_transform(lowered_dim_data) # inverse transform back to n=100
-
-            # Undo scaling transform
-            reconstructed_data = scaler.inverse_transform(reconstructed_data)
-
-
-            reconstructed_hbs[:, :, lead_num] = reconstructed_data
+        raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))        
+        flattened_data = raw_hbs.reshape(-1, 400) # reshape so each feature vector contains all 4 leads for each hearbeat
+        
+        pca = PCA(n_components=dim)
+        pca.fit(flattened_data)
+        lowered_dim_data = pca.transform(flattened_data) # transform to lower dimensional space
+        reconstructed_data = pca.inverse_transform(lowered_dim_data) # inverse transform back to n=100
+        reconstructed_hbs = reconstructed_data.reshape(-1, 100, 4) # reshape back to original 3-d array shape
 
         data_savename = os.path.join("Working_Data", "reconstructed_pca_" + str(dim) + "d_Idx" + file_index  + ".npy") # filename to save 
         np.save(data_savename, reconstructed_hbs)
@@ -144,7 +130,7 @@ def save_pca_reconstructions(dim):
 def save_pca_reduced(dim):
     '''
     Inputs: dimension to reduce to with PCA
-    Returns: nothing -> saves an array of (# of heartbeats) x (dim) x (4) for each patient index, containing reduced dimension after PCA
+    Returns: nothing -> saves an array of (# of heartbeats) x (dim) for each patient index, containing reduced dimension after PCA
     '''
     indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
             '33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
@@ -152,22 +138,12 @@ def save_pca_reduced(dim):
     for file_index in indices:
         print("Starting on index : " + str(file_index))
         raw_hbs = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
-        lowered_dim_hbs = np.zeros((raw_hbs.shape[0], dim, 4)) # to store the reduced heartbeats after reduction to dim dimensions
+        flattened_data = raw_hbs.reshape(-1, 400) # reshape so each feature vector contains all 4 leads for each hearbeat
 
-        for lead_num in range(4): # do pca once for each lead (might try to vectorize this later)
-            lead_data = raw_hbs[:, :, lead_num] # matrix of hbs for current lead, shape is (# of hearbeats) x (100)
+        pca = PCA(n_components=dim)
+        pca.fit(flattened_data)
+        lowered_dim_hbs = pca.transform(flattened_data) # transform to lower dimensional space
 
-            # Normalize to zero mean and unit covariance
-            scaler = StandardScaler()
-            scaler.fit(lead_data)
-            lead_data = scaler.transform(lead_data)
-
-            # Perform PCA and reconstruct
-            pca = PCA(n_components=dim)
-            pca.fit(lead_data) 
-            lowered_dim_data = pca.transform(lead_data) # transform to lower dimensional space
-
-            lowered_dim_hbs[:, :, lead_num] = lowered_dim_data
         data_savename = os.path.join("Working_Data", "reduced_pca_" + str(dim) + "d_Idx" + file_index  + ".npy") # filename to save 
         np.save(data_savename, lowered_dim_hbs)
 
