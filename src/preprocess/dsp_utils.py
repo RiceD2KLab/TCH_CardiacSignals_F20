@@ -74,20 +74,13 @@ def get_peaks_dynamic(data, heartrate):
 			plt.show()
 		"""
 
-		'''
-		Next we want to normalize the window between 0-1, don't want the noise spikes
-		(often 10+ times the mean) to hide true peaks. Thus clip to max 5 standard dev
-		'''
+		
+		#Next we want to normalize the window between 0-1, don't want the noise spikes
+		#(often 10+ times the mean) to hide true peaks. Thus clip to max 5 standard dev
+		
 
 		#Clip the window to have maximum of 5 standard deviations
 		clipped_window = np.clip(dat_window, a_min = 0, a_max = (window_mean + 5.0 * window_std))
-
-		"""
-		if ratio > 6.0:
-			print(ratio)
-			plt.plot(clipped_window)
-			plt.show()
-		"""
 
 		#avoid dividing by 0 if the window is all 0
 		if np.max(np.abs(clipped_window)) == 0:
@@ -109,4 +102,4 @@ def combine_four_lead(data):
 	pos_sum = np.zeros((data.shape[1],))
 	for i in range(4):
 		pos_sum += np.clip(data[i,:], 0, None)
-	return np.clip(pos_sum, 0, 10)
+	return pos_sum
