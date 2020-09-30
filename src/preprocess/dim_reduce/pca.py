@@ -151,8 +151,11 @@ if __name__ == "__main__":
     sys.path.insert(0, os.getcwd()) # lmao "the tucker hack"
     # plot_pca_eigenvalues(1,1)
     # save_pca_reconstructions(dim=10)
-    save_pca_reduced(1)
+    # save_pca_reduced(1)
     # for file_index in heartbeat_split.indicies:
     #     plot_first_2(file_index, 1)
+
+    for i in range(1, 21):
+        save_pca_reconstructions(dim=i)
 
     # plot_3d(16,1)
