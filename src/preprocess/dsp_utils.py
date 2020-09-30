@@ -62,7 +62,7 @@ def get_peaks_dynamic(data, heartrate):
 		window_mean = np.mean(dat_window)
 
 		#For debugging, comment out otherwise
-		ratio = (np.amax(dat_window) - window_mean) / window_std
+		#ratio = (np.amax(dat_window) - window_mean) / window_std
 
 		"""
 		#Check the clipping
@@ -81,10 +81,14 @@ def get_peaks_dynamic(data, heartrate):
 
 		#Clip the window to have maximum of 5 standard deviations
 		clipped_window = np.clip(dat_window, a_min = 0, a_max = (window_mean + 5.0 * window_std))
+
+		"""
 		if ratio > 6.0:
 			print(ratio)
 			plt.plot(clipped_window)
 			plt.show()
+		"""
+
 		#avoid dividing by 0 if the window is all 0
 		if np.max(np.abs(clipped_window)) == 0:
 			continue
