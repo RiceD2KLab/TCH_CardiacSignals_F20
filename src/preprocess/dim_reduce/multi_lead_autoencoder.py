@@ -94,13 +94,27 @@ def run_over(num_epochs, encoded_dim):
     indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
             '33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
 
-    for patient_ in indices:
+    for patient_ in indices[1:10]:
         print("Starting on index: " + str(patient_))
         training_ae(num_epochs, encoded_dim, patient_)
         print("Completed " + patient_ + " reconstruction and encoding")
 
 if __name__ == "__main__":
-    for i in range(1,21):
+    threads = []
+    for i in range(1,6):
         t1 = threading.Thread(target=run_over, args=(40,i))
         t1.start()
+        threads.append(t1)
+    for x in threads:
+        x.join()
+
+    threads = []
+    for i in range(6,11):
+        t1 = threading.Thread(target=run_over, args=(40,i))
+        t1.start()
+        threads.append(t1)
+
+    for x in threads:
+        x.join()
+
         # run_over(40,i)
