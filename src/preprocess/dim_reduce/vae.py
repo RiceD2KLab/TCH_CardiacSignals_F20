@@ -80,7 +80,7 @@ learning_rate: rate of gradient descent, 0.01 is a good number
 
 for file_index in [1]:
     for lead_num in [0,1,2,3]:
-        for latent_dim in [2]:
+        for latent_dim in [1]:
             num_epoch = 200
             learning_rate = 0.01
 
