@@ -52,7 +52,7 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-
+sdfdsf
             mse = tf.keras.losses.MeanSquaredError()
 
             reconstruction_loss = tf.reduce_mean(
