@@ -80,7 +80,7 @@ def training_ae(num_epochs, reduced_dim, file_index):
     reconstruction = decoder.predict(encoded)
 
     reconstruction_save = os.path.join("Working_Data", "reconstructed_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
-    encoded_save = os.path.join("Working_Data", "reduced_vae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
+    encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
     np.save(reconstruction_save, reconstruction)
     np.save(encoded_save,encoded)
 
