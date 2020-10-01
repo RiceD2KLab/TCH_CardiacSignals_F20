@@ -88,7 +88,7 @@ def run_vae(file_index, plot_results=False):
     # Load heartbeat data
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
-    for latent_dim in range(1,11):
+    for latent_dim in range(1,21):
         num_epoch = 200
         learning_rate = 0.001  # this is the default
 
@@ -167,11 +167,11 @@ def run_vae(file_index, plot_results=False):
                 plt.show()
 
 
-        log_filepath = os.path.join("Working_data", "")
+        log_filepath = os.path.join("Working_Data", "")
         os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 
-        reconstruction_savename = os.path.join("Working_data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "singleNN.npy")
-        z_savename = os.path.join("Working_data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "singleNN.npy")
+        reconstruction_savename = os.path.join("Working_Data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
+        z_savename = os.path.join("Working_Data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
         np.save(reconstruction_savename, reconstruction)
         np.save(z_savename, z)
 
@@ -194,5 +194,5 @@ if __name__ == "__main__":
     # for thread in threads:
     #     thread.join()
 
-    for file_index in heartbeat_split.indicies[:10]:
+    for file_index in heartbeat_split.indicies:
         run_vae(file_index, plot_results=False)
