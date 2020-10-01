@@ -98,4 +98,5 @@ def run_over(num_epochs, encoded_dim):
         print("Completed " + patient_ + " reconstruction and encoding")
 
 if __name__ == "__main__":
-    run_over(40,1)
+    for i in range(1,21):
+        run_over(40,i)
