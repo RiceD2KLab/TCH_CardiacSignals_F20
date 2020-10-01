@@ -84,11 +84,11 @@ num_epoch: number of iterations of gradient descent, 200 is a good number
 learning_rate: rate of gradient descent, 0.01 is a good number
 """
 
-def run_vae(file_index, plot_results=False):
+def run_vae(file_index, rng, plot_results=False):
     # Load heartbeat data
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
-    for latent_dim in range(1,21):
+    for latent_dim in rng:
         num_epoch = 200
         learning_rate = 0.001  # this is the default
 
@@ -194,5 +194,5 @@ if __name__ == "__main__":
     # for thread in threads:
     #     thread.join()
 
-    for file_index in heartbeat_split.indicies:
-        run_vae(file_index, plot_results=False)
+    for file_index in heartbeat_split.indicies[10:]:
+        run_vae(file_index, range(1,11), plot_results=False)
