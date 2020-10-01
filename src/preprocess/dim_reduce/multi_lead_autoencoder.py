@@ -7,6 +7,8 @@ import os
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout
 from tensorflow.keras.models import Sequential, Model
+import threading
+
 
 
 def read_in(file_index, normalized):
@@ -99,4 +101,6 @@ def run_over(num_epochs, encoded_dim):
 
 if __name__ == "__main__":
     for i in range(1,21):
-        run_over(40,i)
+        t1 = threading.Thread(target=run_over, args=(40,i))
+        t1.start()
+        # run_over(40,i)
