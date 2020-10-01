@@ -190,5 +190,5 @@ if __name__ == "__main__":
     # for thread in threads:
     #     thread.join()
 
-    for file_index in heartbeat_split.indicies[1]:
-        run_vae(file_index, range(1, 2), plot_results=True)
+    for file_index in heartbeat_split.indicies[:10]:
+        run_vae(file_index, range(1, 11), plot_results=False)

@@ -76,7 +76,7 @@ def generate_reduction_test_files():
     return
 
 
-def compare_patients(model_name, reduced_dimensions, save_errors=False):
+def compare_patients(model_name, reduced_dimensions, file_range=":", save_errors=False):
     """
     Computes the mean squared error for a specified <model_name> that reduced to <reduced_dimensions>
     :param save_errors: save the heartbeat MSEs
@@ -85,44 +85,56 @@ def compare_patients(model_name, reduced_dimensions, save_errors=False):
     :return: mapping of patient_num -> mean squared error for each patient
     """
     errors = {}
-    for file_index in heartbeat_split.indicies:
+    for file_index in heartbeat_split.indicies[file_range]:
         errors[file_index] = float(mean_squared_error(reduced_dimensions, model_name, file_index, save_errors).mean())
     # print(errors)
     return errors
 
 
-def compare_dimensions(model_name, patient_num, save_errors=False):
+def compare_dimensions(model_name, patient_list, plot=False, save_errors=False):
     """
-    Compares the mean squared error of the different dimensions for dimensionality reduction for the first patient
-    :param patient_num: patient number
+    Compares the mean squared error of the different dimensions for dimensionality reduction for the patients in patient_list
+    :param patient_list: the list of indices of the patients
     :param save_errors: save the heartbeat MSEs
     :param model_name: ae (for autoencoders) or vae (for variational autoencoders)
     :return: list[floats] -> list of mean squared errors for each dimension
     """
-    original_signals = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(patient_num)))
-
+    dimension_errors = []
     dimensions = [i for i in range(1, 11)]
-    dimension_errors = {}
-    for dim in dimensions:
-        dimension_errors[dim] = mean_squared_error(dim, model_name, 1, save_errors).mean()
 
-    plt.plot(dimensions, [np.mean(mse_list) for mse_list in dimension_errors.values()])
-    plt.title(
-        "Mean Squared Error for Reconstructed Signal of Patient {} using the {} model".format(patient_num, model_name))
-    plt.xlabel("Initial Dimension Reduction")
-    plt.ylabel("Mean Squared Error on Reconstruction")
-    plt.show()
+    for dim in dimensions:
+        patient_errors = []
+        for patient_num in patient_list:
+            patient_errors.append(mean_squared_error(dim, model_name, patient_num, save_errors).mean())
+
+        dimension_errors.append(np.mean(np.array(patient_errors)))
+    if plot:
+        plt.plot(dimensions, [np.mean(mse_list) for mse_list in dimension_errors.values()])
+        plt.title(
+            "Mean Squared Error for Reconstructed Signal using the {} model".format(model_name))
+        plt.xlabel("Initial Dimension Reduction")
+        plt.ylabel("Mean Squared Error on Reconstruction")
+        plt.show()
+
+    save_mat = np.zeros([len(dimensions), 2]) # n x 2 matrix to save
+    save_mat[:,0] = np.array(dimensions)
+    save_mat[:,1] = np.array(dimension_errors)
+    np.save(os.path.join("Working_Data", "MSE_{}.npy".format(model_name)), save_mat)
     return dimension_errors
 
 
 if __name__ == "__main__":
-    sys.path.insert(0, os.getcwd())  # lmao "the tucker hack"
+    # sys.path.insert(0, os.getcwd())  # lmao "the tucker hack"
     # generate_reduction_test_files()
     #
     # compare_patients("pca", 10)
-    print(compare_dimensions("pca", "4"))
+    # print(compare_dimensions("pca", "4"))
 
     # errors = mean_squared_error(1, "pca", "1")
+
+    compare_dimensions("pca", heartbeat_split.indicies[:10])
+    compare_dimensions("vae", heartbeat_split.indicies[:10])
+    compare_dimensions("ae", heartbeat_split.indicies[:10])
 
     # errors = [err for err in errors if err < 5]
     # print(list(errors))
