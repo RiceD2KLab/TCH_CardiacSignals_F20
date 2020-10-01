@@ -23,7 +23,6 @@ if __name__ == "__main__":
 		lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
 
 		pos_sum = dsp_utils.combine_four_lead(four_lead)
-		del four_lead
 		
 		if heartrate is not None:
 			peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
@@ -36,35 +35,42 @@ if __name__ == "__main__":
 		vals = np.unique(pos_sum[0:peaks[0]])
 		#leading heartbeat
 		if len(vals) < .05 * (peaks[0]):
-			bad_hbs = [(0, peaks[0])]
+			bad_hbs = [slice(0, peaks[0])]
 		#scan heartbeats
 		for i in range(1, len(peaks)):
 			vals = np.unique(pos_sum[peaks[i-1]:peaks[i]])
 			if len(vals) < .05 * (peaks[i] - peaks[i-1]):
-				bad_hbs.append((peaks[i-1], peaks[i]))
+				bad_hbs.append(slice(peaks[i-1], peaks[i]))
 		vals = np.unique(pos_sum[peaks[-1]:])
 		#Trailing heartbeat
 		if len(vals) < .05 * (len(pos_sum) - peaks[-1]):
-			bad_hbs.append( (peaks[-1], len(pos_sum) - 1) )
+			bad_hbs.append( slice(peaks[-1], len(pos_sum) - 1) )
 		#Delete the bad heartbeats
-		for i in range(len(bad_hbs) - 1, -1, -1):
-			pos_sum = np.delete(pos_sum, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
-			time = np.delete(time, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
+		if len(bad_hbs) > 0:
+			ind = np.indices(pos_sum.shape)[0]
+			rm = np.hstack(list(ind[i] for i in bad_hbs))
+			good_indices = sorted(set(ind)-set(rm))
+
+			pos_sum = np.take(pos_sum, good_indices)
+			time = np.take(time, good_indices)
+
 			if heartrate is not None:
-				heartrate = np.delete(heartrate, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
-			lead1 = np.delete(lead1, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
-			lead2 = np.delete(lead2, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
-			lead3 = np.delete(lead3, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
-			lead4 = np.delete(lead4, slice(bad_hbs[i][0], bad_hbs[i][1]), 0)
-		#refind peaks
-		if heartrate is not None:
-			peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
-		else:
-			peaks =  dsp_utils.get_peaks_prominence(pos_sum)
-		peaks = peaks.astype(int)
+				heartrate = np.take(heartrate, good_indices)
+				
+			lead1 = np.take(lead1, good_indices)
+			lead2 = np.take(lead2, good_indices)
+			lead3 = np.take(lead3, good_indices)
+			lead4 = np.take(lead4, good_indices)
+			
+			#refind peaks
+			if heartrate is not None:
+				peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
+			else:
+				peaks =  dsp_utils.get_peaks_prominence(pos_sum)
+			peaks = peaks.astype(int)
+			
+			four_lead = np.vstack((lead1, lead2, lead3, lead4))
 		
-		four_lead = np.vstack((lead1, lead2, lead3, lead4))
-		heartbeat_timestamps = time[peaks]
 		"""
 		#Visual Test for R-Peak identification
 		plt.plot(pos_sum)
@@ -113,12 +119,12 @@ if __name__ == "__main__":
 
 
 		data_savename = os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
-		timestamps_savename = os.path.join("Working_Data", "HB_Timestamps_Idx" + curr_index + ".npy")
+	
 		peaks_savename = os.path.join("Working_Data", "HB_Peaks_Idx" + curr_index + ".npy")
 		HB_lens_savename = os.path.join("Working_Data", "HB_Lens_Idx" + curr_index + ".npy")
 		
 		np.save(data_savename, fixed_dimension_hbs)
-		np.save(timestamps_savename, heartbeat_timestamps)
+	
 		np.save(peaks_savename, peaks)
 		np.save(HB_lens_savename, hb_lengths)
 		log.close()
