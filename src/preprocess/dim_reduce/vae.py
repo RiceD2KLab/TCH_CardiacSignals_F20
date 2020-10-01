@@ -96,11 +96,11 @@ def run_vae(file_index, plot_results=False):
         encoder_inputs = keras.Input(shape=(100, 4))
         x = layers.Flatten()(encoder_inputs)
 
-        #x = layers.Dense(200, activation="tanh", name="encode_layer_1")(x)
-        #x = layers.Dense(100, activation="tanh", name="encode_layer_2")(x)
-        #x = layers.Dense(50, activation="tanh", name="encode_layer_3")(x)
-        #x = layers.Dense(25, activation="tanh", name="encode_layer_4")(x)
-        #x = layers.Dense(10, activation="tanh", name="encode_layer_5")(x)
+        x = layers.Dense(200, activation="tanh", name="encode_layer_1")(x)
+        x = layers.Dense(100, activation="tanh", name="encode_layer_2")(x)
+        x = layers.Dense(50, activation="tanh", name="encode_layer_3")(x)
+        x = layers.Dense(25, activation="tanh", name="encode_layer_4")(x)
+        x = layers.Dense(10, activation="tanh", name="encode_layer_5")(x)
 
         z_mean = layers.Dense(latent_dim, activation="tanh", name="z_mean")(x)
         z_log_var = layers.Dense(latent_dim, activation="tanh", name="z_log_var")(x)
@@ -112,14 +112,14 @@ def run_vae(file_index, plot_results=False):
         # Build the decoder
         latent_inputs = keras.Input(shape=(latent_dim,))
 
-        #x = layers.Dense(10, activation="tanh", name="decode_layer_1")(latent_inputs)
-        #x = layers.Dense(25, activation="tanh", name="decode_layer_2")(x)
-        #x = layers.Dense(50, activation="tanh", name="decode_layer_3")(x)
-        #x = layers.Dense(100, activation="tanh", name="decode_layer_4")(x)
-        #x = layers.Dense(200, activation="tanh", name="decode_layer_5")(x)
-        #x = layers.Dense(400, activation="tanh", name="decode_layer_6")(x)
+        x = layers.Dense(10, activation="tanh", name="decode_layer_1")(latent_inputs)
+        x = layers.Dense(25, activation="tanh", name="decode_layer_2")(x)
+        x = layers.Dense(50, activation="tanh", name="decode_layer_3")(x)
+        x = layers.Dense(100, activation="tanh", name="decode_layer_4")(x)
+        x = layers.Dense(200, activation="tanh", name="decode_layer_5")(x)
+        x = layers.Dense(400, activation="tanh", name="decode_layer_6")(x)
 
-        x = layers.Dense(400, activation="tanh", name="decode_layer_6")(latent_inputs)
+        # x = layers.Dense(400, activation="tanh", name="decode_layer_6")(latent_inputs)
         decoder_outputs = layers.Reshape((100, 4))(x)
 
 
