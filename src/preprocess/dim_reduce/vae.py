@@ -7,12 +7,17 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-
 from sklearn.preprocessing import minmax_scale
+
+(x_train, _), (x_test, _) = keras.datasets.mnist.load_data()
+mnist_digits = np.concatenate([x_train, x_test], axis=0)
+mnist_digits = np.expand_dims(mnist_digits, -1).astype("float32") / 255
+print(np.shape(mnist_digits))
 
 """
 Frank Yang
-Last edited: 9/24/2020, by Frank Yang
+Created: 9/22/2020, by Frank Yang
+Last edited: 10/1/2020, by Frank Yang
 
 Input:  patient data! Further down, you can specify which patients, which leads, 
         and what values of lower-dimension in the latent space (this should be 1,2,3...15)
@@ -66,7 +71,6 @@ class VAE(keras.Model):
             "kl_loss": kl_loss,
         }
 
-
 """
 1. Build the variational auto-encoder
 2. Import and normalize heartbeat data
@@ -81,84 +85,91 @@ learning_rate: rate of gradient descent, 0.01 is a good number
 
 for file_index in [1]:
     # Load heartbeat data
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
-    for latent_dim in [1,2,3,4,5,6,7,8,9,10]:
-        # Construct empty matrices for output data
-        reconstruction_total = np.empty([len(data), 100, 4])
-        z_total = np.empty([len(data), latent_dim, 4])
+    for latent_dim in [2]:
+        num_epoch = 200
+        learning_rate = 0.001  # this is the default
 
-        for lead_num in [0, 1, 2, 3]:
+        # Build the encoder
+        encoder_inputs = keras.Input(shape=(100, 4))
+        x = layers.Flatten()(encoder_inputs)
 
-            num_epoch = 250
-            learning_rate = 0.001 # this is the default
+        #x = layers.Dense(200, activation="tanh", name="encode_layer_1")(x)
+        #x = layers.Dense(100, activation="tanh", name="encode_layer_2")(x)
+        #x = layers.Dense(50, activation="tanh", name="encode_layer_3")(x)
+        #x = layers.Dense(25, activation="tanh", name="encode_layer_4")(x)
+        #x = layers.Dense(10, activation="tanh", name="encode_layer_5")(x)
 
-            if lead_num < 0 or lead_num > 3:
-                sys.stderr.write("bad lead number - check for 1-indexing\n")
+        z_mean = layers.Dense(latent_dim, activation="tanh", name="z_mean")(x)
+        z_log_var = layers.Dense(latent_dim, activation="tanh", name="z_log_var")(x)
+        z = Sampling()([z_mean, z_log_var])
 
-            # Build the encoder
-            encoder_inputs = keras.Input(shape=(100,))
-            z_mean = layers.Dense(latent_dim, activation="tanh", name="z_mean")(encoder_inputs)
-            z_log_var = layers.Dense(latent_dim, activation="tanh", name="z_log_var")(encoder_inputs)
-            z = Sampling()([z_mean, z_log_var])
-            encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
-            encoder.summary()
+        encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+        encoder.summary()
 
-            # Build the decoder
-            latent_inputs = keras.Input(shape=(latent_dim,))
-            decoder_outputs = layers.Dense(100, activation="tanh")(latent_inputs)
-            decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
-            decoder.summary()
+        # Build the decoder
+        latent_inputs = keras.Input(shape=(latent_dim,))
 
-            # Select a lead (0,1,2,3)
-            lead_data = data[:, :, lead_num]
+        #x = layers.Dense(10, activation="tanh", name="decode_layer_1")(latent_inputs)
+        #x = layers.Dense(25, activation="tanh", name="decode_layer_2")(x)
+        #x = layers.Dense(50, activation="tanh", name="decode_layer_3")(x)
+        #x = layers.Dense(100, activation="tanh", name="decode_layer_4")(x)
+        #x = layers.Dense(200, activation="tanh", name="decode_layer_5")(x)
+        #x = layers.Dense(400, activation="tanh", name="decode_layer_6")(x)
 
-            # Normalize each heartbeat to (min=0,max=1). This is important when using ReLu in the NNs
-            for iter1 in range(len(lead_data)):
-                lead_data[iter1, :] = minmax_scale(lead_data[iter1, :], feature_range=(0, 1), axis=0, copy=True)
+        x = layers.Dense(400, activation="tanh", name="decode_layer_6")(latent_inputs)
+        decoder_outputs = layers.Reshape((100, 4))(x)
 
-            vae = VAE(encoder, decoder)
-            vae.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate))
-            vaefit = vae.fit(lead_data, epochs=num_epoch, batch_size=len(lead_data))
 
-            # visualize the loss convergence as we iterate
-            """
-            plt.plot(vaefit.history['loss'])
-            plt.plot(vaefit.history['reconstruction_loss'])
-            plt.plot(vaefit.history['kl_loss'])
-            plt.title('model loss')
-            plt.ylabel('loss')
-            plt.xlabel('epoch')
-            plt.legend(['loss','reconstruction loss','KL loss'], loc='upper left')
-            plt.show()
-            """
+        #x = layers.Dense(7 * 7 * 64, activation="relu")(latent_inputs)
+        #x = layers.Reshape((7, 7, 64))(x)
+        #decoder_outputs = layers.Conv2DTranspose(100, 4, activation="sigmoid", padding="same")(x)
 
-            # visualize the first heartbeat
-            """
-            plt.plot([i for i in range(len(lead_data[0, :]))], lead_data[0, :])
-            plt.plot([i for i in range(len(reconstruction[0, :]))], reconstruction[0, :])
+        decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
+        decoder.summary()
+
+        # Normalize each heartbeat to (min=0,max=1). This is important when using ReLu in the NNs
+        # for iter1 in range(len(lead_data)):
+        #    lead_data[iter1, :] = minmax_scale(lead_data[iter1, :], feature_range=(0, 1), axis=0, copy=True)
+
+        vae = VAE(encoder, decoder)
+        vae.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate))
+
+        #print(np.shape(data))
+
+        vaefit = vae.fit(data, epochs=num_epoch, batch_size=len(data))
+
+        # save the z parameter? save the z-mean or z-variance? --> YES
+        z = encoder.predict(data)
+        reconstruction = decoder.predict(z)
+
+        # visualize the loss convergence as we iterate
+
+        plt.plot(vaefit.history['loss'])
+        plt.plot(vaefit.history['reconstruction_loss'])
+        plt.plot(vaefit.history['kl_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
+        plt.show()
+
+        htbt_idx = 0
+        # visualize the first heartbeat
+        for lead_idx in [0, 1, 2, 3]:
+            plt.plot([i for i in range(len(data[htbt_idx, :, lead_idx]))], data[htbt_idx, :, lead_idx])
+            plt.plot([i for i in range(len(reconstruction[htbt_idx, :, lead_idx]))], reconstruction[htbt_idx, :, lead_idx])
             plt.legend(['original', 'reconstructed'], loc='upper left')
-            plt.title("VAE output comparison (heartbeat 1)")
+            plt.title("VAE output comparison (heartbeat {}, lead {})".format(htbt_idx, lead_idx+1))
             plt.xlabel('Index')
             plt.show()
-            """
 
-            z = encoder.predict(lead_data)
-            print(type(z[2]))
-            print(np.shape(z[2]))
-
-            # save the z parameter? Do not save the z-mean or z-variance? --> this is what got sampled
-            z_total[:, :, lead_num] = z[2]
-            print(np.shape(z_total))
-
-            reconstruction = decoder.predict(z)
-            reconstruction_total[:, :, lead_num] = reconstruction
 
         log_filepath = os.path.join("Working_data", "")
         os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 
-        reconstruction_savename = os.path.join("Working_data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
-        z_savename = os.path.join("Working_data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
-        np.save(reconstruction_savename, reconstruction_total)
-        np.save(z_savename, z_total)
-
+        reconstruction_savename = os.path.join("Working_data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "singleNN.npy")
+        z_savename = os.path.join("Working_data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "singleNN.npy")
+        np.save(reconstruction_savename, reconstruction)
+        np.save(z_savename, z)
