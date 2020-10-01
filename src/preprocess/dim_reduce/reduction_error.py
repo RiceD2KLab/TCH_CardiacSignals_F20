@@ -123,6 +123,20 @@ def compare_dimensions(model_name, patient_list, plot=False, save_errors=False):
     return dimension_errors
 
 
+def plot_loaded_mses():
+    """"
+    Ad-hoc function to plot MSEs from an existing MSE_<model_name> file
+    """
+    model_names = ["pca", "vae", "ae"]
+    for model_name in model_names[2:]:
+        mses = np.load(os.path.join("Working_Data", "MSE_{}.npy".format(model_name)))
+        plt.plot(mses[:,0], mses[:,1])
+    plt.title("Relatived MSEs when encoded/decoded from K latent dimensions (averaged over first 10 patients)")
+    plt.xlabel("Num Latent Dimensions")
+    plt.ylabel("Relative MSE")
+    plt.legend(model_names[2:])
+    plt.show()
+
 if __name__ == "__main__":
     # sys.path.insert(0, os.getcwd())  # lmao "the tucker hack"
     # generate_reduction_test_files()
@@ -132,10 +146,11 @@ if __name__ == "__main__":
 
     # errors = mean_squared_error(1, "pca", "1")
 
-    compare_dimensions("pca", heartbeat_split.indicies[:10])
+    # compare_dimensions("pca", heartbeat_split.indicies[:10])
     compare_dimensions("vae", heartbeat_split.indicies[:10])
-    compare_dimensions("ae", heartbeat_split.indicies[:10])
+    # compare_dimensions("ae", heartbeat_split.indicies[:10])
 
+    # plot_loaded_mses()
     # errors = [err for err in errors if err < 5]
     # print(list(errors))
     # # print(errors.mean())
