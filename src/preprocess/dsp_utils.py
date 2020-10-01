@@ -1,6 +1,8 @@
 import numpy as np 
 from scipy.signal import find_peaks
 
+import matplotlib.pyplot as plt
+
 '''
 Inputs: ECG Signal, desired dimensions
 Outputs: ECG Signal in desired dimension
@@ -47,17 +49,44 @@ def get_peaks_dynamic(data, heartrate):
 	peaks = np.zeros((0,))
 	for i in range(len(data) // interval):
 		avg_hr = np.mean(heartrate[i*interval:(i+1)*interval]) # average heart rate (beats/minute) in current window
+
 		if (avg_hr > 0): # If we have valid HR data
 			avg_dist = (60*240)/avg_hr # average samples/heartbeat in current window
 		else: # If we don't have HR data for most of that window, use a default value
 			avg_dist = 140
+
+		#window of interval length
 		dat_window = data[i*interval:(i+1)*interval]
 
+		window_std = np.std(dat_window)
+		window_mean = np.mean(dat_window)
+
+		#For debugging, comment out otherwise
+		#ratio = (np.amax(dat_window) - window_mean) / window_std
+
+		"""
+		#Check the clipping
+
+		if ratio > 12.0:
+			clip = window_mean + 5.0 * window_std
+			plt.plot(dat_window)
+			plt.hlines(clip, xmin = 0, xmax = 479)
+			plt.show()
+		"""
+
+		
+		#Next we want to normalize the window between 0-1, don't want the noise spikes
+		#(often 10+ times the mean) to hide true peaks. Thus clip to max 5 standard dev
+		
+
+		#Clip the window to have maximum of 5 standard deviations
+		clipped_window = np.clip(dat_window, a_min = 0, a_max = (window_mean + 5.0 * window_std))
+
 		#avoid dividing by 0 if the window is all 0
-		if np.max(np.abs(dat_window)) == 0:
+		if np.max(np.abs(clipped_window)) == 0:
 			continue
 		#normalize the window between 0-1
-		normed_window = dat_window / np.max(np.abs(dat_window))
+		normed_window = dat_window / np.max(np.abs(clipped_window))
 		#find peaks
 		local_peaks, properties = find_peaks( normed_window, distance = 0.5*avg_dist, prominence= .5, wlen=0.25*avg_dist)
 		#Add peaks

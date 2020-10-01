@@ -8,33 +8,60 @@ import os
 import numpy as np
 from src.preprocess.heartbeat_split import heartbeat_split
 import random
+import statistics
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import minmax_scale
+from sklearn.preprocessing import StandardScaler
 
-def mean_squared_error(model_name):
+
+def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
-    Computes the mean squared error of the reconstructed signal against the original signal for each lead for each of the patients
-    Each signal's dimensions are reduced from 100 to 15, then reconstructed to obtain the reconstructed signal
+    Computes the mean squared error of the reconstructed signal against the original signal for each lead for each of the patient_num
+    Each signal's dimensions are reduced from 100 to 'reduced_dimensions', then reconstructed to obtain the reconstructed signal
 
-    For this fucnction to run, there must be numpy files in the Working_Data directory of the form
-    :param model_name: "lstm, vae, pca, test"
-    :return: dictionary of patient_index -> length 4 array of mean squared errors (for the four leads)
+    :param reduced_dimensions: number of dimensions the file was originally reduced to
+    :param model_name: "lstm, vae, ae, pca, test"
+    :return: dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
     """
-    errors = {}
-    for file_index in heartbeat_split.indicies:
-        print("calculating mse for file index {} on the reconstructed {} model".format(file_index, model_name))
-        original_signals = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
-        print("mean is {}".format(np.mean(original_signals)))
-        print("variance of the original signal is {}".format(np.var(original_signals)))
-        reconstructed_signals = np.load(os.path.join("Working_Data", "reconstructed_{}_Idx{}.npy".format(model_name, file_index)))
-        mse = ((original_signals - reconstructed_signals) ** 2).mean(axis=0).mean(axis=0) # compute mean squared error
+    print("calculating mse for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-        # we should expect that the mean squared error is equal to the variance of the uniform distribution in which the perturbations were generated,
-        # which were Unif(-var, var) where var = (variance of original signals / 10)
-        errors[file_index] = list(mse)
-    return errors
+    print("original normalized signal")
+    # print(original_signals[0, :,:])
+    # print(np.mean(original_signals[0,:,:]))
+    # print(np.var(original_signals[0, :, :]))
+    # print(np.linalg.norm(original_signals[0,:,:]))
+    # print([np.linalg.norm(i) for i in original_signals[0,:,:].flatten()])
+
+
+    reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                 "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
+                                                                                         patient_num)))
+    # compute mean squared error for each heartbeat
+    # mse = (np.square(original_signals - reconstructed_signals) / (np.linalg.norm(original_signals))).mean(axis=1).mean(axis=1)
+    # mse = (np.square(original_signals - reconstructed_signals) / (np.square(original_signals) + np.square(reconstructed_signals))).mean(axis=1).mean(axis=1)
+
+    mse = np.zeros(np.shape(original_signals)[0])
+    for i in range(np.shape(original_signals)[0]):
+        mse[i] = (np.linalg.norm(original_signals[i,:,:] - reconstructed_signals[i,:,:]) ** 2) / (np.linalg.norm(original_signals[i,:,:]) ** 2)
+        # mse[i] /= 400
+
+    # plt.plot([i for i in range(np.shape(mse)[0])], mse)
+    # plt.show()
+
+    if save_errors:
+        np.save(
+            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)))
+    # print(list(mse))
+
+    return np.array([err for err in mse if 1 == 1 and err < 5 and 0 == 0 and 3 < 4])
+    return mse
+
 
 def generate_reduction_test_files():
     """
-    Generates test files to test the mean squared error code by randomly perturbing the original heartbeat siganls by a small amount
+    Generates test files to test the mean squared error code by randomly perturbing the original heartbeat signals by a small amount
     :return: nothing -> saves perturbed signals to a file
     """
 
@@ -44,20 +71,78 @@ def generate_reduction_test_files():
         perturbation_delta = float(np.var(original_signals)) / 10
         perturbation_func = np.vectorize(lambda x: x + random.uniform(-1 * perturbation_delta, perturbation_delta))
         perturbed_signals = perturbation_func(original_signals)
-        np.save(os.path.join("Working_Data", "reconstructed_{}_Idx{}.npy".format("test", file_index)), perturbed_signals)
+        np.save(os.path.join("Working_Data", "reconstructed_{}_Idx{}.npy".format("test", file_index)),
+                perturbed_signals)
     return
 
 
+def compare_patients(model_name, reduced_dimensions, save_errors=False):
+    """
+    Computes the mean squared error for a specified <model_name> that reduced to <reduced_dimensions>
+    :param save_errors: save the heartbeat MSEs
+    :param model_name: dimensionality reduction technique
+    :param reduced_dimensions: number of dimensions the original signals were reduced to before reconstruction
+    :return: mapping of patient_num -> mean squared error for each patient
+    """
+    errors = {}
+    for file_index in heartbeat_split.indicies:
+        errors[file_index] = float(mean_squared_error(reduced_dimensions, model_name, file_index, save_errors).mean())
+    # print(errors)
+    return errors
+
+
+def compare_dimensions(model_name, patient_num, save_errors=False):
+    """
+    Compares the mean squared error of the different dimensions for dimensionality reduction for the first patient
+    :param patient_num: patient number
+    :param save_errors: save the heartbeat MSEs
+    :param model_name: ae (for autoencoders) or vae (for variational autoencoders)
+    :return: list[floats] -> list of mean squared errors for each dimension
+    """
+    original_signals = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(patient_num)))
+
+    dimensions = [i for i in range(1, 11)]
+    dimension_errors = {}
+    for dim in dimensions:
+        dimension_errors[dim] = mean_squared_error(dim, model_name, 1, save_errors).mean()
+
+    plt.plot(dimensions, [np.mean(mse_list) for mse_list in dimension_errors.values()])
+    plt.title(
+        "Mean Squared Error for Reconstructed Signal of Patient {} using the {} model".format(patient_num, model_name))
+    plt.xlabel("Initial Dimension Reduction")
+    plt.ylabel("Mean Squared Error on Reconstruction")
+    plt.show()
+    return dimension_errors
+
 
 if __name__ == "__main__":
-    sys.path.insert(0, os.getcwd()) # lmao "the tucker hack"
+    sys.path.insert(0, os.getcwd())  # lmao "the tucker hack"
     # generate_reduction_test_files()
-    errors = mean_squared_error("test")
-    print(errors)
+    #
+    # compare_patients("pca", 10)
+    print(compare_dimensions("pca", "4"))
+
+    # errors = mean_squared_error(1, "pca", "1")
+
+    # errors = [err for err in errors if err < 5]
+    # print(list(errors))
+    # # print(errors.mean())
+    # # print(np.mean(errors))
+    # plt.plot(errors)
+    # plt.show()
+    # print(mean_squared_error(10, "pca", "1").mean())
+
+    # compare_dimensions("pca", "1")
+
+    # original_signals = np.array([10,10,10])
+    # reconstructed_signals = np.array([11,14,12])
+    #
+    # mse = (np.linalg.norm(original_signals - reconstructed_signals) ** 2) / (np.linalg.norm(original_signals) ** 2)
+    # print(mse)
 
 
 
 
-
-
-
+    # ####### FRANK AND KUNAL
+    # compare_dimensions("ae", 1)
+    # compare_dimensions("vae", 1)

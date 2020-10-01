@@ -10,7 +10,6 @@ from src.preprocess import dsp_utils, h5_interface
 
 indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
 				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
-
 if __name__ == "__main__":
 	
 	for curr_index in indicies:
@@ -20,30 +19,66 @@ if __name__ == "__main__":
 		h5f = h5_interface.readh5(filename)
 
 		four_lead, time, heartrate = h5_interface.ecg_np(h5f)
-		
+		lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
+		lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
+
 		pos_sum = dsp_utils.combine_four_lead(four_lead)
+		
 		if heartrate is not None:
 			peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
 		else:
 			peaks =  dsp_utils.get_peaks_prominence(pos_sum)
 		peaks = peaks.astype(int)
+
+		#Look for gaps (based of unique values)
+		bad_hbs = []
+		vals = np.unique(pos_sum[0:peaks[0]])
+		#leading heartbeat
+		if len(vals) < .05 * (peaks[0]):
+			bad_hbs = [slice(0, peaks[0])]
+		#scan heartbeats
 		for i in range(1, len(peaks)):
 			vals = np.unique(pos_sum[peaks[i-1]:peaks[i]])
 			if len(vals) < .05 * (peaks[i] - peaks[i-1]):
-				print(peaks[i-1], peaks[i])
-				print(peaks[i] - peaks[i-1], len(vals))
-				plt.plot(np.arange(start = peaks[i-1]-50, stop = peaks[i] + 50), pos_sum[peaks[i-1]-50:peaks[i] + 50])
-				plt.show()
-		heartbeat_timestamps = time[peaks]
+				bad_hbs.append(slice(peaks[i-1], peaks[i]))
+		vals = np.unique(pos_sum[peaks[-1]:])
+		#Trailing heartbeat
+		if len(vals) < .05 * (len(pos_sum) - peaks[-1]):
+			bad_hbs.append( slice(peaks[-1], len(pos_sum) - 1) )
+		#Delete the bad heartbeats
+		if len(bad_hbs) > 0:
+			ind = np.indices(pos_sum.shape)[0]
+			rm = np.hstack(list(ind[i] for i in bad_hbs))
+			good_indices = sorted(set(ind)-set(rm))
 
-		'''
+			pos_sum = np.take(pos_sum, good_indices)
+			time = np.take(time, good_indices)
+
+			if heartrate is not None:
+				heartrate = np.take(heartrate, good_indices)
+				
+			lead1 = np.take(lead1, good_indices)
+			lead2 = np.take(lead2, good_indices)
+			lead3 = np.take(lead3, good_indices)
+			lead4 = np.take(lead4, good_indices)
+			
+			#refind peaks
+			if heartrate is not None:
+				peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
+			else:
+				peaks =  dsp_utils.get_peaks_prominence(pos_sum)
+			peaks = peaks.astype(int)
+			
+			four_lead = np.vstack((lead1, lead2, lead3, lead4))
+		
+		"""
 		#Visual Test for R-Peak identification
 		plt.plot(pos_sum)
 		# plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
 		plt.plot(peaks, pos_sum[peaks], "x")
 		plt.show()
-		'''
-		'''
+		"""
+		
 		log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
 		os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 		log = open(log_filepath, 'w')
@@ -54,26 +89,14 @@ if __name__ == "__main__":
 		hb_lengths = hb_lengths[1:] 				#remove the leading 0
 		np.concatenate( (hb_lengths,np.array([four_lead.shape[1]-peaks[-1]]) ) ) #append the last length
 
-		#Remove extreme outliers (Some data has gaps, etc...)
-		hb_superoutliers = np.nonzero( (hb_lengths - np.average(hb_lengths) ) > 3 * np.std(hb_lengths) )[0]
-
-		#Identify outliers (skipped beats where R-peak identification failed)
-		hb_outliers = np.nonzero( (hb_lengths - np.average(hb_lengths) ) > 1 * np.std(np.delete(hb_lengths, hb_superoutliers) ) )[0]
-
-		#Delete the outliers
-		consistant_hb_lens = np.delete(hb_lengths, hb_outliers)
 
 		#Find the maximum length
 		maximum_hb_len = 100
 		
 		log.write("Average heartbeat length before outlier removal : " + str(np.average(hb_lengths)) + "\n")
-		log.write("Total heartbeats : " + str(len(peaks))+ "\n")
-		log.write("Heatbeat length (extreme outliers removed) standard dev : " + str(np.std(np.delete(hb_lengths, hb_superoutliers)))+ "\n")
-		log.write("Number of heartbeat extreme outliers : " + str(len(hb_superoutliers)) + "\n")
-		log.write("Number of heartbeat outliers : " + str(len(hb_outliers))+ "\n")
-		log.write("Total consistant heartbeats : " + str(len(consistant_hb_lens))+ "\n")
-		log.write("Average consistant heartbeat length : " + str(np.average(consistant_hb_lens))+ "\n")
-		log.write("Max Heartbeat Length : " + str(maximum_hb_len)+ "\n")
+		log.write("Total valid heartbeats : " + str(len(peaks))+ "\n")
+		log.write("Total invalid heartbeats : " + str(len(vals))+ "\n")
+		log.write("Average valid heartbeat length : " + str(np.average(hb_lengths))+ "\n")
 
 		#Num heartbeats x Max heartbeat length x Leads (4) 3D array
 		fixed_dimension_hbs = np.zeros((len(peaks), maximum_hb_len, 4))
@@ -96,15 +119,13 @@ if __name__ == "__main__":
 
 
 		data_savename = os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
-		timestamps_savename = os.path.join("Working_Data", "HB_Timestamps_Idx" + curr_index + ".npy")
+	
 		peaks_savename = os.path.join("Working_Data", "HB_Peaks_Idx" + curr_index + ".npy")
-		outliers_savename = os.path.join("Working_Data", "HB_Outliers_Idx" + curr_index + ".npy")
 		HB_lens_savename = os.path.join("Working_Data", "HB_Lens_Idx" + curr_index + ".npy")
 		
 		np.save(data_savename, fixed_dimension_hbs)
-		np.save(timestamps_savename, heartbeat_timestamps)
+	
 		np.save(peaks_savename, peaks)
-		np.save(outliers_savename, hb_outliers)
 		np.save(HB_lens_savename, hb_lengths)
 		log.close()
-		'''
+		
