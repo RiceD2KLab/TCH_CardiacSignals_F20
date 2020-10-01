@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-
+from src.preprocess.heartbeat_split import heartbeat_split
+import threading
 from sklearn.preprocessing import minmax_scale
 
 (x_train, _), (x_test, _) = keras.datasets.mnist.load_data()
@@ -49,8 +50,8 @@ class VAE(keras.Model):
         if isinstance(data, tuple):
             data = data[0]
         with tf.GradientTape() as tape:
-            z_mean, z_log_var, z = encoder(data)
-            reconstruction = decoder(z)
+            z_mean, z_log_var, z = self.encoder(data)
+            reconstruction = self.decoder(z)
 
             mse = tf.keras.losses.MeanSquaredError()
 
@@ -83,11 +84,11 @@ num_epoch: number of iterations of gradient descent, 200 is a good number
 learning_rate: rate of gradient descent, 0.01 is a good number
 """
 
-for file_index in [1]:
+def run_vae(file_index, plot_results=False):
     # Load heartbeat data
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
-    for latent_dim in [2]:
+    for latent_dim in range(1,11):
         num_epoch = 200
         learning_rate = 0.001  # this is the default
 
@@ -145,25 +146,25 @@ for file_index in [1]:
         reconstruction = decoder.predict(z)
 
         # visualize the loss convergence as we iterate
-
-        plt.plot(vaefit.history['loss'])
-        plt.plot(vaefit.history['reconstruction_loss'])
-        plt.plot(vaefit.history['kl_loss'])
-        plt.title('model loss')
-        plt.ylabel('loss')
-        plt.xlabel('epoch')
-        plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
-        plt.show()
-
-        htbt_idx = 0
-        # visualize the first heartbeat
-        for lead_idx in [0, 1, 2, 3]:
-            plt.plot([i for i in range(len(data[htbt_idx, :, lead_idx]))], data[htbt_idx, :, lead_idx])
-            plt.plot([i for i in range(len(reconstruction[htbt_idx, :, lead_idx]))], reconstruction[htbt_idx, :, lead_idx])
-            plt.legend(['original', 'reconstructed'], loc='upper left')
-            plt.title("VAE output comparison (heartbeat {}, lead {})".format(htbt_idx, lead_idx+1))
-            plt.xlabel('Index')
+        if plot_results:
+            plt.plot(vaefit.history['loss'])
+            plt.plot(vaefit.history['reconstruction_loss'])
+            plt.plot(vaefit.history['kl_loss'])
+            plt.title('model loss')
+            plt.ylabel('loss')
+            plt.xlabel('epoch')
+            plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
             plt.show()
+
+            htbt_idx = 0
+            # visualize the first heartbeat
+            for lead_idx in [0, 1, 2, 3]:
+                plt.plot([i for i in range(len(data[htbt_idx, :, lead_idx]))], data[htbt_idx, :, lead_idx])
+                plt.plot([i for i in range(len(reconstruction[htbt_idx, :, lead_idx]))], reconstruction[htbt_idx, :, lead_idx])
+                plt.legend(['original', 'reconstructed'], loc='upper left')
+                plt.title("VAE output comparison (heartbeat {}, lead {})".format(htbt_idx, lead_idx+1))
+                plt.xlabel('Index')
+                plt.show()
 
 
         log_filepath = os.path.join("Working_data", "")
@@ -173,3 +174,25 @@ for file_index in [1]:
         z_savename = os.path.join("Working_data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + "singleNN.npy")
         np.save(reconstruction_savename, reconstruction)
         np.save(z_savename, z)
+
+if __name__ == "__main__":
+    # threads = []
+    # for file_index in heartbeat_split.indicies[:5]:
+    #     t = threading.Thread(target=run_vae, args=(10, False))
+    #     t.start()
+    #     threads.append(t)
+    #
+    # for thread in threads:
+    #     thread.join()
+    #
+    # threads = []
+    # for file_index in heartbeat_split.indicies[5:10]:
+    #     t = threading.Thread(target=run_vae, args=(10, False))
+    #     t.start()
+    #     threads.append(t)
+    #
+    # for thread in threads:
+    #     thread.join()
+
+    for file_index in heartbeat_split.indicies[:10]:
+        run_vae(file_index, plot_results=False)
