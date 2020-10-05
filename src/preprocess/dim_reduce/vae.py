@@ -10,10 +10,6 @@ from src.preprocess.heartbeat_split import heartbeat_split
 import threading
 from sklearn.preprocessing import minmax_scale
 
-(x_train, _), (x_test, _) = keras.datasets.mnist.load_data()
-mnist_digits = np.concatenate([x_train, x_test], axis=0)
-mnist_digits = np.expand_dims(mnist_digits, -1).astype("float32") / 255
-print(np.shape(mnist_digits))
 
 """
 Frank Yang
@@ -37,7 +33,7 @@ class Sampling(layers.Layer):
         z_mean, z_log_var = inputs
         batch = tf.shape(z_mean)[0]
         dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
+        epsilon = tf.keras.backend.random_normal(shape=(batch, dim),mean=0., stddev=0.01)
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 class VAE(keras.Model):
@@ -89,14 +85,14 @@ def run_vae(file_index, rng, plot_results=False):
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
     for latent_dim in rng:
-        num_epoch = 200
-        learning_rate = 0.001  # this is the default
+        num_epoch = 1000
+        learning_rate = 0.001 # this is the default
 
         # Build the encoder
         encoder_inputs = keras.Input(shape=(100, 4))
         x = layers.Flatten()(encoder_inputs)
 
-        x = layers.Dense(200, activation="tanh", name="encode_layer_1")(x)
+        x = layers.Dense(200, activation="linear", name="encode_layer_1")(x)
         x = layers.Dense(100, activation="tanh", name="encode_layer_2")(x)
         x = layers.Dense(50, activation="tanh", name="encode_layer_3")(x)
         x = layers.Dense(25, activation="tanh", name="encode_layer_4")(x)
@@ -117,7 +113,7 @@ def run_vae(file_index, rng, plot_results=False):
         x = layers.Dense(50, activation="tanh", name="decode_layer_3")(x)
         x = layers.Dense(100, activation="tanh", name="decode_layer_4")(x)
         x = layers.Dense(200, activation="tanh", name="decode_layer_5")(x)
-        x = layers.Dense(400, activation="tanh", name="decode_layer_6")(x)
+        x = layers.Dense(400, activation="linear", name="decode_layer_6")(x)
 
         # x = layers.Dense(400, activation="tanh", name="decode_layer_6")(latent_inputs)
         decoder_outputs = layers.Reshape((100, 4))(x)
@@ -156,7 +152,7 @@ def run_vae(file_index, rng, plot_results=False):
             plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
             plt.show()
 
-            htbt_idx = 0
+            htbt_idx = 15000
             # visualize the first heartbeat
             for lead_idx in [0, 1, 2, 3]:
                 plt.plot([i for i in range(len(data[htbt_idx, :, lead_idx]))], data[htbt_idx, :, lead_idx])
@@ -195,4 +191,4 @@ if __name__ == "__main__":
     #     thread.join()
 
     for file_index in heartbeat_split.indicies[:10]:
-        run_vae(file_index, range(1,11), plot_results=False)
+        run_vae(file_index, range(1, 11), plot_results=False)
