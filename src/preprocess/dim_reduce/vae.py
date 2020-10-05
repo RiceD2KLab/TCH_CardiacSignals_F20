@@ -85,8 +85,8 @@ def run_vae(file_index, rng, plot_results=False):
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
     for latent_dim in rng:
-        num_epoch = 100
-        learning_rate = 0.01  # this is the default
+        num_epoch = 1000
+        learning_rate = 0.001 # this is the default
 
         # Build the encoder
         encoder_inputs = keras.Input(shape=(100, 4))
@@ -152,7 +152,7 @@ def run_vae(file_index, rng, plot_results=False):
             plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
             plt.show()
 
-            htbt_idx = 0
+            htbt_idx = 15000
             # visualize the first heartbeat
             for lead_idx in [0, 1, 2, 3]:
                 plt.plot([i for i in range(len(data[htbt_idx, :, lead_idx]))], data[htbt_idx, :, lead_idx])
