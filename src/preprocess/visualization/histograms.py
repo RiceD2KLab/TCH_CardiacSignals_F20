@@ -4,7 +4,7 @@ import os
 import sys
 sys.path.insert(0, os.getcwd())  # lmao "the tucker hack"
 
-file_index = 1
+file_index = 1 # You can change it here or iterate over all file idx 
 patient_idx = file_index
 dim_red = 'pca'
 test = np.load(os.path.join("Working_Data", f"reduced_{dim_red}_1d_Idx{str(file_index)}.npy"))
