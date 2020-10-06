@@ -167,13 +167,13 @@ def run_vae(file_index, rng, plot_results=False):
 
             plt.figure()
             data_stack = z[0];
-            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.hist(data_stack, bins=np.linspace(-1.2, 1.2, num=501))
             plt.title("Latent Variable Means - Train Data")
             plt.show()
 
             plt.figure()
             data_stack = z[1];
-            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.hist(data_stack, bins=np.linspace(-1.5, -0.5, num=501))
             plt.title("Latent Variable log(Variance) - Train Data")
             plt.show()
 
@@ -193,19 +193,19 @@ def run_vae(file_index, rng, plot_results=False):
         # visualize the loss convergence as we iterate
         if plot_results:
             plt.figure()
-            data_stack = z[0];
-            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            data_stack = z[0]
+            plt.hist(data_stack, bins=np.linspace(-1.2, 1.2, num=501))
             plt.title("Latent Variable Means - Test Data")
             plt.show()
 
             plt.figure()
-            data_stack = z[1];
-            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            data_stack = z[1]
+            plt.hist(data_stack, bins=np.linspace(-1.5, -0.5, num=501))
             plt.title("Latent Variable log(Variance) - Test Data")
             plt.show()
 
             plt.figure()
-            data_stack = z[2];
+            data_stack = z[2]
             plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
             plt.title("Sampled Latent Variable - Test Data")
             plt.show()
