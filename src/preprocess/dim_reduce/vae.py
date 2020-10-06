@@ -88,8 +88,12 @@ def run_vae(file_index, rng, plot_results=False):
     # Load heartbeat data
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
+    splitting_idx = round(len(data)*5/6)
+    data_train = data[0:splitting_idx]
+    data_test = data[(splitting_idx+1):]
+
     for latent_dim in rng:
-        num_epoch = 300
+        num_epoch = 400
         learning_rate = 0.001  # this is the default
 
         # Build the encoder
@@ -119,29 +123,23 @@ def run_vae(file_index, rng, plot_results=False):
         x = layers.Dense(200, activation="tanh", name="decode_layer_5")(x)
         x = layers.Dense(400, activation="linear", name="decode_layer_6")(x)
 
-        # x = layers.Dense(400, activation="tanh", name="decode_layer_6")(latent_inputs)
         decoder_outputs = layers.Reshape((100, 4))(x)
 
-        # x = layers.Dense(7 * 7 * 64, activation="relu")(latent_inputs)
-        # x = layers.Reshape((7, 7, 64))(x)
-        # decoder_outputs = layers.Conv2DTranspose(100, 4, activation="sigmoid", padding="same")(x)
 
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
         decoder.summary()
 
-        # Normalize each heartbeat to (min=0,max=1). This is important when using ReLu in the NNs
-        # for iter1 in range(len(lead_data)):
-        #    lead_data[iter1, :] = minmax_scale(lead_data[iter1, :], feature_range=(0, 1), axis=0, copy=True)
-
         vae = VAE(encoder, decoder)
         vae.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate))
 
-        # print(np.shape(data))
+        #print(np.shape(data))
 
-        vaefit = vae.fit(data, epochs=num_epoch, batch_size=len(data))
+        vaefit = vae.fit(data_train, epochs=num_epoch, batch_size=len(data_train))
 
+        ###############################################################################################################
+        # PUT TRAIN DATA IN
         # save the z parameter? save the z-mean or z-variance? --> YES
-        z = encoder.predict(data)
+        z = encoder.predict(data_train)
         reconstruction = decoder.predict(z)
         # print(np.shape(z[2]))
 
@@ -167,15 +165,51 @@ def run_vae(file_index, rng, plot_results=False):
                 plt.xlabel('Index')
                 plt.show()
 
-            #
-            # plt.figure()
-            # data_stack = z[2];
-            # plt.hist(data_stack, bins=np.linspace(-1, 1, num=201))
-            # plt.show()
+            plt.figure()
+            data_stack = z[0];
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Latent Variable Means - Train Data")
+            plt.show()
+
+            plt.figure()
+            data_stack = z[1];
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Latent Variable log(Variance) - Train Data")
+            plt.show()
+
             plt.figure()
             data_stack = z[2];
             plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Sampled Latent Variable - Train Data")
             plt.show()
+
+        ###############################################################################################################
+        # PUT TEST DATA IN
+        # save the z parameter? save the z-mean or z-variance? --> YES
+        z = encoder.predict(data_test)
+        reconstruction = decoder.predict(z)
+        # print(np.shape(z[2]))
+
+        # visualize the loss convergence as we iterate
+        if plot_results:
+            plt.figure()
+            data_stack = z[0];
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Latent Variable Means - Test Data")
+            plt.show()
+
+            plt.figure()
+            data_stack = z[1];
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Latent Variable log(Variance) - Test Data")
+            plt.show()
+
+            plt.figure()
+            data_stack = z[2];
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Sampled Latent Variable - Test Data")
+            plt.show()
+
 
         log_filepath = os.path.join("Working_Data", "")
         os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
