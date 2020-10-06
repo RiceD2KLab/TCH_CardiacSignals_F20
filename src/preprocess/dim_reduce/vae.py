@@ -10,7 +10,6 @@ from src.preprocess.heartbeat_split import heartbeat_split
 import threading
 from sklearn.preprocessing import minmax_scale
 
-
 """
 Frank Yang
 Created: 9/22/2020, by Frank Yang
@@ -21,6 +20,7 @@ Input:  patient data! Further down, you can specify which patients, which leads,
         
 Output: The (1) reduced dimension latent space and (2) the reconstructed data
 """
+
 
 class Sampling(layers.Layer):
     """
@@ -33,8 +33,9 @@ class Sampling(layers.Layer):
         z_mean, z_log_var = inputs
         batch = tf.shape(z_mean)[0]
         dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape=(batch, dim),mean=0., stddev=0.01)
+        epsilon = tf.keras.backend.random_normal(shape=(batch, dim), mean=0., stddev=1)
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+
 
 class VAE(keras.Model):
     def __init__(self, encoder, decoder, **kwargs):
@@ -48,7 +49,7 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-sdfdsf
+
             mse = tf.keras.losses.MeanSquaredError()
 
             reconstruction_loss = tf.reduce_mean(
@@ -56,7 +57,8 @@ sdfdsf
             )
 
             reconstruction_loss *= 1
-            kl_loss = 1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var)
+            alpha = 0
+            kl_loss = (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))*alpha
             kl_loss = tf.reduce_mean(kl_loss)
             kl_loss *= -0.5
             total_loss = reconstruction_loss + kl_loss
@@ -67,6 +69,7 @@ sdfdsf
             "reconstruction_loss": reconstruction_loss,
             "kl_loss": kl_loss,
         }
+
 
 """
 1. Build the variational auto-encoder
@@ -80,13 +83,14 @@ num_epoch: number of iterations of gradient descent, 200 is a good number
 learning_rate: rate of gradient descent, 0.01 is a good number
 """
 
+
 def run_vae(file_index, rng, plot_results=False):
     # Load heartbeat data
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
     for latent_dim in rng:
-        num_epoch = 1000
-        learning_rate = 0.001 # this is the default
+        num_epoch = 300
+        learning_rate = 0.001  # this is the default
 
         # Build the encoder
         encoder_inputs = keras.Input(shape=(100, 4))
@@ -118,10 +122,9 @@ def run_vae(file_index, rng, plot_results=False):
         # x = layers.Dense(400, activation="tanh", name="decode_layer_6")(latent_inputs)
         decoder_outputs = layers.Reshape((100, 4))(x)
 
-
-        #x = layers.Dense(7 * 7 * 64, activation="relu")(latent_inputs)
-        #x = layers.Reshape((7, 7, 64))(x)
-        #decoder_outputs = layers.Conv2DTranspose(100, 4, activation="sigmoid", padding="same")(x)
+        # x = layers.Dense(7 * 7 * 64, activation="relu")(latent_inputs)
+        # x = layers.Reshape((7, 7, 64))(x)
+        # decoder_outputs = layers.Conv2DTranspose(100, 4, activation="sigmoid", padding="same")(x)
 
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
         decoder.summary()
@@ -133,13 +136,14 @@ def run_vae(file_index, rng, plot_results=False):
         vae = VAE(encoder, decoder)
         vae.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate))
 
-        #print(np.shape(data))
+        # print(np.shape(data))
 
         vaefit = vae.fit(data, epochs=num_epoch, batch_size=len(data))
 
         # save the z parameter? save the z-mean or z-variance? --> YES
         z = encoder.predict(data)
         reconstruction = decoder.predict(z)
+        # print(np.shape(z[2]))
 
         # visualize the loss convergence as we iterate
         if plot_results:
@@ -156,20 +160,32 @@ def run_vae(file_index, rng, plot_results=False):
             # visualize the first heartbeat
             for lead_idx in [0, 1, 2, 3]:
                 plt.plot([i for i in range(len(data[htbt_idx, :, lead_idx]))], data[htbt_idx, :, lead_idx])
-                plt.plot([i for i in range(len(reconstruction[htbt_idx, :, lead_idx]))], reconstruction[htbt_idx, :, lead_idx])
+                plt.plot([i for i in range(len(reconstruction[htbt_idx, :, lead_idx]))],
+                         reconstruction[htbt_idx, :, lead_idx])
                 plt.legend(['original', 'reconstructed'], loc='upper left')
-                plt.title("VAE output comparison (heartbeat {}, lead {})".format(htbt_idx, lead_idx+1))
+                plt.title("VAE output comparison (heartbeat {}, lead {})".format(htbt_idx, lead_idx + 1))
                 plt.xlabel('Index')
                 plt.show()
 
+            #
+            # plt.figure()
+            # data_stack = z[2];
+            # plt.hist(data_stack, bins=np.linspace(-1, 1, num=201))
+            # plt.show()
+            plt.figure()
+            data_stack = z[2];
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.show()
 
         log_filepath = os.path.join("Working_Data", "")
         os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 
-        reconstruction_savename = os.path.join("Working_Data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
+        reconstruction_savename = os.path.join("Working_Data", "reconstructed_vae_" + str(latent_dim) + "d_Idx" + str(
+            file_index) + ".npy")
         z_savename = os.path.join("Working_Data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
         np.save(reconstruction_savename, reconstruction)
         np.save(z_savename, z)
+
 
 if __name__ == "__main__":
     # threads = []
@@ -190,5 +206,5 @@ if __name__ == "__main__":
     # for thread in threads:
     #     thread.join()
 
-    for file_index in heartbeat_split.indicies[:10]:
-        run_vae(file_index, range(1, 11), plot_results=False)
+    for file_index in heartbeat_split.indicies[:1]:
+        run_vae(file_index, range(1, 2), plot_results=True)
