@@ -145,7 +145,7 @@ def vae_alpha_dim_sweep(file_index,  dim_rng, alpha_rng, learning_rate, num_epoc
     for alpha in alpha_rng:
         dim_mses = {}
         for latent_dim in dim_rng:
-            vae, vaefit = train_vae(data, latent_dim, 0.5, learning_rate, num_epoch)
+            vae, vaefit = train_vae(data, latent_dim, alpha, learning_rate, num_epoch)
 
             ###############################################################################################################
             # PUT TRAIN DATA IN
@@ -172,77 +172,74 @@ def vae_alpha_dim_sweep(file_index,  dim_rng, alpha_rng, learning_rate, num_epoc
 
 
 
-def plot_data_splitting(data, vae, vaefit):
-    z = vae.encoder.predict(data)
-    reconstruction = vae.decoder.predict(z)
-    splitting_idx = round(len(data) * 5 / 6)
-    data_train = data[0:splitting_idx]
-    data_test = data[(splitting_idx + 1):]
+def plot_data_splitting(file_index, dim_range, alpha_range, learning_rate, num_epoch):
+    data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
-    # visualize the loss convergence as we iterate
-    plt.plot(vaefit.history['loss'])
-    plt.plot(vaefit.history['reconstruction_loss'])
-    plt.plot(vaefit.history['kl_loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
-    plt.show()
+    for alpha in alpha_range:
+        for latent_dim in dim_range:
 
-    # htbt_idx = 15000
-    # # visualize the first heartbeat
-    # for lead_idx in [0, 1, 2, 3]:
-    #     plt.plot([i for i in range(len(data[htbt_idx, :, lead_idx]))], data[htbt_idx, :, lead_idx])
-    #     plt.plot([i for i in range(len(reconstruction[htbt_idx, :, lead_idx]))],
-    #              reconstruction[htbt_idx, :, lead_idx])
-    #     plt.legend(['original', 'reconstructed'], loc='upper left')
-    #     plt.title("VAE output comparison (heartbeat {}, lead {})".format(htbt_idx, lead_idx + 1))
-    #     plt.xlabel('Index')
-    #     plt.show()
 
-    plt.figure()
-    data_stack = z[0];
-    plt.hist(data_stack, bins=np.linspace(-1.2, 1.2, num=501))
-    plt.title("Latent Variable Means - Train Data")
-    plt.show()
+            splitting_idx = round(len(data) * 5 / 6)
+            data_train = data[0:splitting_idx]
+            data_test = data[(splitting_idx + 1):]
 
-    plt.figure()
-    data_stack = z[1];
-    plt.hist(data_stack, bins=np.linspace(-1.5, -0.5, num=501))
-    plt.title("Latent Variable log(Variance) - Train Data")
-    plt.show()
+            # only train on the first 5 hours
+            vae, vaefit = train_vae(data_train, latent_dim, alpha, learning_rate, num_epoch)
+            z = vae.encoder.predict(data)
 
-    plt.figure()
-    data_stack = z[2];
-    plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
-    plt.title("Sampled Latent Variable - Train Data")
-    plt.show()
+            # visualize the loss convergence as we iterate
+            plt.plot(vaefit.history['loss'])
+            plt.plot(vaefit.history['reconstruction_loss'])
+            plt.plot(vaefit.history['kl_loss'])
+            plt.title('model loss')
+            plt.ylabel('loss')
+            plt.xlabel('epoch')
+            plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
+            plt.show()
 
-    ###############################################################################################################
-    # PUT TEST DATA IN
-    # save the z parameter? save the z-mean or z-variance? --> YES
-    z = vae.encoder.predict(data_test)
-    reconstruction = vae.decoder.predict(z)
-    # print(np.shape(z[2]))
+            plt.figure()
+            data_stack = z[0]
+            plt.hist(data_stack, bins=np.linspace(-1.2, 1.2, num=501))
+            plt.title("Latent Variable Means - Train Data")
+            plt.show()
 
-    # visualize the loss convergence as we iterate
-    plt.figure()
-    data_stack = z[0]
-    plt.hist(data_stack, bins=np.linspace(-1.2, 1.2, num=501))
-    plt.title("Latent Variable Means - Test Data")
-    plt.show()
+            plt.figure()
+            data_stack = z[1]
+            plt.hist(data_stack, bins=np.linspace(-1.5, -0.5, num=501))
+            plt.title("Latent Variable log(Variance) - Train Data")
+            plt.show()
 
-    plt.figure()
-    data_stack = z[1]
-    plt.hist(data_stack, bins=np.linspace(-1.5, -0.5, num=501))
-    plt.title("Latent Variable log(Variance) - Test Data")
-    plt.show()
+            plt.figure()
+            data_stack = z[2]
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Sampled Latent Variable - Train Data")
+            plt.show()
 
-    plt.figure()
-    data_stack = z[2]
-    plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
-    plt.title("Sampled Latent Variable - Test Data")
-    plt.show()
+            ###############################################################################################################
+            # PUT TEST DATA IN
+            # save the z parameter? save the z-mean or z-variance? --> YES
+            z = vae.encoder.predict(data_test)
+            reconstruction = vae.decoder.predict(z)
+            # print(np.shape(z[2]))
+
+            # visualize the loss convergence as we iterate
+            plt.figure()
+            data_stack = z[0]
+            plt.hist(data_stack, bins=np.linspace(-1.2, 1.2, num=501))
+            plt.title("Latent Variable Means - Test Data")
+            plt.show()
+
+            plt.figure()
+            data_stack = z[1]
+            plt.hist(data_stack, bins=np.linspace(-1.5, -0.5, num=501))
+            plt.title("Latent Variable log(Variance) - Test Data")
+            plt.show()
+
+            plt.figure()
+            data_stack = z[2]
+            plt.hist(data_stack, bins=np.linspace(-5, 5, num=101))
+            plt.title("Sampled Latent Variable - Test Data")
+            plt.show()
 
 
 
@@ -258,6 +255,6 @@ if __name__ == "__main__":
     outfile.close()
 
 
-    # if we want to perform data splitting across a smaller dimension range:
+    # # if we want to perform data splitting across a smaller dimension range:
     # for file_index in heartbeat_split.indicies[:1]:
-    #     vae_alpha_dim_sweep(file_index, range(1, 4), [1, 0.5, 0.1, 0.05, 0.001, 0], 0.001, 1000, custom_callback=plot_data_splitting)
+    #     plot_data_splitting(file_index, range(1, 11), [1, 0.5, 0.1, 0.05, 0.001, 0], 0.001, 1000)
