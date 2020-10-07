@@ -109,7 +109,7 @@ def compare_dimensions(model_name, patient_list, plot=False, save_errors=False):
 
         dimension_errors.append(np.mean(np.array(patient_errors)))
     if plot:
-        plt.plot(dimensions, [np.mean(mse_list) for mse_list in dimension_errors.values()])
+        plt.plot(dimensions, [np.mean(mse_list) for mse_list in dimension_errors])
         plt.title(
             "Mean Squared Error for Reconstructed Signal using the {} model".format(model_name))
         plt.xlabel("Initial Dimension Reduction")
@@ -137,7 +137,22 @@ def plot_loaded_mses():
     plt.legend(model_names[0:])
     plt.show()
 
+def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_num):
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
+    reconstructed_signals = np.load(
+        os.path.join("Working_Data", "reconstructed_{}_{}d_Idx{}.npy".format(model_name, str(dimension_num), str(patient_num))))
+
+    for lead_num in range(4):
+        plt.plot(original_signals[heartbeat_num, :, lead_num])
+        plt.plot(reconstructed_signals[heartbeat_num, :, lead_num])
+        plt.title("Reconstructed {} vs Original Signal for heartbeat {} on patient {} for lead {} reduced to {} dims".format(model_name, heartbeat_num, patient_num, lead_num, dimension_num))
+        plt.xlabel("Sample Index")
+        plt.show()
+
+
 if __name__ == "__main__":
+
     # sys.path.insert(0, os.getcwd())  # lmao "the tucker hack"
     # generate_reduction_test_files()
     #
@@ -147,10 +162,10 @@ if __name__ == "__main__":
     # errors = mean_squared_error(1, "pca", "1")
 
     # compare_dimensions("pca", heartbeat_split.indicies[:10])
-    compare_dimensions("vae", heartbeat_split.indicies[:1])
+    # compare_dimensions("vae", heartbeat_split.indicies[:10])
     # compare_dimensions("ae", heartbeat_split.indicies[:10])
 
-    plot_loaded_mses()
+    # plot_loaded_mses()
     # errors = [err for err in errors if err < 5]
     # print(list(errors))
     # # print(errors.mean())
@@ -166,8 +181,7 @@ if __name__ == "__main__":
     #
     # mse = (np.linalg.norm(original_signals - reconstructed_signals) ** 2) / (np.linalg.norm(original_signals) ** 2)
     # print(mse)
-
-
+    pass
 
 
     # ####### FRANK AND KUNAL
