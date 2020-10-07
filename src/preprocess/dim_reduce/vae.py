@@ -145,6 +145,7 @@ def vae_alpha_dim_sweep(file_index,  dim_rng, alpha_rng, learning_rate, num_epoc
     for alpha in alpha_rng:
         dim_mses = {}
         for latent_dim in dim_rng:
+            print("Training vae for alpha {} and latent dimensions {} for patient{}".format(alpha, latent_dim, file_index))
             vae, vaefit = train_vae(data, latent_dim, alpha, learning_rate, num_epoch)
 
             ###############################################################################################################
