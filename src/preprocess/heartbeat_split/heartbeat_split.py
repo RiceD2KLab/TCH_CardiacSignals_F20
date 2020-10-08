@@ -117,12 +117,13 @@ if __name__ == "__main__":
 				"""
 
 
-
+		mod_four_lead_savename = os.path.join("Working_Data", "Mod_Four_Lead_Idx" + curr_index + ".npy")
 		data_savename = os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
 		hr_savename = os.path.join("Working_Data", "Cleaned_HR_Idx" + curr_index + ".npy")
 		peaks_savename = os.path.join("Working_Data", "HB_Peaks_Idx" + curr_index + ".npy")
 		HB_lens_savename = os.path.join("Working_Data", "HB_Lens_Idx" + curr_index + ".npy")
 		
+		np.save(mod_four_lead_savename, four_lead)
 		np.save(data_savename, fixed_dimension_hbs)
 		np.save(hr_savename, heartrate)
 		np.save(peaks_savename, peaks)
