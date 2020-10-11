@@ -10,6 +10,7 @@ from tensorflow.keras import layers
 from src.preprocess.heartbeat_split import heartbeat_split
 import threading
 from sklearn.preprocessing import minmax_scale
+from collections import defaultdict
 
 """
 Frank Yang
@@ -171,6 +172,37 @@ def vae_alpha_dim_sweep(file_index,  dim_rng, alpha_rng, learning_rate, num_epoc
     print(alpha_mses)
     return alpha_mses
 
+def process_vae_sweep():
+    """
+    Plots the computed MSEs for the VAE sweep across the alpha and dimension range (because they had to be computed on AWS)
+    :return:
+    """
+
+    # transform the dictionary from patient -> {alpha -> dimensions} to alpha -> {dimensions} by taking the mean
+    patient_mses = pickle.load(open("Working_Data/vae_sweep_mses.pkl", "rb"))
+    print(patient_mses)
+
+    alpha_mses = defaultdict(lambda: defaultdict(list))
+    for patient, alpha_map in patient_mses.items():
+        for alpha, dim_map in alpha_map.items():
+            for dim, err in dim_map.items():
+                alpha_mses[alpha][dim].append(err)
+
+    # now, take the mean of each alpha list
+    for alpha in alpha_mses.keys():
+        for dim in dim_map.keys():
+            alpha_mses[alpha][dim] = np.mean(np.array(alpha_mses[alpha][dim]))
+
+    # plot the figures
+    print(alpha_mses)
+    for alpha, dim_map in alpha_mses.items():
+        plt.figure()
+        plt.plot(dim_map.keys(), dim_map.values())
+        plt.title("VAE Reconstruction Loss MSE for alpha {}".format(alpha))
+        plt.xlabel("Latent Dimension")
+        plt.ylabel("MSE")
+        plt.show()
+
 
 
 def plot_data_splitting(file_index, dim_range, alpha_range, learning_rate, num_epoch):
@@ -247,15 +279,17 @@ def plot_data_splitting(file_index, dim_range, alpha_range, learning_rate, num_e
 
 
 if __name__ == "__main__":
-    patient_mses = {}
-    for file_index in heartbeat_split.indicies[:10]:
-        patient_mses[file_index] = vae_alpha_dim_sweep(file_index, range(1, 11), [1, 0.5, 0.1, 0.05, 0.001, 0], 0.001, 1000, save_results=True)
+    # patient_mses = {}
+    # for file_index in heartbeat_split.indicies[:10]:
+    #     patient_mses[file_index] = vae_alpha_dim_sweep(file_index, range(1, 4), [1, 0.5, 0.1, 0.05, 0.001, 0], 0.001, 1000, save_results=True)
+    #
+    # outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
+    # pickle.dump(patient_mses, outfile)
+    # outfile.close()
 
-    outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
-    pickle.dump(patient_mses, outfile)
-    outfile.close()
 
-
-    # # if we want to perform data splitting across a smaller dimension range:
+    # if we want to perform data splitting across a smaller dimension range:
     # for file_index in heartbeat_split.indicies[:1]:
     #     plot_data_splitting(file_index, range(1, 11), [1, 0.5, 0.1, 0.05, 0.001, 0], 0.001, 1000)
+
+    process_vae_sweep()
