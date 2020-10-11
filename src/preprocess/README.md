@@ -7,4 +7,5 @@ filtering, and dimension reduction.
 `heartbeat_split`: contains code for splitting the waveforms into individual heartbeats and performing peak detection\
 `visualization`: code for visuaulizing some of the unprocessed data/data in the preprocessing stage 
 
-The folder also contains some general utility files for performing signal processing and file-io operations
+The folder also contains some general utility files for performing signal processing and file-io operations and one file 
+with functions for tracking wandering baseline/cardio-pulmonary interactions.
