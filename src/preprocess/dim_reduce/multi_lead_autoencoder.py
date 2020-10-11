@@ -1,5 +1,5 @@
 """
-Creates a normal sequential autoencoder reducing dimensionality of data and saving the output as numpy arrays
+Creates a determinsitic autoencoder for dimension reduction of 4-lead ECG signals. Saves the encoded and reconstructed signals to the data folder.
 """
 
 import numpy as np
@@ -13,6 +13,7 @@ import threading
 
 def read_in(file_index, normalized):
     """
+    Reads in a file and can toggle between normalized and original files
     :param file_index: patient number as string
     :param normalized: boolean that determines whether the files should be normalized or not
     :return: returns npy array of patient data across 4 leads
@@ -27,7 +28,7 @@ def read_in(file_index, normalized):
 
 def build_autoencoder(sig_shape, encode_size):
     """
-    Builds a sequential autoencoder
+    Builds a deterministic autoencoder, returning both the encoder and decoder models
     :param sig_shape: shape of input signal
     :param encode_size: dimension that we want to reduce to
     :return: encoder, decoder models
@@ -57,11 +58,11 @@ def build_autoencoder(sig_shape, encode_size):
 
 def training_ae(num_epochs, reduced_dim, file_index):
     """
-    Training function for autoencoder
+    Training function for deterministic autoencoder, saves the encoded and reconstructed arrays
     :param num_epochs: number of epochs to use
     :param reduced_dim: goal dimension
     :param file_index: patient number
-    :return: saved numpy arrays of the encoded and reconstructed signals
+    :return: None
     """
     data = read_in(file_index,1)
     signal_shape = data.shape[1:]
