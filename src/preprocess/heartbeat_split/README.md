@@ -1,3 +1,5 @@
+# Heartbeat Split
+
 To split the ECG leads into individual heartbeats, run `heartbeat_split.py` \
 This will split the ECGs for each patient into individual heartbeats, interpolate them, and store them into numpy arrays\
 The interpolated hearbeats will be stored into a `Working_Data` directory at the root of the project (ignored by the .gitignore)
