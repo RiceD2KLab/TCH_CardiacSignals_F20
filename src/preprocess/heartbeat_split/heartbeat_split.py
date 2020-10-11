@@ -114,7 +114,7 @@ def preprocess(indicies):
 		
 		log.write("Average heartbeat length before outlier removal : " + str(np.average(hb_lengths)) + "\n")
 		log.write("Total valid heartbeats : " + str(len(peaks))+ "\n")
-		log.write("Total invalid heartbeats : " + str(len(vals))+ "\n")
+		log.write("Total invalid heartbeats : " + str(len(bad_hbs))+ "\n")
 		log.write("Average valid heartbeat length : " + str(np.average(hb_lengths))+ "\n")
 
 		#Save an array of dimension Num heartbeats x 100 (heartbeat length) x Leads (4)
