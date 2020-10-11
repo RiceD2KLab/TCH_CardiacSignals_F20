@@ -1,6 +1,8 @@
 # Detection of Cardiac Electrical Instability Prior to Cardiac Arrest
 Rice D2K Lab Fall 2020 project
+
 By: Aneel Damaraju, Chiraag Kaushik, Andrew Pham, Kunal Rai, Tucker Reinhardt, Frank Yang
+
 Mentors: Sebastian Acosta, PhD; Mubbasheer Ahmed, MD; Parag Jain, MD
 
 # The Project 
