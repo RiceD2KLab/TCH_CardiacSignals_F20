@@ -1,26 +1,19 @@
 import numpy as np
 import os
-import sys
 import matplotlib.pyplot as plt
 import pickle
 
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from src.preprocess.heartbeat_split import heartbeat_split
-import threading
-from sklearn.preprocessing import minmax_scale
 from collections import defaultdict
 
+from src.preprocess.dim_reduce.reduction_error import *
+from src.preprocess.heartbeat_split import heartbeat_split
+
 """
-Frank Yang
 Created: 9/22/2020, by Frank Yang
-Last edited: 10/1/2020, by Frank Yang
-
-Input:  patient data! Further down, you can specify which patients, which leads, 
-        and what values of lower-dimension in the latent space (this should be 1,2,3...15)
-
-Output: The (1) reduced dimension latent space and (2) the reconstructed data
+Last edited: 10/11/2020, by andypandy737 and Frank Yang
 """
 
 
@@ -74,6 +67,15 @@ class VAE(keras.Model):
 
 
 def train_vae(data, latent_dim, alpha, learning_rate, num_epoch):
+    """
+    Train VAE for given parameters
+    :param data: input data, a numpy array of many heartbeats
+    :param latent_dim: desired latent dimension (integer)
+    :param alpha: weighting for the KL Loss (between 0 and 1)
+    :param learning_rate: Learning rate for the model (usually 0.001)
+    :param num_epoch: Number of epochs of model (about 500 is usually good).
+    :return: Trained model vae and the object vaefit, which is a dictionary with info about the training process.
+    """
     # Build the encoder
     encoder_inputs = keras.Input(shape=(100, 4))
     x = layers.Flatten()(encoder_inputs)
@@ -113,29 +115,19 @@ def train_vae(data, latent_dim, alpha, learning_rate, num_epoch):
     return vae, vaefit
 
 
-"""
-1. Build the variational auto-encoder
-2. Import and normalize heartbeat data
-3. Run the VAE
-
-file_index: Choose a given patient idx
-lead_num: lead numbers are 0,1,2,3
-latent_dim: number of dimensions in the latent space, keep this below 15
-num_epoch: number of iterations of gradient descent, 200 is a good number
-learning_rate: rate of gradient descent, 0.01 is a good number
-"""
-
-
 def vae_alpha_dim_sweep(file_index, dim_rng, alpha_rng, learning_rate, num_epoch, save_results=False):
     """
     Performs a sweep across the alpha(KL-weight) and the dimensions range, and optionally calls a callback
     function to execute optional code such as data splitting or plotting
     :param file_index: the patient to perform the sweep over
-    :param dim_rng:
-    :param alpha_rng:
-    :param plot_results: True if function should plot the results
-    :return:
+    :param dim_rng: range of dimension of latent space (1-15 is appropriate).
+    :param alpha_rng: range of alpha (between 0 and 1)
+    :param learning_rate: Learning rate of model (0.001 is usually good).
+    :param num_epoch: Number of epochs of model (about 500 is usually good).
+    :param save_results: True if I want to save results
+    :return: Return the MSEs vs. alpha.
     """
+
     # Load heartbeat data
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
     alpha_mses = {}
@@ -178,7 +170,7 @@ def vae_alpha_dim_sweep(file_index, dim_rng, alpha_rng, learning_rate, num_epoch
 def process_vae_sweep():
     """
     Plots the computed MSEs for the VAE sweep across the alpha and dimension range (because they had to be computed on AWS)
-    :return:
+    :return: plots of computed MSEs vs. alpha
     """
 
     # transform the dictionary from patient -> {alpha -> dimensions} to alpha -> {dimensions} by taking the mean
@@ -207,12 +199,24 @@ def process_vae_sweep():
         plt.show()
 
 
-def plot_data_splitting(file_index, dim_range, alpha_range, learning_rate, num_epoch):
+def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, learning_rate, num_epoch):
+    """
+    Input the file indices and data splitting ratio. Sweep the desired latent space dimensionality and range of alpha.
+    Train the VAE on the first split. Evaluate the VAE on the second split. Plot the latent space means, variances, and
+    sampled data.
+    :param file_index: List of integers representing file indices.
+    :param data_split_ratio: float between 0 and 1. It represents the way we split the heartbeats.
+    :param dim_range: List of integers representing latent space dimensions.
+    :param alpha_range: List of float between 0 and 1 representing the weighting of the KL loss.
+    :param learning_rate: Learning rate of model (0.001 is usually good).
+    :param num_epoch: Number of epochs of model (about 500 is usually good).
+    :return: Plots of latent space means, variances, and samples for the first dimension on train and test data.
+    """
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
     for alpha in alpha_range:
         for latent_dim in dim_range:
-            splitting_idx = round(len(data) * 5 / 6)
+            splitting_idx = round(len(data) * data_split_ratio)
             data_train = data[0:splitting_idx]
             data_test = data[(splitting_idx + 1):]
 
@@ -276,16 +280,18 @@ def plot_data_splitting(file_index, dim_range, alpha_range, learning_rate, num_e
 
 
 if __name__ == "__main__":
+    ## This code sweeps the VAE performance without any data split. Useful for optimization.
     # patient_mses = {}
-    # for file_index in heartbeat_split.indicies[:10]:
-    #     patient_mses[file_index] = vae_alpha_dim_sweep(file_index, range(1, 4), [1, 0.5, 0.1, 0.05, 0.001, 0], 0.001, 1000, save_results=True)
+    # for file_index in heartbeat_split.indicies[:1]:
+    #     patient_mses[file_index] = vae_alpha_dim_sweep(file_index, range(1, 2), [1], 0.001, 10, save_results=True)
     #
     # outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
     # pickle.dump(patient_mses, outfile)
     # outfile.close()
+    #
+    # process_vae_sweep()
 
     # if we want to perform data splitting across a smaller dimension range:
-    # for file_index in heartbeat_split.indicies[:1]:
-    #     plot_data_splitting(file_index, range(1, 11), [1, 0.5, 0.1, 0.05, 0.001, 0], 0.001, 1000)
-
-    process_vae_sweep()
+    for file_index in heartbeat_split.indicies[:1]:
+         plot_data_splitting(file_index, 5/6, range(1, 2), [1], 0.001, 2)
+         compare_reconstructed_hb(file_index, 100, 'vae', 1)
