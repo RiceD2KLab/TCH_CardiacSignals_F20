@@ -11,8 +11,8 @@ import sys
 
 
 """
-Note: On first inspection, PCA might not be the most useful, as the graphs indicate that most of the variance is contained
-within the first few eigenvectors of the covariance matrix
+PCA for dimension reduction of 4-lead ECG signals. Functions for dimension redudction and saving the 
+dim reduced and reconstructed data to the Working_Data directory.
 """
 
 def plot_pca_eigenvalues(file_index, lead_num):
@@ -154,8 +154,6 @@ if __name__ == "__main__":
     # save_pca_reduced(1)
     # for file_index in heartbeat_split.indicies:
     #     plot_first_2(file_index, 1)
-
-    for i in range(2,3):
-        save_pca_reconstructions(dim=i)
-
+    # for i in range(2,3):
+    #     save_pca_reconstructions(dim=i)
     # plot_3d(16,1)
