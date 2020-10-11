@@ -1,4 +1,14 @@
-# TCH_CardiacSignals_F20
+# Detection of Cardiac Electrical Instability Prior to Cardiac Arrest
+Rice D2K Lab Fall 2020 project
+By: Aneel Damaraju, Chiraag Kaushik, Andrew Pham, Kunal Rai, Tucker Reinhardt, Frank Yang
+Mentors: Sebastian Acosta, PhD; Mubbasheer Ahmed, MD; Parag Jain, MD
+
+# The Project 
+
+
+
+# To use this Repository
+
 
 **Ensure that the working directory of any python files are set to the project root**\
 This will ensure that package imports work inside the project\
@@ -13,5 +23,4 @@ This will ensure that package imports work inside the project\
 Download the H5 files folder from the TCH box into the project root. **Rename  to `Data_H5_Files`**
 
 
-## Running Code
 
