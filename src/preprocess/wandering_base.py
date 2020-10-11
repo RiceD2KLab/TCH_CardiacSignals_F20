@@ -34,6 +34,8 @@ def one_sided_filter(sig, cutoff, type):
 
 def peak_height_scatter(patient_num):
     '''
+    Plots a scatter plot of instantaneous heart rate vs R-peak height for a given patient
+    
     Inputs: Patient ID Number
     Outputs: None, plots a scatter plot of peak height vs. inter-peak interval length
     '''
@@ -86,7 +88,7 @@ def extract_respiratory_signal(patient_num):
 
 
 ### Testing above functions
-#breathing_rate = extract_respiratory_signal(4)
+# breathing_rate = extract_respiratory_signal(4)
 # for i in range(15, 50):
 #     try:
 #         peak_height_scatter(i)
