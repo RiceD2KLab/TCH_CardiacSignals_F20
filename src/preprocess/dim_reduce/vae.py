@@ -19,7 +19,7 @@ Last edited: 10/1/2020, by Frank Yang
 
 Input:  patient data! Further down, you can specify which patients, which leads, 
         and what values of lower-dimension in the latent space (this should be 1,2,3...15)
-        
+
 Output: The (1) reduced dimension latent space and (2) the reconstructed data
 """
 
@@ -60,7 +60,7 @@ class VAE(keras.Model):
             )
 
             reconstruction_loss *= 1
-            kl_loss = (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))*self.alpha
+            kl_loss = (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var)) * self.alpha
             kl_loss = tf.reduce_mean(kl_loss)
             kl_loss *= -0.5
             total_loss = reconstruction_loss + kl_loss
@@ -73,9 +73,7 @@ class VAE(keras.Model):
         }
 
 
-
 def train_vae(data, latent_dim, alpha, learning_rate, num_epoch):
-
     # Build the encoder
     encoder_inputs = keras.Input(shape=(100, 4))
     x = layers.Flatten()(encoder_inputs)
@@ -115,8 +113,6 @@ def train_vae(data, latent_dim, alpha, learning_rate, num_epoch):
     return vae, vaefit
 
 
-
-
 """
 1. Build the variational auto-encoder
 2. Import and normalize heartbeat data
@@ -130,7 +126,7 @@ learning_rate: rate of gradient descent, 0.01 is a good number
 """
 
 
-def vae_alpha_dim_sweep(file_index,  dim_rng, alpha_rng, learning_rate, num_epoch, save_results=False):
+def vae_alpha_dim_sweep(file_index, dim_rng, alpha_rng, learning_rate, num_epoch, save_results=False):
     """
     Performs a sweep across the alpha(KL-weight) and the dimensions range, and optionally calls a callback
     function to execute optional code such as data splitting or plotting
@@ -146,7 +142,8 @@ def vae_alpha_dim_sweep(file_index,  dim_rng, alpha_rng, learning_rate, num_epoc
     for alpha in alpha_rng:
         dim_mses = {}
         for latent_dim in dim_rng:
-            print("Training vae for alpha {} and latent dimensions {} for patient{}".format(alpha, latent_dim, file_index))
+            print("Training vae for alpha {} and latent dimensions {} for patient{}".format(alpha, latent_dim,
+                                                                                            file_index))
             vae, vaefit = train_vae(data, latent_dim, alpha, learning_rate, num_epoch)
 
             ###############################################################################################################
@@ -156,21 +153,27 @@ def vae_alpha_dim_sweep(file_index,  dim_rng, alpha_rng, learning_rate, num_epoc
             reconstruction = vae.decoder.predict(z)
 
             if save_results:
-                reconstruction_savename = os.path.join("Working_Data", "reconstructed_vaeAlpha{}_{}d_Idx{}.npy".format(alpha, latent_dim, file_index))
-                z_savename = os.path.join("Working_Data", "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
+                reconstruction_savename = os.path.join("Working_Data",
+                                                       "reconstructed_vaeAlpha{}_{}d_Idx{}.npy".format(alpha,
+                                                                                                       latent_dim,
+                                                                                                       file_index))
+                z_savename = os.path.join("Working_Data",
+                                          "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
                 np.save(reconstruction_savename, reconstruction)
                 np.save(z_savename, z)
 
             # compute the mse between the original signal and the reconstruction
             mse = np.zeros(np.shape(data)[0])
             for i in range(np.shape(data)[0]):
-                mse[i] = (np.linalg.norm(data[i, :, :] - reconstruction[i, :, :]) ** 2) / (np.linalg.norm(data[i, :, :]) ** 2)
+                mse[i] = (np.linalg.norm(data[i, :, :] - reconstruction[i, :, :]) ** 2) / (
+                            np.linalg.norm(data[i, :, :]) ** 2)
 
             dim_mses[latent_dim] = mse.mean()
         alpha_mses[alpha] = dim_mses
 
     print(alpha_mses)
     return alpha_mses
+
 
 def process_vae_sweep():
     """
@@ -204,14 +207,11 @@ def process_vae_sweep():
         plt.show()
 
 
-
 def plot_data_splitting(file_index, dim_range, alpha_range, learning_rate, num_epoch):
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
 
     for alpha in alpha_range:
         for latent_dim in dim_range:
-
-
             splitting_idx = round(len(data) * 5 / 6)
             data_train = data[0:splitting_idx]
             data_test = data[(splitting_idx + 1):]
@@ -275,9 +275,6 @@ def plot_data_splitting(file_index, dim_range, alpha_range, learning_rate, num_e
             plt.show()
 
 
-
-
-
 if __name__ == "__main__":
     # patient_mses = {}
     # for file_index in heartbeat_split.indicies[:10]:
@@ -286,7 +283,6 @@ if __name__ == "__main__":
     # outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
     # pickle.dump(patient_mses, outfile)
     # outfile.close()
-
 
     # if we want to perform data splitting across a smaller dimension range:
     # for file_index in heartbeat_split.indicies[:1]:
