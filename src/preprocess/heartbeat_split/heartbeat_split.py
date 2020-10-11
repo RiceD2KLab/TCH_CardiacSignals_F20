@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 
 from src.preprocess import dsp_utils, h5_interface
 
+indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
+				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
 '''
 Inputs: Sum of clipped lead signals (pos_sum), detected peak indicies (peaks)
 Outputs: Slices of heartbeats which have less than 5% unique values
@@ -154,6 +156,4 @@ def preprocess(indicies):
 		log.close()
 	
 if __name__ == "__main__":
-	indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
-				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
 	preprocess(indicies)
