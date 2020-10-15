@@ -182,8 +182,3 @@ if __name__ == "__main__":
     # mse = (np.linalg.norm(original_signals - reconstructed_signals) ** 2) / (np.linalg.norm(original_signals) ** 2)
     # print(mse)
     pass
-
-
-    # ####### FRANK AND KUNAL
-    # compare_dimensions("ae", 1)
-    # compare_dimensions("vae", 1)
