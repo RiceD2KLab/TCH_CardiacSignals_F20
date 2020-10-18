@@ -5,6 +5,17 @@ This Modules performs the basic preprocessing on the raw data:
 2. Heartbeats with less than 5% unique values are clipped
 3. Every heartbeat is interpolated to dimension 100
 4. Individual interpolated heartbeats are saved
+
+Outputs several processed data files named based off their "index" which is the alphanurmeric
+sorted position of the raw data file in the Data_H5_Files directory
+
+Mod_Four_Lead_[idx].npy : 4 x n Numpy array of the four lead signals with lead disconnections clipped out
+HB_Peaks_[idx].npy      : (num heartbeats - 1) Numpy vector of the indicies of the R-Peaks in Mod_Four_Lead 
+Fixed_Dim_Hbs_[idx].npy : 4 x 100 x (num heartbeats) Numpy array of the four lead signals seperated into 
+						  individual heartbeats and interpolated to dimension 100
+Cleaned_HR_[idx].npy    : n Numpy vector of the heartrate from monitor, with lead disconnections clipped out
+HB_Lens_[idx].npy       : (num heartbeats) Numpy vector of individual heartbeat lengths in samples; before interpolation					  
+
 """
 
 import numpy as np
@@ -39,8 +50,11 @@ def detect_gaps(pos_sum, peaks):
 	for i in range(1, len(peaks)):
 		vals = np.unique(pos_sum[peaks[i-1]:peaks[i]])
 		if len(vals) < .05 * (peaks[i] - peaks[i-1]):
-			plt.plot(peaks[i-1], peaks[i])
+			"""
+			#Visual Inspection of bad heartbeat removal
+			plt.plot(pos_sum[peaks[i-1]: peaks[i]])
 			plt.show()
+			"""
 			bad_hbs.append(slice(peaks[i-1], peaks[i]))
 	vals = np.unique(pos_sum[peaks[-1]:])
 	#Trailing heartbeat
@@ -123,10 +137,9 @@ def preprocess(filename, curr_index):
 	#Constant dimension to interpolate heartbeats to
 	maximum_hb_len = 100
 	
-	log.write("Average heartbeat length before outlier removal : " + str(np.average(hb_lengths)) + "\n")
+	log.write("Average valid heartbeat length : " + str(np.average(hb_lengths)) + "\n")
 	log.write("Total valid heartbeats : " + str(len(peaks))+ "\n")
 	log.write("Total invalid heartbeats : " + str(len(bad_hbs))+ "\n")
-	log.write("Average valid heartbeat length : " + str(np.average(hb_lengths))+ "\n")
 
 	#Save an array of dimension Num heartbeats x 100 (heartbeat length) x Leads (4)
 	fixed_dimension_hbs = np.zeros((len(peaks), maximum_hb_len, 4))
@@ -165,9 +178,5 @@ def preprocess(filename, curr_index):
 	log.close()
 	
 if __name__ == "__main__":
-<<<<<<< HEAD
 	for idx, filename in enumerate(get_filenames()):
 		preprocess(filename, idx)
-=======
-	preprocess(indicies)
->>>>>>> ee1b43eed996d9d946952dba919b3b430b047864
