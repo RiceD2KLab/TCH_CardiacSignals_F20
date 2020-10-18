@@ -165,5 +165,9 @@ def preprocess(filename, curr_index):
 	log.close()
 	
 if __name__ == "__main__":
+<<<<<<< HEAD
 	for idx, filename in enumerate(get_filenames()):
 		preprocess(filename, idx)
+=======
+	preprocess(indicies)
+>>>>>>> ee1b43eed996d9d946952dba919b3b430b047864

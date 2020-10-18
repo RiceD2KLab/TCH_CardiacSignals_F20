@@ -26,7 +26,9 @@ Download the H5 files folder from the TCH box into the project root. **Rename  t
 
 ## Running code 
 
-To start running the code in this directory, head to the [``src``directory](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/tree/master/src), for information on preprocessing, modeling and validation. 
+To start running the code in this directory, head to the [``src``directory](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/tree/master/src), for information on preprocessing, modeling and validation.
+The following diagram is an overview of the files associated with our data science pipline
+![Data Science Pipeline Overview](ds_pipeline_diagram.jpeg) 
 
 # In this directory
 
