@@ -39,6 +39,8 @@ def detect_gaps(pos_sum, peaks):
 	for i in range(1, len(peaks)):
 		vals = np.unique(pos_sum[peaks[i-1]:peaks[i]])
 		if len(vals) < .05 * (peaks[i] - peaks[i-1]):
+			plt.plot(peaks[i-1], peaks[i])
+			plt.show()
 			bad_hbs.append(slice(peaks[i-1], peaks[i]))
 	vals = np.unique(pos_sum[peaks[-1]:])
 	#Trailing heartbeat
