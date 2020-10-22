@@ -2,6 +2,9 @@ import os
 
 '''
 Function that returns a list of filenames
+
+## ATTENTION FUTURE ECE STUDENT ##
+Set optional parameter "original" to False if you are using your own data
 '''
 def get_filenames(start = 0, stop = None, original=True):
 	if original:
