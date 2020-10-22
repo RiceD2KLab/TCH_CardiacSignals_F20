@@ -66,7 +66,7 @@ def detect_gaps(pos_sum, peaks):
 Inputs: Indicies of the patient files to process
 Outputs: Saves multiple files of processed data, in addition to a text file log for each
 '''
-def preprocess(filename, curr_index):
+def preprocess(filename, curr_index, double_beats = False):
 	curr_index = str(curr_index)
 	print("Starting on file : " + filename)
 
@@ -141,16 +141,18 @@ def preprocess(filename, curr_index):
 	log.write("Total valid heartbeats : " + str(len(peaks))+ "\n")
 	log.write("Total invalid heartbeats : " + str(len(bad_hbs))+ "\n")
 
+	if double_beats:
+		peaks = np.take(peaks, list(range(1, len(peaks),2)))
 	#Save an array of dimension Num heartbeats x 100 (heartbeat length) x Leads (4)
-	fixed_dimension_hbs = np.zeros((len(peaks), maximum_hb_len, 4))
+	fixed_dimension_hbs = np.zeros((len(peaks)+1, maximum_hb_len, 4))
 	for lead_num in range(4):
 		#First heartbeat in data
 		fixed_dimension_hbs[0,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, 0:peaks[0]], maximum_hb_len)
 		#Last heartbeat in data
-		fixed_dimension_hbs[len(peaks) - 1,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, peaks[-1]:], maximum_hb_len)
+		fixed_dimension_hbs[len(peaks),:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, peaks[-1]:], maximum_hb_len)
 		#iterate through the rest of heartbeats
-		for hb_num, peak in enumerate(peaks[1:-1], start = 1):
-			individual_hb = four_lead[lead_num,peaks[hb_num]:peaks[hb_num+1]]
+		for hb_num, peak in enumerate(peaks[:-1], start = 1):
+			individual_hb = four_lead[lead_num,peaks[hb_num-1]:peaks[hb_num]]
 			fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, maximum_hb_len)
 			"""
 			#Periodic Visual inspection of dimension fixed heartbeat
@@ -158,6 +160,10 @@ def preprocess(filename, curr_index):
 				plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
 				plt.show()
 			"""
+			#Periodic Visual inspection of dimension fixed heartbeat
+			if hb_num == len(peaks) - 1:
+				plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
+				plt.show()
 
 	#Save the four lead signals with gaps cut out
 	mod_four_lead_savename = os.path.join("Working_Data", "Mod_Four_Lead_Idx" + curr_index + ".npy")
@@ -179,4 +185,4 @@ def preprocess(filename, curr_index):
 	
 if __name__ == "__main__":
 	for idx, filename in enumerate(get_filenames()):
-		preprocess(filename, idx)
+		preprocess(filename, idx, double_beats =True)
