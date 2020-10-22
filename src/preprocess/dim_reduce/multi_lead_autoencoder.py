@@ -4,10 +4,10 @@ Creates a determinsitic autoencoder for dimension reduction of 4-lead ECG signal
 
 import numpy as np
 import os
+import threading
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout
 from tensorflow.keras.models import Sequential, Model
-import threading
 
 
 
