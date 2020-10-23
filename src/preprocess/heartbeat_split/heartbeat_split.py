@@ -154,16 +154,12 @@ def preprocess(filename, curr_index, double_beats = False):
 		for hb_num, peak in enumerate(peaks[:-1], start = 1):
 			individual_hb = four_lead[lead_num,peaks[hb_num-1]:peaks[hb_num]]
 			fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, maximum_hb_len)
-			"""
+			
 			#Periodic Visual inspection of dimension fixed heartbeat
 			if hb_num % 15000 == 0:
 				plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
 				plt.show()
-			"""
-			#Periodic Visual inspection of dimension fixed heartbeat
-			if hb_num == len(peaks) - 1:
-				plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
-				plt.show()
+			
 
 	#Save the four lead signals with gaps cut out
 	mod_four_lead_savename = os.path.join("Working_Data", "Mod_Four_Lead_Idx" + curr_index + ".npy")
@@ -175,12 +171,15 @@ def preprocess(filename, curr_index, double_beats = False):
 	peaks_savename = os.path.join("Working_Data", "HB_Peaks_Idx" + curr_index + ".npy")
 	#Save the heartbeat lengths
 	HB_lens_savename = os.path.join("Working_Data", "HB_Lens_Idx" + curr_index + ".npy")
+	#Save the heartbeat timestamps
+	HB_timestamps_savename = os.path.join("Working_Data", "HB_Timestamps_Idx" + curr_index + ".npy")
 	
 	np.save(mod_four_lead_savename, four_lead)
 	np.save(data_savename, fixed_dimension_hbs)
 	np.save(hr_savename, heartrate)
 	np.save(peaks_savename, peaks)
 	np.save(HB_lens_savename, hb_lengths)
+	np.save(HB_timestamps_savename, time[peaks])
 	log.close()
 	
 if __name__ == "__main__":
