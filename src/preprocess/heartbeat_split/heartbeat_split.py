@@ -135,7 +135,7 @@ def preprocess(filename, curr_index, double_beats = False):
 
 
 	#Constant dimension to interpolate heartbeats to
-	maximum_hb_len = 100
+	maximum_hb_len = 200
 	
 	log.write("Average valid heartbeat length : " + str(np.average(hb_lengths)) + "\n")
 	log.write("Total valid heartbeats : " + str(len(peaks))+ "\n")
@@ -163,7 +163,7 @@ def preprocess(filename, curr_index, double_beats = False):
 			#Periodic Visual inspection of dimension fixed heartbeat
 			if hb_num == len(peaks) - 1:
 				plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
-				plt.show()
+				# plt.show()
 
 	#Save the four lead signals with gaps cut out
 	mod_four_lead_savename = os.path.join("Working_Data", "Mod_Four_Lead_Idx" + curr_index + ".npy")
@@ -185,4 +185,4 @@ def preprocess(filename, curr_index, double_beats = False):
 	
 if __name__ == "__main__":
 	for idx, filename in enumerate(get_filenames()):
-		preprocess(filename, idx, double_beats =True)
+		preprocess(filename, idx, double_beats=True)
