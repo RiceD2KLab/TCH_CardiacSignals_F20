@@ -12,6 +12,8 @@ def get_filenames(start = 0, stop = None, original=True):
 				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
 		filenames = []
 		for index in indicies:
+			if int(index) < start:
+				continue
 			if stop and not int(index) in range(stop):
 				break
 			filenames.append("Reference_idx_" + index + "_Time_block_1.h5")
