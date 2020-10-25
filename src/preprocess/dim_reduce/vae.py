@@ -308,7 +308,7 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
             plt.title("Sampled Latent Variable - Train Data")
             plt.show()
 
-            ###############################################################################################################
+            ###################################################################################################
             # PUT TEST DATA IN
             # save the z parameter? save the z-mean or z-variance? --> YES
             z = vae.encoder.predict(data_test)
