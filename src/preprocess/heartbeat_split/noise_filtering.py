@@ -12,7 +12,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.fft import fft
-from scipy import interpolate
 
 from src.preprocess import h5_interface
 
@@ -86,6 +85,7 @@ lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
 lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
 
 lead1_filtered = remove_noise(time, lead1, plots=True)
+
 plt.plot(time, lead1, 'k-', label='input')
 plt.plot(time, lead1_filtered, 'c-', linewidth=1.5, label='filtered')
 plt.title('Lead Data')

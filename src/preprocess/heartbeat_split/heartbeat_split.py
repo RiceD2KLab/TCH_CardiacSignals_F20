@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 
 from src.utils.file_indexer import get_filenames
 from src.preprocess import dsp_utils, h5_interface
+from src.preprocess.heartbeat_split.noise_filtering import remove_noise
 
 indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
 				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
@@ -114,6 +115,12 @@ def preprocess(filename, curr_index, double_beats = False):
 	four_lead, time, heartrate = h5_interface.ecg_np(h5f)
 	lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
 	lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
+
+	# Removing baseline wander and high frequency noise
+	lead1 = remove_noise(time, lead1, plots=False)
+	lead2 = remove_noise(time, lead2, plots=False)
+	lead3 = remove_noise(time, lead3, plots=False)
+	lead4 = remove_noise(time, lead4, plots=False)
 
 	pos_sum = dsp_utils.combine_four_lead(four_lead)
 	
