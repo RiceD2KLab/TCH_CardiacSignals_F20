@@ -240,5 +240,7 @@ def preprocess(filename, curr_index, double_beats = False):
 	log.close()
 	
 if __name__ == "__main__":
-	for idx, filename in enumerate(get_filenames()):
+	# for idx, filename in enumerate(get_filenames()):
+	# 	preprocess(filename, idx, double_beats =False)
+	for idx, filename in zip(indicies, get_filenames()):
 		preprocess(filename, idx, double_beats =False)
