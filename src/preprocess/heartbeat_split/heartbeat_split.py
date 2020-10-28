@@ -117,10 +117,10 @@ def preprocess(filename, curr_index, double_beats = False):
 	lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
 
 	# Removing baseline wander and high frequency noise
-	lead1 = remove_noise(time, lead1, plots=False)
-	lead2 = remove_noise(time, lead2, plots=False)
-	lead3 = remove_noise(time, lead3, plots=False)
-	lead4 = remove_noise(time, lead4, plots=False)
+	lead1 = remove_noise(time, lead1)
+	lead2 = remove_noise(time, lead2)
+	lead3 = remove_noise(time, lead3)
+	lead4 = remove_noise(time, lead4)
 
 	pos_sum = dsp_utils.combine_four_lead(four_lead)
 	

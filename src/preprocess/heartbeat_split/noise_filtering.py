@@ -76,25 +76,25 @@ def remove_noise(time, lead_data, plots=False):
 
 
 
-# Test the noise removal on patient 1
-filename = 'Reference_idx_1_Time_block_1.h5'
-h5f = h5_interface.readh5(filename)
-
-four_lead, time, heartrate = h5_interface.ecg_np(h5f)
-lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
-lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
-
-lead1_filtered = remove_noise(time, lead1, plots=True)
-
-plt.plot(time, lead1, 'k-', label='input')
-plt.plot(time, lead1_filtered, 'c-', linewidth=1.5, label='filtered')
-plt.title('Lead Data')
-plt.xlabel('Time [sec]')
-plt.ylabel('Amplitude')
-plt.legend(loc='best')
-plt.xlim(5, 8)
-plt.ylim(-2, 2)
-plt.show()
+# # Test the noise removal on patient 1
+# filename = 'Reference_idx_1_Time_block_1.h5'
+# h5f = h5_interface.readh5(filename)
+#
+# four_lead, time, heartrate = h5_interface.ecg_np(h5f)
+# lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
+# lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
+#
+# lead1_filtered = remove_noise(time, lead1)
+#
+# plt.plot(time, lead1, 'k-', label='input')
+# plt.plot(time, lead1_filtered, 'c-', linewidth=1.5, label='filtered')
+# plt.title('Lead Data')
+# plt.xlabel('Time [sec]')
+# plt.ylabel('Amplitude')
+# plt.legend(loc='best')
+# plt.xlim(5, 8)
+# plt.ylim(-2, 2)
+# plt.show()
 
 
 
