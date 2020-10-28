@@ -8,6 +8,6 @@ The following Python files and Jupyter notebooks serve to develop dimensionality
  * `pca.py` runs PCA on original data and reduces data to 1 dimension, saving the encoded and reconstructed files 
  * `reduction_error.py` assesses the dimensionality reduction technique by first reducing the heartbeat dimension with the technique, then projecting
 the reduced data back to the original dimension and calculating the mean squared error
- * `umap_viz.py` plots 2-dimensional representation of the PCA matrix for a particular lead of the ith file
+ * `umap_viz.py` plots 2-dimen*__________*sional representation of the PCA matrix for a particular lead of the ith file
 
 
