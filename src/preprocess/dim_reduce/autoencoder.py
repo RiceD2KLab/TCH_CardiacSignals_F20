@@ -87,6 +87,13 @@ def training_ae(num_epochs, reduced_dim, file_index):
 
     autoencoder.fit(x=normal, y=normal, epochs=num_epochs)
 
+    # save out the model
+    json_model = autoencoder.to_json()
+    filename = 'ae_patient_' + str(file_index) + '_dim' + str(reduced_dim) + '.json'
+    json_file = open(os.path.join("Working_Data", filename), 'w')
+    json_file.write(json_model)
+
+    # using AE to encode other data
     encoded = encoder.predict(abnormal)
     reconstruction = decoder.predict(encoded)
 
