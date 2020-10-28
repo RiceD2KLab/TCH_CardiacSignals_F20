@@ -118,4 +118,6 @@ def run_over(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
+for i in range(5, 16):
+    run_over(100, i)
 # run_over(100,10)
