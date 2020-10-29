@@ -308,7 +308,7 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
             plt.title("Sampled Latent Variable - Train Data")
             plt.show()
 
-            ###################################################################################################
+            #######################################################################################################
             # PUT TEST DATA IN
             # save the z parameter? save the z-mean or z-variance? --> YES
             z = vae.encoder.predict(data_test)
@@ -336,8 +336,6 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
             plt.show()
 
             data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
-
-<<<<<<< HEAD
             # print(np.shape(data[200][:]))
             #
             # z_100 = vae.encoder.predict(data[100][:])
@@ -387,31 +385,16 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
 
 
 
-plot_data_splitting(4, 0.5, [1], [1], 0.005, 3)
 
 
-
-
-
-
-
-# filestring = os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(4) + ".npy")
-# data_train, data_test, dummy_remainder = patient_split(filestring, 0.5)
-# print(np.shape(data_train))
-# print(type(data_train))
-# print(data_train[0, :, 0])
-#
-# for i in range(0,4):
-#     print(i)
-#     plt.plot(data_train[0, :, i])
-#     plt.show()
-
-=======
 if __name__ == "__main__":
     ## This code sweeps the VAE performance without any data split. Useful for optimization.
     patient_mses = {}
     for file_index in heartbeat_split.indicies:
         patient_mses[file_index] = vae_alpha_dim_sweep(file_index, [10], [0.05], 0.001, 200, save_results=True)
+
+# plot_data_splitting(4, 0.5, [1], [1], 0.005, 3)
+
     #
     # outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
     # pickle.dump(patient_mses, outfile)
@@ -423,4 +406,3 @@ if __name__ == "__main__":
     # for file_index in heartbeat_split.indicies[:1]:
     #      plot_data_splitting(file_index, 5/6, range(1, 2), [1], 0.001, 2)
     #      compare_reconstructed_hb(file_index, 100, 'vae', 1)
->>>>>>> 7ed476e2a14d364aaeca744896cc3976d6216f7a
