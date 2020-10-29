@@ -39,4 +39,4 @@ def patient_split_all(filepath, split_ratio):
     first_portion = data[0:splitting_idx]
     second_portion = data[splitting_idx:]
 
-    return first_portion, second_portion
+    return first_portion, second_portion, data
