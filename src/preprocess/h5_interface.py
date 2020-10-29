@@ -27,12 +27,17 @@ Outpus : 4 x n numpy array representing the four lead signals
 
 Convert h5py dataset to numpy arrays
 '''
-def ecg_np(dataset):
+def ecg_np(dataset, split = False):
 	lead_one = (dataset['GE_WAVE_ECG_1_ID'] [()])
 	lead_two = (dataset['GE_WAVE_ECG_2_ID'] [()])
 	lead_three = (dataset['GE_WAVE_ECG_3_ID'] [()])
 	lead_four = (dataset['GE_WAVE_ECG_4_ID'] [()]) 
 
+	if split:
+		try:
+			return lead_one, lead_two, lead_three, lead_four, dataset['time'][()], dataset['PARM_HR'][()]
+		except:
+			return lead_one, lead_two, lead_three, lead_four, dataset['time'][()], None
 	try:
 		return np.vstack((lead_one, lead_two, lead_three, lead_four)), dataset['time'][()], dataset['PARM_HR'][()]
 	except:
