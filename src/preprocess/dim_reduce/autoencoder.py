@@ -27,8 +27,8 @@ def read_in(file_index, normalized, train, ratio):
             normal_train, normal_test, abnormal = patient_split_train(filepath, ratio)
             return normal_train, normal_test
         else:
-            train, test = patient_split_all(filepath, ratio)
-            return train, test
+            train, test, full = patient_split_all(filepath, ratio)
+            return train, test, full
     else:
         data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + file_index + ".npy"))
         return data
@@ -74,10 +74,11 @@ def training_ae(num_epochs, reduced_dim, file_index):
     :param file_index: patient number
     :return: None
     """
-    normal, abnormal = read_in(file_index, 1, 0, 0.3)
+    normal, abnormal, full = read_in(file_index, 1, 0, 0.3)
     signal_shape = normal.shape[1:]
     encoder, decoder = build_autoencoder(signal_shape, reduced_dim)
-
+    # print(encoder.summary())
+    # print(decoder.summary())
     inp = Input(signal_shape)
     encode = encoder(inp)
     reconstruction = decoder(encode)
@@ -88,13 +89,11 @@ def training_ae(num_epochs, reduced_dim, file_index):
     autoencoder.fit(x=normal, y=normal, epochs=num_epochs)
 
     # save out the model
-    json_model = autoencoder.to_json()
-    filename = 'ae_patient_' + str(file_index) + '_dim' + str(reduced_dim) + '.json'
-    json_file = open(os.path.join("Working_Data", filename), 'w')
-    json_file.write(json_model)
+    # filename = 'ae_patient_' + str(file_index) + '_dim' + str(reduced_dim)
+    # autoencoder.save(filename + '.h5')
 
     # using AE to encode other data
-    encoded = encoder.predict(abnormal)
+    encoded = encoder.predict(full)
     reconstruction = decoder.predict(encoded)
 
     reconstruction_save = os.path.join("Working_Data", "reconstructed_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
@@ -112,12 +111,12 @@ def run_over(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    indices = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '16', '17', '18',
-               '19', '20', '21', '22', '25', '27', '28','30', '31', '32', '33', '34',
-               '35', '37', '38', '39', '40', '41', '42', '44', '45', '46', '47', '48',
-               '49', '50', '52', '53', '54', '55', '56']
+    indicies = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '16', '17', '18', '19', '20', '21', '22', '25',
+                '27', '28', '30', '31', '32',
+                '33', '34', '35', '37', '38', '39', '40', '41', '42', '44', '45', '46', '47', '48', '49', '50', '52',
+                '53', '54', '55', '56']
 
-    for patient_ in indices:
+    for patient_ in indicies:
         print("Starting on index: " + str(patient_))
         training_ae(num_epochs, encoded_dim, patient_)
         print("Completed " + patient_ + " reconstruction and encoding, saved test data to assess performance")
@@ -125,4 +124,4 @@ def run_over(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
-# run_over(100,10)
+run_over(100,10)
