@@ -123,7 +123,38 @@ def delete_slices(slices, length, removals):
 		 removals[i] = np.take(removals[i], good_indices)
 	
 	return removals
-def build_hb_matrix(four_lead, peaks, dimension, double_beats, plotting = False):
+
+def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
+	if len(peaks) % 2 == 0:
+		four_lead = four_lead[:,:peaks[-1]]
+		peaks = peaks[:-1]
+	lead_length = len(four_lead[1,:]) - 1
+	#Save an array of dimension Num heartbeats x 200 (heartbeat length) x Leads (4)
+	fixed_dimension_hbs = np.zeros((len(peaks)+1 // 2, dimension * 2, 4))
+	for lead_num in range(4):
+		#First heartbeat in data
+		first_half = dsp_utils.change_dim(four_lead[lead_num, peaks[0] // 10:peaks[0]], dimension)
+		second_half = dsp_utils.change_dim(four_lead[lead_num, peaks[0]:peaks[1] - (peaks[1] - peaks[0]) // 10], dimension)
+		fixed_dimension_hbs[0,:,lead_num] = np.concatenate((first_half, second_half))
+		#Last heartbeat in data
+		first_half = dsp_utils.change_dim(four_lead[lead_num, peaks[-2] + (peaks[-1] - peaks[-2]) // 10:peaks[-1]], dimension)
+		second_half = dsp_utils.change_dim(four_lead[lead_num, peaks[-1]:lead_length - (lead_length - peaks[-1]) // 10], dimension)
+		fixed_dimension_hbs[(len(peaks) + 1) // 2,:,lead_num] = np.concatenate((first_half, second_half))
+		
+		#iterate through the rest of heartbeats
+		for hb_num in range(2, len(peaks) - 1, 2):
+			first_half = dsp_utils.change_dim(four_lead[lead_num, peaks[hb_num] + (peaks[hb_num + 1] - peaks[hb_num]) // 10:peaks[hb_num + 1]], dimension)
+			second_half = dsp_utils.change_dim(four_lead[lead_num, peaks[hb_num + 1]:peaks[hb_num + 2] - (peaks[hb_num + 2] - peaks[hb_num + 1]) // 10], dimension)
+			fixed_dimension_hbs[hb_num // 2,:,lead_num] = np.concatenate((first_half, second_half))
+			
+			#Periodic Visual inspection of dimension fixed heartbeat
+			if plotting and hb_num % 15000 == 0:
+				plt.plot(fixed_dimension_hbs[hb_num // 2,:,lead_num])
+				plt.title(label = f"Lead {lead_num} hb_num {hb_num // 2}")
+				plt.show()
+	return fixed_dimension_hbs
+
+def build_hb_matrix(four_lead, peaks, dimension, double_beats = False, plotting = False):
 	if double_beats:
 		peaks = np.take(peaks, list(range(1, len(peaks),2)))
 	#Save an array of dimension Num heartbeats x 100 (heartbeat length) x Leads (4)
@@ -153,13 +184,14 @@ def load_np(filename):
 	h5f = h5_interface.readh5(filename)
 
 	lead1, lead2, lead3, lead4, time, heartrate = h5_interface.ecg_np(h5f, split = True)
-	four_lead = np.vstack((lead1, lead2, lead3, lead4))
 
 	# Removing baseline wander and high frequency noise
 	lead1 = remove_noise(time, lead1)
 	lead2 = remove_noise(time, lead2)
 	lead3 = remove_noise(time, lead3)
 	lead4 = remove_noise(time, lead4)
+
+	four_lead = np.vstack((lead1, lead2, lead3, lead4))
 
 	pos_sum = dsp_utils.combine_four_lead(four_lead)
 
@@ -204,24 +236,40 @@ def preprocess_seperate(filename, curr_index, double_beats = False):
 	peaks4 = (dsp_utils.get_peaks_dynamic(lead4, heartrate)).astype(int)
 
 	mini_len = min(len(peaks1), len(peaks2), len(peaks3), len(peaks4))
-	plt.plot(lead1)
-	plt.vlines(x = peaks1, ymin = -1, ymax = 10, colors = 'r')
-	plt.show()
-	plt.plot(lead2)
-	plt.vlines(x = peaks2, ymin = -1, ymax = 10, colors = 'r')
-	plt.show()
-	plt.plot(lead3)
-	plt.vlines(x = peaks3, ymin = -1, ymax = 10, colors = 'r')
-	plt.show()
-	plt.plot(lead4)
-	plt.vlines(x = peaks4, ymin = -1, ymax = 10, colors = 'r')
-	plt.show()
 
 	peaks_stack = np.vstack((peaks1[:mini_len], peaks2[:mini_len], peaks3[:mini_len], peaks4[:mini_len]))
-
+	print(len(peaks1), len(peaks2), len(peaks3), len(peaks4))
 	stds = np.std(peaks_stack, axis = 0)
 	print(max(stds))
 	print(peaks_stack[:,mini_len-1])
+
+	
+	plt.plot(lead1)
+	plt.title(label = f'Patient {curr_index} Lead1')
+	plt.vlines(x = peaks1, ymin = -1, ymax = 10, colors = 'r')
+	plt.xlim(2e6,2e6 + 600)
+	plt.ylim(-4, 4)
+	plt.show()
+	plt.plot(lead2)
+	plt.title(label = f'Patient {curr_index} Lead2')
+	plt.vlines(x = peaks2, ymin = -1, ymax = 10, colors = 'r')
+	plt.xlim(2e6,2e6 + 600)
+	plt.ylim(-4, 4)
+	plt.show()
+	plt.plot(lead3)
+	plt.title(label = f'Patient {curr_index} Lead3')
+	plt.vlines(x = peaks3, ymin = -1, ymax = 10, colors = 'r')
+	plt.xlim(2e6,2e6 + 600)
+	plt.ylim(-4, 4)
+	plt.show()
+	plt.plot(lead4)
+	plt.title(label = f'Patient {curr_index} Lead4')
+	plt.vlines(x = peaks4, ymin = -1, ymax = 10, colors = 'r')
+	plt.xlim(2e6,2e6 + 600)
+	plt.ylim(-4, 4)
+	plt.show()
+	
+
 	plt.plot(stds)
 	plt.show()
 '''
@@ -285,15 +333,15 @@ def preprocess_sum(filename, curr_index, double_beats = False):
 	plt.show()
 	"""
 	
-	fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, double_beats, plotting = False)
+	fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = True)
 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks, four_lead.shape[1])
 
 	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time)
 if __name__ == "__main__":
-	for idx, filename in enumerate(get_filenames()):
+	for idx, filename in enumerate(get_filenames(start = 4)):
 		#TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
-		#preprocess_sum(filename, idx, double_beats = False)
-		preprocess_seperate(filename, idx, double_beats =False)
+		preprocess_sum(filename, idx, double_beats = False)
+		#preprocess_seperate(filename, idx, double_beats =False)

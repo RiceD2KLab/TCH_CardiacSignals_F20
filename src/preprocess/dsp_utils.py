@@ -95,7 +95,7 @@ def get_peaks_dynamic(data, heartrate, plotting = False):
 		#normalize the window between 0-1
 		normed_window = clipped_window / np.max(np.abs(clipped_window))
 		#find peaks
-		local_peaks, properties = find_peaks( normed_window, distance = 0.5*avg_dist, prominence= .3, wlen=0.25*avg_dist)
+		local_peaks, properties = find_peaks( normed_window, distance = 0.8*avg_dist, prominence= .3, wlen=0.25*avg_dist)
 		
 		if plotting:
 			print(avg_dist)
@@ -112,5 +112,6 @@ Outputs : Sum of the 4 signals with clipped negative values (set to 0)
 def combine_four_lead(data):
 	pos_sum = np.zeros((data.shape[1],))
 	for i in range(4):
-		pos_sum += np.clip(data[i,:], 0, None)
+		#pos_sum += np.clip(data[i,:], 0, None) #clip negative values
+		pos_sum += np.absolute(data[i,:])
 	return pos_sum
