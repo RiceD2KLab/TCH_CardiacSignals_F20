@@ -333,14 +333,14 @@ def preprocess_sum(filename, curr_index, double_beats = False):
 	plt.show()
 	"""
 	
-	fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = True)
+	fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = False)
 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks, four_lead.shape[1])
 
 	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time)
 if __name__ == "__main__":
-	for idx, filename in enumerate(get_filenames(start = 4)):
+	for idx, filename in enumerate(get_filenames()):
 		#TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
 		preprocess_sum(filename, idx, double_beats = False)
