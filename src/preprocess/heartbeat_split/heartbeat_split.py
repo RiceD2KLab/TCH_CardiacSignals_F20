@@ -340,7 +340,7 @@ def preprocess_sum(filename, curr_index, double_beats = False):
 
 	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time)
 if __name__ == "__main__":
-	for idx, filename in enumerate(get_filenames()):
+	for idx, filename in zip(indicies, get_filenames()):
 		#TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
 		preprocess_sum(filename, idx, double_beats = False)
