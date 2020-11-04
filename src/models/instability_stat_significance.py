@@ -7,8 +7,8 @@ indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20',
 
 def print_metrics(variance_list):
     '''
-        
-    :param variance_list:
+
+    :param variance_list: A lists of lists containing variances for 6 hours worth of heart attack data
     :return:
     '''
     total_valid = 0
@@ -37,7 +37,7 @@ def print_metrics(variance_list):
 def get_metric_differences(variances):
     '''
 
-    :param variances: A list of lists containing variances for 6 hours worth of heart attack data
+    :param variances: A lists containing variances for 6 hours worth of heart attack data
     :return:
     isValid: (Bool) checks if the data is valid
     {krusk,ks}_{start,end}: (Bool) if the {Kruskal Wallace, KS} Test finds a significant difference between the first and {second,sixth} hour
