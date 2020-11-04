@@ -44,19 +44,26 @@ Inputs: ECG Signal, heart-rate signal (must be same length)
 Outputs: Indices of peaks
 Gets peaks via prominence, using known heart-rate information to choose parameters dynamically
 '''
-def get_peaks_dynamic(data, heartrate):
-	interval = 240 * 2 # Use a 2 second window of heartrate information
+def get_peaks_dynamic(data, heartrate, plotting = False):
+	interval = 240 * 5 # Use a 2 second window of heartrate information
 	peaks = np.zeros((0,))
-	for i in range(len(data) // interval):
+	if heartrate is None:
+		heartrate = np.full((len(data),), 110)
+	for i in range(len(data) // interval + 1):
 		avg_hr = np.mean(heartrate[i*interval:(i+1)*interval]) # average heart rate (beats/minute) in current window
-
 		if (avg_hr > 0): # If we have valid HR data
-			avg_dist = (60*240)/avg_hr # average samples/heartbeat in current window
+			if avg_hr < 80:
+				avg_dist = 100
+			else:
+				avg_dist = (60*240)/avg_hr # average samples/heartbeat in current window
 		else: # If we don't have HR data for most of that window, use a default value
-			avg_dist = 140
+			avg_dist = 100
 
 		#window of interval length
 		dat_window = data[i*interval:(i+1)*interval]
+
+		if len(dat_window) == 0:
+			continue
 
 		window_std = np.std(dat_window)
 		window_mean = np.mean(dat_window)
@@ -86,9 +93,13 @@ def get_peaks_dynamic(data, heartrate):
 		if np.max(np.abs(clipped_window)) == 0:
 			continue
 		#normalize the window between 0-1
-		normed_window = dat_window / np.max(np.abs(clipped_window))
+		normed_window = clipped_window / np.max(np.abs(clipped_window))
 		#find peaks
-		local_peaks, properties = find_peaks( normed_window, distance = 0.5*avg_dist, prominence= .5, wlen=0.25*avg_dist)
+		local_peaks, properties = find_peaks( normed_window, distance = 0.8*avg_dist, prominence= .3, wlen=0.25*avg_dist)
+		
+		if plotting:
+			print(avg_dist)
+	
 		#Add peaks
 		local_peaks = local_peaks + (i * interval)
 		peaks = np.concatenate((peaks, local_peaks))
@@ -101,5 +112,6 @@ Outputs : Sum of the 4 signals with clipped negative values (set to 0)
 def combine_four_lead(data):
 	pos_sum = np.zeros((data.shape[1],))
 	for i in range(4):
-		pos_sum += np.clip(data[i,:], 0, None)
+		#pos_sum += np.clip(data[i,:], 0, None) #clip negative values
+		pos_sum += np.absolute(data[i,:])
 	return pos_sum

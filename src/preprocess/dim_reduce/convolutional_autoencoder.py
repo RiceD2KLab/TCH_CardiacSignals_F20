@@ -11,11 +11,11 @@ from tensorflow.keras.layers import Conv1D, Conv1DTranspose, GaussianNoise, MaxP
 
 data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(1) + ".npy"))
 
-model = keras.models.Sequential()
-model.add(Conv1D(1,kernel_size=5, input_shape=(100,4)))
-model.add(Dense(10, activation='softmax'))
-model.compile(loss='mse', optimizer='adam')
-model.summary()
+# model = keras.models.Sequential()
+# model.add(Conv1D(1,kernel_size=5, input_shape=(100,4)))
+# model.add(Dense(10, activation='softmax'))
+# model.compile(loss='mse', optimizer='adam')
+# model.summary()
 
 input_window = Input(shape=(100,4))
 x = Conv1D(16, 7, activation="relu", padding="same")(input_window) # 10 dims

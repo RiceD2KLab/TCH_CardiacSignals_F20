@@ -137,7 +137,7 @@ def save_pca_reduced(dim):
 
     for file_index in indices:
         print("Starting on index : " + str(file_index))
-        raw_hbs = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
+        raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
         flattened_data = raw_hbs.reshape(-1, 400) # reshape so each feature vector contains all 4 leads for each hearbeat
 
         pca = PCA(n_components=dim)
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.getcwd()) # lmao "the tucker hack"
     # plot_pca_eigenvalues(1,1)
     # save_pca_reconstructions(dim=10)
-    save_pca_reduced(dim=10)
+    # save_pca_reduced(dim=15)
     # for file_index in heartbeat_split.indicies:
     #     plot_first_2(file_index, 1)
     # for i in range(2,3):
