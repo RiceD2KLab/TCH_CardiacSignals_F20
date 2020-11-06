@@ -17,21 +17,37 @@ def print_metrics(variance_list):
     ks_start_score = 0
     ks_end_score = 0
 
+    krusk_start_list = []
+    krusk_end_list = []
+    ks_start_list = []
+    ks_end_list = []
+
     for iter, variances in enumerate(variance_list):
         print(f"Computing metrics for {iter+1}/{len(variance_list)}")
         isValid,krusk_start,krusk_end,ks_start,ks_end = get_metric_differences(variances)
         if isValid:
             total_valid += 1
             krusk_start_score += krusk_start
+            krusk_start_list.append(int(krusk_start))
             krusk_end_score += krusk_end
+            krusk_end_list.append(int(krusk_end))
             ks_start_score += ks_start
+            ks_start_list.append(int(ks_start))
             ks_end_score += krusk_end
+            ks_end_list.append(int(ks_end))
 
     print(f"Number of patients with Statistical Differences between 1st and 2nd hour using Kruskal = {krusk_start_score} / {total_valid}")
+    print(f"Statistical Differences between 1st and 2nd hour using Kruskal as a Boolean, 1 = Different, 0 = Same")
+    print(krusk_start_list)
     print(f"Number of patients with Statistical Differences between 1st and 6th hour using Kruskal = {krusk_end_score} / {total_valid}")
+    print(f"Statistical Differences between 1st and 6th hour using Kruskal as a Boolean, 1 = Different, 0 = Same")
+    print(krusk_end_list)
     print(f"Number of patients with Statistical Differences between 1st and 2nd hour using KS test = {ks_start_score} / {total_valid}")
+    print(f"Statistical Differences between 1st and 2nd hour using KS test as a Boolean, 1 = Different, 0 = Same")
+    print(ks_start_list)
     print(f"Number of patients with Statistical Differences between 1st and 6th hour using KS test = {ks_end_score} / {total_valid}")
-
+    print(f"Statistical Differences between 1st and 6th hour using KS test as a Boolean, 1 = Different, 0 = Same")
+    print(ks_end_list)
 
 
 def get_metric_differences(variances):
