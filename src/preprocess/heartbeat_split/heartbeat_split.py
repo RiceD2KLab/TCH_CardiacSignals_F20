@@ -154,21 +154,24 @@ def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
 				plt.show()
 	return fixed_dimension_hbs
 
-def build_hb_matrix(four_lead, peaks, dimension, double_beats = False, plotting = False):
-	if double_beats:
-		peaks = np.take(peaks, list(range(1, len(peaks),2)))
+def build_hb_matrix(four_lead, peaks, dimension, beats_per_vector = 1, plotting = False):
+	peaks = np.concatenate((np.array([0]), peaks, np.array([four_lead.shape[1]])))
+	if not beats_per_vector == 1:
+		num_beats = len(peaks) + 1
+		peaks = peaks[num_beats % beats_per_vector:]
+	peaks = np.take(peaks, list(range(0, len(peaks),beats_per_vector)))
 	#Save an array of dimension Num heartbeats x 100 (heartbeat length) x Leads (4)
-	fixed_dimension_hbs = np.zeros((len(peaks)+1, dimension, 4))
+	fixed_dimension_hbs = np.zeros((len(peaks)-1, beats_per_vector * dimension, 4))
 	for lead_num in range(4):
 		#First heartbeat in data
-		fixed_dimension_hbs[0,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, 0:peaks[0]], dimension)
+		#fixed_dimension_hbs[0,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, 0:peaks[0]], dimension)
 		#Last heartbeat in data
-		fixed_dimension_hbs[len(peaks),:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, peaks[-1]:], dimension)
+		#fixed_dimension_hbs[len(peaks),:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, peaks[-1]:], dimension)
 		#iterate through the rest of heartbeats
-		for hb_num, peak in enumerate(peaks[:-1], start = 1):
-			individual_hb = four_lead[lead_num,peaks[hb_num-1]:peaks[hb_num]]
+		for hb_num, start_peak in enumerate(peaks[:-1]):
+			individual_hb = four_lead[lead_num,start_peak + 10:peaks[hb_num+1] - 10]
 			try:
-				fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, dimension)
+				fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, beats_per_vector * dimension)
 			except:
 				print("interpolation failed on heartbeat:" + str(hb_num))
 			
@@ -227,7 +230,7 @@ def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate
 	np.save(HB_timestamps_savename, time[peaks])
 	log.close()
 
-def preprocess_seperate(filename, curr_index, double_beats = False):
+def preprocess_seperate(filename, curr_index):
 	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename)
 
 	peaks1 = (dsp_utils.get_peaks_dynamic(lead1, heartrate)).astype(int)
@@ -276,7 +279,7 @@ def preprocess_seperate(filename, curr_index, double_beats = False):
 Inputs: Indicies of the patient files to process
 Outputs: Saves multiple files of processed data, in addition to a text file log for each
 '''
-def preprocess_sum(filename, curr_index, double_beats = False):
+def preprocess_sum(filename, curr_index, beats_per_datapoint = 1):
 	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename)
 
 	peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
@@ -333,7 +336,8 @@ def preprocess_sum(filename, curr_index, double_beats = False):
 	plt.show()
 	"""
 	
-	fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = False)
+	fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, beats_per_vector = beats_per_datapoint, plotting = True)
+	#fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = False)
 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks, four_lead.shape[1])
@@ -343,5 +347,5 @@ if __name__ == "__main__":
 	for idx, filename in enumerate(get_filenames()):
 		#TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
-		preprocess_sum(filename, idx, double_beats = False)
-		#preprocess_seperate(filename, idx, double_beats =False)
+		preprocess_sum(filename, idx, beats_per_datapoint = 7)
+		#preprocess_seperate(filename, idx)
