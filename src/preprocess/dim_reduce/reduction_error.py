@@ -10,6 +10,7 @@ from src.preprocess.heartbeat_split import heartbeat_split
 import random
 import statistics
 import matplotlib.pyplot as plt
+from scipy import signal
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import StandardScaler
 
@@ -100,7 +101,7 @@ def compare_dimensions(model_name, patient_list, plot=False, save_errors=False):
     :return: list[floats] -> list of mean squared errors for each dimension
     """
     dimension_errors = []
-    dimensions = [i for i in range(1, 11)]
+    dimensions = [i for i in range(13, 15)]
 
     for dim in dimensions:
         patient_errors = []
@@ -123,18 +124,23 @@ def compare_dimensions(model_name, patient_list, plot=False, save_errors=False):
     return dimension_errors
 
 
-def plot_loaded_mses():
+def plot_loaded_mses(special=False):
     """"
     Ad-hoc function to plot MSEs from an existing MSE_<model_name> file
     """
-    model_names = ["pca", "vae", "ae"]
-    for model_name in model_names[0:]:
-        mses = np.load(os.path.join("Working_Data", "MSE_{}.npy".format(model_name)))
+    if special:
+        mses = np.load(os.path.join("Working_Data", "MSE_ae_first_third.npy"))
+        print("yess")
         plt.plot(mses[:,0], mses[:,1])
-    plt.title("Relatived MSEs when encoded/decoded from K latent dimensions (averaged over first 10 patients)")
+    else:
+        model_names = ["pca", "vae", "ae"]
+        for model_name in model_names[2:]:
+            mses = np.load(os.path.join("Working_Data", "MSE_{}.npy".format(model_name)))
+            plt.plot(mses[:,0], mses[:,1])
+    plt.title("Autoencoder MSEs when encoded/decoded from K latent dims ")
     plt.xlabel("Num Latent Dimensions")
     plt.ylabel("Relative MSE")
-    plt.legend(model_names[0:])
+    # plt.legend(model_names)
     plt.show()
 
 def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_num):
@@ -150,6 +156,38 @@ def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_n
         plt.xlabel("Sample Index")
         plt.show()
 
+def mse_over_time(patient_num, model_name, dimension_num, smooth=False):
+    """
+    Computes (and plots) the MSE over time for a single patient on a model that reduced to k=dimension_num dimensions
+    """
+    errors = mean_squared_error(dimension_num, model_name, patient_num, False)
+
+    sos = signal.butter(10, 0.5, 'lp', fs=240, output='sos')
+    errors = signal.sosfilt(sos, errors)
+
+    sample_idcs = [i for i in range(len(errors))]
+    plt.plot(sample_idcs, errors)
+    plt.title("MSE over time for patient {} with model {} reduced to {} dimensions".format(patient_num, model_name, dimension_num))
+    plt.xlabel("Sample Index")
+    plt.ylabel("Relative MSE")
+    plt.show()
+
+def windowed_mse_over_time(patient_num, model_name, dimension_num):
+    errors = mean_squared_error(dimension_num, model_name, patient_num, False)
+
+    # window the errors - assume 500 samples ~ 5 min
+    window_duration = 500
+    windowed_errors = []
+    for i in range(0, len(errors) - window_duration, window_duration):
+        windowed_errors.append(np.mean(errors[i:i+window_duration]))
+
+    sample_idcs = [i for i in range(len(windowed_errors))]
+    plt.plot(sample_idcs, windowed_errors)
+    plt.title("5-min Windowed MSE over time for patient {} with k = {}".format(patient_num, model_name, dimension_num))
+    plt.xlabel("Window Index")
+    plt.ylabel("Relative MSE")
+    plt.show()
+
 
 if __name__ == "__main__":
 
@@ -163,9 +201,15 @@ if __name__ == "__main__":
 
     # compare_dimensions("pca", heartbeat_split.indicies[:10])
     # compare_dimensions("vae", heartbeat_split.indicies[:10])
-    # compare_dimensions("ae", heartbeat_split.indicies[:10])
+    # compare_dimensions("ae", heartbeat_split.indicies)
 
-    # plot_loaded_mses()
+    # plot_loaded_mses(special=True)
+    # mse_over_time(35, "ae", 13)
+    windowed_mse_over_time(27, "ae", 10)
+
+
+
+
     # errors = [err for err in errors if err < 5]
     # print(list(errors))
     # # print(errors.mean())
@@ -182,8 +226,3 @@ if __name__ == "__main__":
     # mse = (np.linalg.norm(original_signals - reconstructed_signals) ** 2) / (np.linalg.norm(original_signals) ** 2)
     # print(mse)
     pass
-
-
-    # ####### FRANK AND KUNAL
-    # compare_dimensions("ae", 1)
-    # compare_dimensions("vae", 1)

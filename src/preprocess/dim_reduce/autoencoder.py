@@ -7,6 +7,7 @@ import numpy as np
 import os
 import threading
 from tensorflow import keras
+from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout
 from tensorflow.keras.models import Sequential, Model
 from src.preprocess.dim_reduce.patient_split import *
@@ -86,7 +87,8 @@ def training_ae(num_epochs, reduced_dim, file_index):
     autoencoder = Model(inp, reconstruction)
     autoencoder.compile(optimizer='Adam', loss='mse')
 
-    autoencoder.fit(x=normal, y=normal, epochs=num_epochs)
+    early_stopping = EarlyStopping(patience=5)
+    autoencoder.fit(x=normal, y=normal, epochs=num_epochs, validation_split=0.3, callbacks=early_stopping)
 
     # save out the model
     # filename = 'ae_patient_' + str(file_index) + '_dim' + str(reduced_dim)
@@ -111,10 +113,8 @@ def run_over(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    indicies = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '16', '17', '18', '19', '20', '21', '22', '25',
-                '27', '28', '30', '31', '32',
-                '33', '34', '35', '37', '38', '39', '40', '41', '42', '44', '45', '46', '47', '48', '49', '50', '52',
-                '53', '54', '55', '56']
+    indicies = ['30', '31', '32',
+                '33', '34', '35', '37', '38', '39']
 
     for patient_ in indicies:
         print("Starting on index: " + str(patient_))
@@ -124,4 +124,6 @@ def run_over(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
-run_over(100,10)
+# for i in range(5, 20):
+#     run_over(100, i)
+# run_over(300, 14)
