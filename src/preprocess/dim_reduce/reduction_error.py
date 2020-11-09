@@ -210,7 +210,10 @@ if __name__ == "__main__":
     # windowed_mse_over_time(27, "ae", 10)
 
     for patient in heartbeat_split.indicies:
-        windowed_mse_over_time(patient, "ae", 10)
+        try:
+            windowed_mse_over_time(patient, "ae", 10)
+        except:
+            continue
 
 
 
