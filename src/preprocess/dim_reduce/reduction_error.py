@@ -188,7 +188,7 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num):
     plt.ylabel("Relative MSE")
     plt.show()
 
-    np.save(f"Working_Data/windowed_mse_{dimension_num}d_Idx{patient_num}.npy")
+    np.save(f"Working_Data/windowed_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
 
 
 if __name__ == "__main__":
