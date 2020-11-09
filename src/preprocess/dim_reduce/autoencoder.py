@@ -11,6 +11,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Conv1D, MaxPooling1D, BatchNormalization, UpSampling1D
 from tensorflow.keras.models import Sequential, Model
 from src.preprocess.dim_reduce.patient_split import *
+from src.preprocess.heartbeat_split import heartbeat_split
 
 
 def read_in(file_index, normalized, train, ratio):
@@ -175,11 +176,11 @@ def run(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    indicies = ["33"]
+    # indicies = ["33"]
     # indicies = ['30', '31', '32',
     #             '33', '34', '35', '37', '38', '39']
 
-    for patient_ in indicies:
+    for patient_ in heartbeat_split.indicies:
         print("Starting on index: " + str(patient_))
         training_ae(num_epochs, encoded_dim, patient_)
         print("Completed " + patient_ + " reconstruction and encoding, saved test data to assess performance")

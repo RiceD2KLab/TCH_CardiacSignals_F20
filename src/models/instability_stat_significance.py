@@ -1,4 +1,4 @@
-from src.models.instability import  get_metrics
+# from src.models.instability import  get_metrics
 import numpy as np
 from scipy.stats import ttest_rel,kstest,kruskal
 indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
@@ -82,10 +82,15 @@ def get_metric_differences(variances):
 
 
 if __name__ == "__main__":
-    variance_list = []
-    for idx in indices:
-        print(f"Computing variance for Patient {idx}")
+    # variance_list = []
+    # for idx in indices:
+    #     print(f"Computing variance for Patient {idx}")
+    #
+    #     variances = get_metrics("variance", 10, idx, "rawhb", PLOT=False)
+    #     variance_list.append(variances)
 
-        variances = get_metrics("variance", 10, idx, "rawhb", PLOT=False)
-        variance_list.append(variances)
-    print_metrics(variance_list)
+    mse_list = []
+    for idx in indices:
+        print(f"computing mse for pateint {idx}")
+        mse_list.append(np.load(f"Working_Data/windowed_mse_ae_10d_Idx{idx}.npy"))
+    print_metrics(mse_list)
