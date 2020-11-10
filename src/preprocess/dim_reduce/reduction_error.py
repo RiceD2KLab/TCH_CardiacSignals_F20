@@ -188,6 +188,8 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num):
     plt.ylabel("Relative MSE")
     plt.show()
 
+    np.save(f"Working_Data/windowed_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
+
 
 if __name__ == "__main__":
 
@@ -205,8 +207,13 @@ if __name__ == "__main__":
 
     # plot_loaded_mses(special=True)
     # mse_over_time(35, "ae", 13)
-    windowed_mse_over_time(27, "ae", 10)
+    # windowed_mse_over_time(27, "ae", 10)
 
+    for patient in heartbeat_split.indicies:
+        try:
+            windowed_mse_over_time(patient, "ae", 10)
+        except:
+            continue
 
 
 
