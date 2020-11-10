@@ -5,7 +5,6 @@ Saves the encoded and reconstructed signals to the working data directory
 
 import numpy as np
 import os
-import threading
 from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Conv1D, MaxPooling1D, BatchNormalization, UpSampling1D
