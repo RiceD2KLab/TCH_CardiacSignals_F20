@@ -176,8 +176,10 @@ def build_convolutional_autoencoder(sig_shape, encode_size):
 
     encoder = Sequential()
     encoder.add(InputLayer((1000,4)))
-    encoder.add(Conv1D(10, 11, activation="linear", padding="same"))
-    encoder.add(Conv1D(10, 7, activation="relu", padding="same"))
+    # idk if causal is really making that much of an impact but it seems useful for time series data?
+    encoder.add(Conv1D(10, 11, activation="linear", padding="causal"))
+    encoder.add(Conv1D(10, 7, activation="relu", padding="causal"))
+    # encoder.add(Conv1D(10, 3, activation="relu", padding="same"))
     encoder.add(Flatten())
     encoder.add(Dense(750, activation = 'tanh', kernel_initializer='glorot_normal'))
     encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
@@ -209,6 +211,7 @@ def build_convolutional_autoencoder(sig_shape, encode_size):
     decoder.add(Dense(750, activation='relu', kernel_initializer='glorot_normal'))
     decoder.add(Dense(10000, activation='relu', kernel_initializer='glorot_normal'))
     decoder.add(Reshape((1000, 10)))
+    # decoder.add(Conv1DTranspose(8, 3, activation="relu", padding="same"))
     decoder.add(Conv1DTranspose(8, 7, activation="relu", padding="same"))
     decoder.add(Conv1DTranspose(4, 11, activation="linear", padding="same"))
 
