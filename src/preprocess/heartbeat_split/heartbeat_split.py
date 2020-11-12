@@ -130,7 +130,7 @@ def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
 		peaks = peaks[:-1]
 	lead_length = len(four_lead[1,:]) - 1
 	#Save an array of dimension Num heartbeats x 200 (heartbeat length) x Leads (4)
-	fixed_dimension_hbs = np.zeros((len(peaks)+1 // 2, dimension * 2, 4))
+	fixed_dimension_hbs = np.zeros(((len(peaks)+3) // 2, dimension * 2, 4))
 	for lead_num in range(4):
 		#First heartbeat in data
 		first_half = dsp_utils.change_dim(four_lead[lead_num, peaks[0] // 10:peaks[0]], dimension)
@@ -161,7 +161,7 @@ def build_hb_matrix(four_lead, peaks, dimension, beats_per_vector = 1, plotting 
 		peaks = peaks[num_beats % beats_per_vector:]
 	peaks = np.take(peaks, list(range(0, len(peaks),beats_per_vector)))
 	#Save an array of dimension Num heartbeats x 100 (heartbeat length) x Leads (4)
-	fixed_dimension_hbs = np.zeros((len(peaks)-1, beats_per_vector * dimension, 4))
+	fixed_dimension_hbs = np.zeros(((len(peaks)-1) // beats_per_vector, beats_per_vector * dimension, 4))
 	for lead_num in range(4):
 		#First heartbeat in data
 		#fixed_dimension_hbs[0,:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, 0:peaks[0]], dimension)
@@ -335,9 +335,9 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1):
 	plt.plot(peaks, pos_sum[peaks], "x")
 	plt.show()
 	"""
-	
-	fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, beats_per_vector = beats_per_datapoint, plotting = True)
-	#fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = False)
+
+	# fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, beats_per_vector = beats_per_datapoint, plotting = True)
+	fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = False)
 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks, four_lead.shape[1])
@@ -345,7 +345,7 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1):
 	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time)
 if __name__ == "__main__":
 	for idx, filename in zip(indicies, get_filenames()):
-		#TODO : Fix this index problem. Need to call resulting files the correct index
+		# TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
-		preprocess_sum(filename, idx, beats_per_datapoint = 7)
-		#preprocess_seperate(filename, idx)
+		preprocess_sum(filename, idx, beats_per_datapoint = 2)
+		# preprocess_seperate(filename, idx)
