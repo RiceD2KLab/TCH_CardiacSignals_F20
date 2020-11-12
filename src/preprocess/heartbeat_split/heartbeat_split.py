@@ -152,8 +152,8 @@ def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
 				plt.plot(fixed_dimension_hbs[hb_num // 2,:,lead_num])
 				plt.title(label = f"Lead {lead_num} hb_num {hb_num // 2}")
 				plt.show()
-	plt.plot(fixed_dimension_hbs[-1,:,1])
-	plt.show()
+	#plt.plot(fixed_dimension_hbs[-1,:,1])
+	#plt.show()
 	return fixed_dimension_hbs
 
 def build_hb_matrix(four_lead, peaks, dimension, beats_per_vector = 1, plotting = False):
@@ -179,8 +179,8 @@ def build_hb_matrix(four_lead, peaks, dimension, beats_per_vector = 1, plotting 
 			if plotting and hb_num % 15000 == 0:
 				plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
 				plt.show()
-	plt.plot(fixed_dimension_hbs[-1,:,1])
-	plt.show()
+	#plt.plot(fixed_dimension_hbs[-1,:,1])
+	#plt.show()
 	return fixed_dimension_hbs
 
 def load_np(filename):
