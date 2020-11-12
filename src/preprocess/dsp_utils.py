@@ -9,12 +9,9 @@ Outputs: ECG Signal in desired dimension
 Map a signal to a specific dimension, linearly interpolating
 '''
 def change_dim(data, dim):
-	samp_times = np.arange(start = 0, stop = dim-.999999999, step = (dim - 1) / (len(data) - 1))
-	resamp_times = np.arange(dim)
+	samp_times = np.linspace(start = 0, stop = len(data) - 1, num = dim, endpoint = True)
 
-	if not (len(samp_times) == len(data)):
-		print(len(samp_times), len(data))
-	return np.interp(resamp_times, samp_times, data)
+	return np.interp(samp_times, np.arange(len(data)), data)
 '''
 Inputs: ECG Signal
 Outputs: Indicies of peaks
