@@ -324,8 +324,11 @@ def run(num_epochs, encoded_dim):
     """
     for patient_ in heartbeat_split.indicies:
         print("Starting on index: " + str(patient_))
-        training_ae(num_epochs, encoded_dim, patient_)
-        print("Completed " + patient_ + " reconstruction and encoding, saved test data to assess performance")
+        try:
+            training_ae(num_epochs, encoded_dim, patient_)
+            print("Completed " + patient_ + " reconstruction and encoding, saved test data to assess performance")
+        except:
+            continue
 
 
 
