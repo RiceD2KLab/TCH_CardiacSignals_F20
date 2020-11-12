@@ -39,7 +39,7 @@ def read_in(file_index, normalized, train, ratio):
         data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + file_index + ".npy"))
         return data
 
-
+r
 
 # def build_autoencoder(sig_shape, encode_size):
 #     """
