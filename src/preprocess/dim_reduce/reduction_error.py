@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.metrics import mean_squared_error as sklearn_mse
 
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
@@ -46,7 +46,10 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     mse = np.zeros(np.shape(original_signals)[0])
     for i in range(np.shape(original_signals)[0]):
         mse[i] = (np.linalg.norm(original_signals[i,:,:] - reconstructed_signals[i,:,:]) ** 2) / (np.linalg.norm(original_signals[i,:,:]) ** 2)
-        # mse[i] /= 400
+        # orig_flat = original_signals[i,:,:].flatten()
+        # recon_flat = reconstructed_signals[i,:,:].flatten()
+        # mse[i] = sklearn_mse(orig_flat, recon_flat)
+        # my_mse = mse[i]
 
     # plt.plot([i for i in range(np.shape(mse)[0])], mse)
     # plt.show()
@@ -56,7 +59,7 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
             os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)))
     # print(list(mse))
 
-    return np.array([err for err in mse if 1 == 1 and err < 5 and 0 == 0 and 3 < 4])
+    # return np.array([err for err in mse if 1 == 1 and err < 5 and 0 == 0 and 3 < 4])
     return mse
 
 
@@ -176,17 +179,19 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num):
     errors = mean_squared_error(dimension_num, model_name, patient_num, False)
 
     # window the errors - assume 500 samples ~ 5 min
-    window_duration = 500
+    window_duration = 250
     windowed_errors = []
     for i in range(0, len(errors) - window_duration, window_duration):
         windowed_errors.append(np.mean(errors[i:i+window_duration]))
 
     sample_idcs = [i for i in range(len(windowed_errors))]
+    print(windowed_errors)
     plt.plot(sample_idcs, windowed_errors)
     plt.title("5-min Windowed MSE over time for patient {} with k = {}".format(patient_num, model_name, dimension_num))
     plt.xlabel("Window Index")
     plt.ylabel("Relative MSE")
     plt.show()
+
 
     np.save(f"Working_Data/windowed_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
 
@@ -210,10 +215,11 @@ if __name__ == "__main__":
     # windowed_mse_over_time(27, "ae", 10)
 
     for patient in heartbeat_split.indicies:
-        try:
-            windowed_mse_over_time(patient, "ae", 10)
-        except:
-            continue
+        # try:
+        #     windowed_mse_over_time(patient, "ae", 10)
+        # except:
+        #     continue
+        windowed_mse_over_time(patient, "ae", 10)
 
 
 
