@@ -24,6 +24,7 @@ def read_in(file_index, normalized, train, ratio):
     """
     filepath = os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + file_index + ".npy")
     # filepath = os.path.join("Working_Data", "1000d", "Normalized_Fixed_Dim_HBs_Idx35.npy")
+    # filepath = "Working_Data/Training_Subset/Normalized/two_hbs/Normalized_Fixed_Dim_HBs_Idx38.npy"
     if normalized == 1:
         if train == 1:
             # normal_test,
@@ -31,12 +32,34 @@ def read_in(file_index, normalized, train, ratio):
             # noise_factor = 0.5
             # noise_train = normal_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=normal_train.shape)
             return normal_train, normal_test # noise_train  # normal_test,
-        else:
+        elif train == 0:
             training, test, full = patient_split_all(filepath, ratio)
             return training, test, full
     else:
         data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + file_index + ".npy"))
         return data
+
+
+    # encoder = Sequential()
+    # encoder.add(InputLayer(sig_shape))
+    # encoder.add(Flatten())
+    # encoder.add(Dense(400, activation='tanh', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(250, activation='relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(75, activation='relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(encode_size))
+    #
+    # # Decoder
+    # decoder = Sequential()
+    # decoder.add(InputLayer((encode_size,)))
+    # decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(75, activation='relu', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(250, activation='relu', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(400, activation='tanh', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(np.prod(sig_shape), activation='linear'))
+    # decoder.add(Reshape(sig_shape))
 
 
 # def build_autoencoder(sig_shape, encode_size):
@@ -78,51 +101,57 @@ def build_autoencoder(sig_shape, encode_size):
     :param encode_size: dimension that we want to reduce to
     :return: encoder, decoder models
     """
-    # # Encoder
-    # encoder = Sequential()
-    # encoder.add(InputLayer(sig_shape))
-    # encoder.add(Flatten())
-    # encoder.add(Dense(2000, activation = 'tanh', kernel_initializer='glorot_normal'))
-    # encoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
-    # encoder.add(Dense(1000, activation = 'relu', kernel_initializer='glorot_normal'))
-    # encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
-    # encoder.add(Dense(250, activation = 'relu', kernel_initializer='glorot_normal'))
-    # encoder.add(Dense(encode_size))
-    #
-    # # Decoder
-    # decoder = Sequential()
-    # decoder.add(InputLayer((encode_size,)))
-    # decoder.add(Dense(250, activation = 'relu',kernel_initializer='glorot_normal'))
-    # decoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
-    # decoder.add(Dense(1000, activation = 'relu',kernel_initializer='glorot_normal'))
-    # decoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
-    # decoder.add(Dense(2000, activation = 'tanh',kernel_initializer='glorot_normal'))
-    # decoder.add(Dense(np.prod(sig_shape), activation = 'linear'))
-    # decoder.add(Reshape(sig_shape))
+    if encode_size == 10:
 
-    # Encoder
-    encoder = Sequential()
-    encoder.add(InputLayer(sig_shape))
-    encoder.add(Flatten())
-    encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(encode_size))
+        # Encoder
+        encoder = Sequential()
+        encoder.add(InputLayer(sig_shape))
+        encoder.add(Flatten())
+        encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(encode_size))
 
-    # Decoder
-    decoder = Sequential()
-    decoder.add(InputLayer((encode_size,)))
-    decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
-    decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
-    decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
-    decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
-    decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
-    decoder.add(Dense(np.prod(sig_shape), activation='linear'))
-    decoder.add(Reshape(sig_shape))
+        # Decoder
+        decoder = Sequential()
+        decoder.add(InputLayer((encode_size,)))
+        decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(np.prod(sig_shape), activation='linear'))
+        decoder.add(Reshape(sig_shape))
 
-    return encoder, decoder
+        return encoder, decoder
+
+    elif encode_size == 100:
+
+        # Encoder
+        encoder = Sequential()
+        encoder.add(InputLayer(sig_shape))
+        encoder.add(Flatten())
+        encoder.add(Dense(2000, activation = 'tanh', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(1000, activation = 'relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(250, activation = 'relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(encode_size))
+
+        # Decoder
+        decoder = Sequential()
+        decoder.add(InputLayer((encode_size,)))
+        decoder.add(Dense(250, activation = 'relu',kernel_initializer='glorot_normal'))
+        decoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(1000, activation = 'relu',kernel_initializer='glorot_normal'))
+        decoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(2000, activation = 'tanh',kernel_initializer='glorot_normal'))
+        decoder.add(Dense(np.prod(sig_shape), activation = 'linear'))
+        decoder.add(Reshape(sig_shape))
+
+        return encoder, decoder
 
 
 def build_convolutional_autoencoder(sig_shape, encode_size):
@@ -275,8 +304,8 @@ def training_ae(num_epochs, reduced_dim, file_index):
     reconstruction = decoder.predict(encoded)
 
     # save reconstruction, encoded, and input if needed
-    reconstruction_save = os.path.join("Working_Data","1000d", "reconstructed_ae_" + str(100) + "d_Idx" + str(35) + ".npy")
-    encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(100) + "d_Idx" + str(35) + ".npy")
+    reconstruction_save = os.path.join("Working_Data", "reconstructed_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
+    encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
 
     np.save(reconstruction_save, reconstruction)
     np.save(encoded_save,encoded)
@@ -301,4 +330,6 @@ def run(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
-# run(100, 100)
+run(100, 10)
+
+# run(100,100)
