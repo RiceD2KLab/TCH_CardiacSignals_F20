@@ -22,15 +22,15 @@ def read_in(file_index, normalized, train, ratio):
     :param ratio: ratio to split the files into train and test
     :return: returns npy array of patient data across 4 leads
     """
-    # filepath = os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + file_index + ".npy")
-    filepath = os.path.join("Working_Data", "1000d", "Normalized_Fixed_Dim_HBs_Idx35.npy")
+    filepath = os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + file_index + ".npy")
+    # filepath = os.path.join("Working_Data", "1000d", "Normalized_Fixed_Dim_HBs_Idx35.npy")
     if normalized == 1:
         if train == 1:
             # normal_test,
-            normal_train, abnormal, all = patient_split_all(filepath, ratio)
-            noise_factor = 0.5
-            noise_train = normal_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=normal_train.shape)
-            return normal_train,  noise_train  # normal_test,
+            normal_train, normal_test, abnormal = patient_split_train(filepath, ratio)
+            # noise_factor = 0.5
+            # noise_train = normal_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=normal_train.shape)
+            return normal_train, normal_test # noise_train  # normal_test,
         else:
             training, test, full = patient_split_all(filepath, ratio)
             return training, test, full
@@ -178,14 +178,14 @@ def build_convolutional_autoencoder(sig_shape, encode_size):
     encoder.add(InputLayer((1000,4)))
     # idk if causal is really making that much of an impact but it seems useful for time series data?
     encoder.add(Conv1D(10, 11, activation="linear", padding="causal"))
-    encoder.add(Conv1D(10, 7, activation="relu", padding="causal"))
+    encoder.add(Conv1D(10, 5, activation="relu", padding="causal"))
     # encoder.add(Conv1D(10, 3, activation="relu", padding="same"))
     encoder.add(Flatten())
-    encoder.add(Dense(750, activation = 'tanh', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(750, activation = 'tanh', kernel_initializer='glorot_normal')) #tanh
     encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
     encoder.add(Dense(400, activation = 'relu', kernel_initializer='glorot_normal'))
     encoder.add(Dense(300, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(200, activation = 'relu', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(200, activation = 'relu', kernel_initializer='glorot_normal')) #relu
     encoder.add(Dense(latent_dim))
     # encoder.summary()
     ####################################################################################################################
@@ -212,7 +212,7 @@ def build_convolutional_autoencoder(sig_shape, encode_size):
     decoder.add(Dense(10000, activation='relu', kernel_initializer='glorot_normal'))
     decoder.add(Reshape((1000, 10)))
     # decoder.add(Conv1DTranspose(8, 3, activation="relu", padding="same"))
-    decoder.add(Conv1DTranspose(8, 7, activation="relu", padding="same"))
+    decoder.add(Conv1DTranspose(8, 5, activation="relu", padding="same"))
     decoder.add(Conv1DTranspose(4, 11, activation="linear", padding="same"))
 
     return encoder, decoder
@@ -229,9 +229,9 @@ def training_ae(num_epochs, reduced_dim, file_index):
     :param file_index: patient number
     :return: None
     """
-    normal, noise = read_in(file_index, 1, 1, 0.3)
+    normal, abnormal, all = read_in(file_index, 1, 0, 0.3)
     signal_shape = normal.shape[1:]
-    encoder, decoder = build_convolutional_autoencoder(signal_shape, reduced_dim)
+    encoder, decoder = build_autoencoder(signal_shape, reduced_dim)
     # print(encoder.summary())
     # print(decoder.summary())
     inp = Input(signal_shape)
@@ -241,24 +241,24 @@ def training_ae(num_epochs, reduced_dim, file_index):
     autoencoder = Model(inp, reconstruction)
     autoencoder.compile(optimizer='Adam', loss='mse')
 
-    # early_stopping = EarlyStopping(patience=20, min_delta=0.001, mode='min')
-    autoencoder.fit(x=normal, y=normal, epochs=num_epochs) # , validation_split=0.25, callbacks=early_stopping
+    early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
+    autoencoder.fit(x=normal, y=normal, epochs=num_epochs, validation_split=0.25, callbacks=early_stopping)
 
-    # # save out the model
-    # filename = 'ae_patient_' + str(file_index) + '_dim' + str(reduced_dim) + '_model'
-    # autoencoder.save(filename + '.h5')
-    # print('Model saved for ' + 'patient ' + str(file_index))
+    # save out the model
+    filename = 'ae_patient_' + str(file_index) + '_dim' + str(reduced_dim) + '_model'
+    autoencoder.save(filename + '.h5')
+    print('Model saved for ' + 'patient ' + str(file_index))
 
     # using AE to encode other data
-    # encoded = encoder.predict(full)
-    # reconstruction = decoder.predict(encoded)
+    encoded = encoder.predict(all)
+    reconstruction = decoder.predict(encoded)
 
-    # reconstruction_save = os.path.join("Working_Data", "reconstructed_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
-    # encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
-    # input_save = os.path.join("Working_Data", "original_data_test" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
-    # np.save(reconstruction_save, reconstruction)
-    # np.save(encoded_save,encoded)
-    # np.save(input_save, normal_test)
+    reconstruction_save = os.path.join("Working_Data","1000d", "reconstructed_ae_" + str(100) + "d_Idx" + str(35) + ".npy")
+    encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(100) + "d_Idx" + str(35) + ".npy")
+    # input_save = os.path.join("Working_Data","1000d", "original_data_test_ae" + str(100) + "d_Idx" + str(35) + ".npy")
+    np.save(reconstruction_save, reconstruction)
+    np.save(encoded_save,encoded)
+    # np.save(input_save, test)
 
 
 def run(num_epochs, encoded_dim):
@@ -268,10 +268,6 @@ def run(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    # indicies = ["33"]
-    # indicies = ['30', '31', '32',
-    #             '33', '34', '35', '37', '38', '39']
-
     for patient_ in heartbeat_split.indicies:
         print("Starting on index: " + str(patient_))
         training_ae(num_epochs, encoded_dim, patient_)
@@ -280,6 +276,4 @@ def run(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
-# for i in range(5, 20):
-#     run_over(100, i)
-run(100, 100)
+# run(100, 100)
