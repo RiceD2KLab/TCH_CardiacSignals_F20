@@ -78,26 +78,48 @@ def build_autoencoder(sig_shape, encode_size):
     :param encode_size: dimension that we want to reduce to
     :return: encoder, decoder models
     """
+    # # Encoder
+    # encoder = Sequential()
+    # encoder.add(InputLayer(sig_shape))
+    # encoder.add(Flatten())
+    # encoder.add(Dense(2000, activation = 'tanh', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(1000, activation = 'relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(250, activation = 'relu', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(encode_size))
+    #
+    # # Decoder
+    # decoder = Sequential()
+    # decoder.add(InputLayer((encode_size,)))
+    # decoder.add(Dense(250, activation = 'relu',kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(1000, activation = 'relu',kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(2000, activation = 'tanh',kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(np.prod(sig_shape), activation = 'linear'))
+    # decoder.add(Reshape(sig_shape))
+
     # Encoder
     encoder = Sequential()
     encoder.add(InputLayer(sig_shape))
     encoder.add(Flatten())
-    encoder.add(Dense(2000, activation = 'tanh', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(1000, activation = 'relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(250, activation = 'relu', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
     encoder.add(Dense(encode_size))
 
     # Decoder
     decoder = Sequential()
     decoder.add(InputLayer((encode_size,)))
-    decoder.add(Dense(250, activation = 'relu',kernel_initializer='glorot_normal'))
-    decoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
-    decoder.add(Dense(1000, activation = 'relu',kernel_initializer='glorot_normal'))
-    decoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
-    decoder.add(Dense(2000, activation = 'tanh',kernel_initializer='glorot_normal'))
-    decoder.add(Dense(np.prod(sig_shape), activation = 'linear'))
+    decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
+    decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
+    decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
+    decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+    decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
+    decoder.add(Dense(np.prod(sig_shape), activation='linear'))
     decoder.add(Reshape(sig_shape))
 
     return encoder, decoder
@@ -232,8 +254,7 @@ def training_ae(num_epochs, reduced_dim, file_index):
     normal, abnormal, all = read_in(file_index, 1, 0, 0.3)
     signal_shape = normal.shape[1:]
     encoder, decoder = build_autoencoder(signal_shape, reduced_dim)
-    # print(encoder.summary())
-    # print(decoder.summary())
+
     inp = Input(signal_shape)
     encode = encoder(inp)
     reconstruction = decoder(encode)
@@ -253,11 +274,15 @@ def training_ae(num_epochs, reduced_dim, file_index):
     encoded = encoder.predict(all)
     reconstruction = decoder.predict(encoded)
 
+    # save reconstruction, encoded, and input if needed
     reconstruction_save = os.path.join("Working_Data","1000d", "reconstructed_ae_" + str(100) + "d_Idx" + str(35) + ".npy")
     encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(100) + "d_Idx" + str(35) + ".npy")
-    # input_save = os.path.join("Working_Data","1000d", "original_data_test_ae" + str(100) + "d_Idx" + str(35) + ".npy")
+
     np.save(reconstruction_save, reconstruction)
     np.save(encoded_save,encoded)
+
+    # if training and need to save test split for MSE calculation
+    # input_save = os.path.join("Working_Data","1000d", "original_data_test_ae" + str(100) + "d_Idx" + str(35) + ".npy")
     # np.save(input_save, test)
 
 
