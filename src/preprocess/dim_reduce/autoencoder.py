@@ -284,7 +284,7 @@ def training_ae(num_epochs, reduced_dim, file_index):
     """
     normal, noise, abnormal, all = read_in(file_index, 1, 0, 0.3)
     signal_shape = normal.shape[1:]
-    batch_size = round(len(normal) * 0.01)
+    batch_size = round(len(normal) * 0.001)
     encoder, decoder = build_autoencoder(signal_shape, reduced_dim)
 
     inp = Input(signal_shape)

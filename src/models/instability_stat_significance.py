@@ -127,4 +127,5 @@ if __name__ == "__main__":
         print(f"computing mse for patient {idx}")
         mse_list.append(np.load(f"Working_Data/windowed_mse_ae_10d_Idx{idx}.npy"))
     print_metrics(mse_list)
+
 #mean_square_error(10, 'ae', patient_num, save_errors=True)

@@ -56,7 +56,7 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
 
     if save_errors:
         np.save(
-            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)))
+            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)), mse)
     # print(list(mse))
 
     # return np.array([err for err in mse if 1 == 1 and err < 5 and 0 == 0 and 3 < 4])
