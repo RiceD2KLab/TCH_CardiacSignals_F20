@@ -3,9 +3,11 @@ Creates and trains a determinisitic autoencoder model for dimension reduction of
 Saves the encoded and reconstructed signals to the working data directory
 """
 from numpy.random import seed
+
 seed(1)
 import tensorflow
 from tensorflow import keras
+
 tensorflow.random.set_seed(2)
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -13,11 +15,11 @@ import numpy as np
 import os
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.regularizers import l1, l2
-from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout, Conv1D, MaxPooling1D, BatchNormalization, UpSampling1D, Conv1DTranspose
+from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout, Conv1D, MaxPooling1D, \
+    BatchNormalization, UpSampling1D, Conv1DTranspose
 from tensorflow.keras.models import Sequential, Model
 from src.preprocess.dim_reduce.patient_split import *
 from src.preprocess.heartbeat_split import heartbeat_split
-from sklearn.model_selection import train_test_split
 
 
 def read_in(file_index, normalized, train, ratio):
@@ -31,7 +33,7 @@ def read_in(file_index, normalized, train, ratio):
     """
     # filepath = os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + file_index + ".npy")
     # filepath = os.path.join("Working_Data", "1000d", "Normalized_Fixed_Dim_HBs_Idx35.npy")
-    filepath = "Working_Data/Training_Subset/Normalized/two_hbs/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
+    filepath = "Working_Data/training_subset/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
 
     if normalized == 1:
         if train == 1:
@@ -39,7 +41,7 @@ def read_in(file_index, normalized, train, ratio):
             normal_train, normal_test, abnormal = patient_split_train(filepath, ratio)
             # noise_factor = 0.5
             # noise_train = normal_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=normal_train.shape)
-            return normal_train, normal_test # noise_train  # normal_test,
+            return normal_train, normal_test  # noise_train  # normal_test,
         elif train == 0:
             training, test, full = patient_split_all(filepath, ratio)
             noise_factor = 0.5
@@ -48,7 +50,6 @@ def read_in(file_index, normalized, train, ratio):
     else:
         data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + file_index + ".npy"))
         return data
-
 
 
 # def build_autoencoder(sig_shape, encode_size):
@@ -90,36 +91,26 @@ def build_autoencoder(sig_shape, encode_size):
     :param encode_size: dimension that we want to reduce to
     :return: encoder, decoder models
     """
-    if encode_size == 10:
-
+    if encode_size == 1:
+        reg = 1e-50
         # Encoder
         encoder = Sequential()
         encoder.add(InputLayer(sig_shape))
         encoder.add(Flatten())
-        encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
-        encoder.add(Dropout(0.2))
-        encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+        # encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal', activity_regularizer=l2(reg)))
+        # encoder.add(Dropout(0.2))
 
-        encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
-
-        encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
-
-        encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
-        encoder.add(Dense(encode_size))
+        encoder.add(
+            Dense(encode_size, activation='relu', activity_regularizer=l2(reg)))
 
         # Decoder
         decoder = Sequential()
         decoder.add(InputLayer((encode_size,)))
-        decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
-        decoder.add(Dropout(0.2))
-        decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
 
-        decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
+        # decoder.add(Dropout(0.2))
 
-        decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
-
-        decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
-        decoder.add(Dense(np.prod(sig_shape), activation='linear'))
+        # decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal', activity_regularizer=l2(reg)))
+        decoder.add(Dense(np.prod(sig_shape), activation='linear', activity_regularizer=l2(reg)))
         decoder.add(Reshape(sig_shape))
 
         return encoder, decoder
@@ -130,30 +121,30 @@ def build_autoencoder(sig_shape, encode_size):
         encoder = Sequential()
         encoder.add(InputLayer(sig_shape))
         encoder.add(Flatten())
-        encoder.add(Dense(2000, activation = 'tanh', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(2000, activation='tanh', kernel_initializer='glorot_normal'))
         encoder.add(Dropout(0.5))
         encoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
         encoder.add(Dropout(0.5))
-        encoder.add(Dense(1000, activation = 'relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(1000, activation='relu', kernel_initializer='glorot_normal'))
         encoder.add(Dropout(0.5))
         encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
         encoder.add(Dropout(0.5))
-        encoder.add(Dense(250, activation = 'relu', kernel_initializer='glorot_normal'))
+        encoder.add(Dense(250, activation='relu', kernel_initializer='glorot_normal'))
         encoder.add(Dense(encode_size))
 
         # Decoder
         decoder = Sequential()
         decoder.add(InputLayer((encode_size,)))
-        decoder.add(Dense(250, activation = 'relu',kernel_initializer='glorot_normal'))
+        decoder.add(Dense(250, activation='relu', kernel_initializer='glorot_normal'))
         decoder.add(Dropout(0.5))
         decoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
         decoder.add(Dropout(0.5))
-        decoder.add(Dense(1000, activation = 'relu',kernel_initializer='glorot_normal'))
+        decoder.add(Dense(1000, activation='relu', kernel_initializer='glorot_normal'))
         decoder.add(Dropout(0.5))
         decoder.add(Dense(1250, activation='relu', kernel_initializer='glorot_normal'))
         decoder.add(Dropout(0.5))
-        decoder.add(Dense(2000, activation = 'tanh',kernel_initializer='glorot_normal'))
-        decoder.add(Dense(np.prod(sig_shape), activation = 'linear'))
+        decoder.add(Dense(2000, activation='tanh', kernel_initializer='glorot_normal'))
+        decoder.add(Dense(np.prod(sig_shape), activation='linear'))
         decoder.add(Reshape(sig_shape))
 
         return encoder, decoder
@@ -231,17 +222,17 @@ def build_convolutional_autoencoder(data, encode_size):
     # encoder.add(Dense(latent_dim))
 
     encoder = Sequential()
-    encoder.add(InputLayer((1000,4)))
+    encoder.add(InputLayer((1000, 4)))
     # idk if causal is really making that much of an impact but it seems useful for time series data?
     encoder.add(Conv1D(10, 11, activation="linear", padding="causal"))
     encoder.add(Conv1D(10, 5, activation="relu", padding="causal"))
     # encoder.add(Conv1D(10, 3, activation="relu", padding="same"))
     encoder.add(Flatten())
-    encoder.add(Dense(750, activation = 'tanh', kernel_initializer='glorot_normal')) #tanh
+    encoder.add(Dense(750, activation='tanh', kernel_initializer='glorot_normal'))  # tanh
     encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(400, activation = 'relu', kernel_initializer='glorot_normal'))
+    encoder.add(Dense(400, activation='relu', kernel_initializer='glorot_normal'))
     encoder.add(Dense(300, activation='relu', kernel_initializer='glorot_normal'))
-    encoder.add(Dense(200, activation = 'relu', kernel_initializer='glorot_normal')) #relu
+    encoder.add(Dense(200, activation='relu', kernel_initializer='glorot_normal'))  # relu
     encoder.add(Dense(latent_dim))
     # encoder.summary()
     ####################################################################################################################
@@ -274,7 +265,6 @@ def build_convolutional_autoencoder(data, encode_size):
     return encoder, decoder
 
 
-
 def training_ae(num_epochs, reduced_dim, file_index):
     """
     Training function for deterministic autoencoder model, saves the encoded and reconstructed arrays
@@ -284,14 +274,8 @@ def training_ae(num_epochs, reduced_dim, file_index):
     :return: None
     """
     normal, noise, abnormal, all = read_in(file_index, 1, 0, 0.3)
-<<<<<<< HEAD
-    train, valid = train_test_split(normal, train_size=0.85, random_state=1)
-    signal_shape = train.shape[1:]
-    batch_size = round(len(train) * 0.01)
-=======
     signal_shape = normal.shape[1:]
-    batch_size = round(len(normal) * 0.001)
->>>>>>> 7f373335db5c9a1cc0212287a1eaf6217a18786f
+    batch_size = round(len(normal) * 0.01)
     encoder, decoder = build_autoencoder(signal_shape, reduced_dim)
 
     inp = Input(signal_shape)
@@ -302,8 +286,8 @@ def training_ae(num_epochs, reduced_dim, file_index):
     opt = keras.optimizers.Adam(learning_rate=0.0008)
     autoencoder.compile(optimizer=opt, loss='mse')
 
-    early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
-    autoencoder = autoencoder.fit(x=train, y=train, epochs=num_epochs, validation_data=(valid, valid), batch_size=batch_size, callbacks=early_stopping)
+    # early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
+    autoencoder = autoencoder.fit(x=normal, y=normal, epochs=num_epochs, validation_split=0.2, batch_size=batch_size)
     # validation_split=0.25, callbacks=early_stopping
     plt.plot(autoencoder.history['loss'])
     plt.plot(autoencoder.history['val_loss'])
@@ -325,11 +309,11 @@ def training_ae(num_epochs, reduced_dim, file_index):
     # reconstruction_save = os.path.join("Working_Data", "reconstructed_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
     # encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
 
-    reconstruction_save = "Working_Data/Training_Subset/Model_Output/reconstructed_2hb_" + str(file_index) + ".npy"
-    encoded_save = "Working_Data/Training_Subset/Model_Output/encoded_2hb_" + str(file_index) + ".npy"
+    reconstruction_save = "Working_Data/training_subset/reconstructed_2hb_" + str(file_index) + ".npy"
+    encoded_save = "Working_Data/training_subset/encoded_2hb_" + str(file_index) + ".npy"
 
     np.save(reconstruction_save, reconstruction)
-    np.save(encoded_save,encoded)
+    np.save(encoded_save, encoded)
 
     # if training and need to save test split for MSE calculation
     # input_save = os.path.join("Working_Data","1000d", "original_data_test_ae" + str(100) + "d_Idx" + str(35) + ".npy")
@@ -343,7 +327,7 @@ def run(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    for patient_ in [1,4,11]: #heartbeat_split.indicies:
+    for patient_ in [1, 4, 11]:  # heartbeat_split.indicies:
         print("Starting on index: " + str(patient_))
         # try:
         training_ae(num_epochs, encoded_dim, patient_)
@@ -352,8 +336,7 @@ def run(num_epochs, encoded_dim):
         #     continue
 
 
-
 #################### Training to be done for 100 epochs for all dimensions ############################################
-run(100, 10)
+run(100, 1)
 
 # run(100,100)
