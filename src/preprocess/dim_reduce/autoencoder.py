@@ -17,6 +17,7 @@ from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, 
 from tensorflow.keras.models import Sequential, Model
 from src.preprocess.dim_reduce.patient_split import *
 from src.preprocess.heartbeat_split import heartbeat_split
+from sklearn.model_selection import train_test_split
 
 
 def read_in(file_index, normalized, train, ratio):
@@ -95,29 +96,29 @@ def build_autoencoder(sig_shape, encode_size):
         encoder = Sequential()
         encoder.add(InputLayer(sig_shape))
         encoder.add(Flatten())
-        encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
         encoder.add(Dropout(0.2))
-        encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
 
-        encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
 
-        encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
 
-        encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
         encoder.add(Dense(encode_size))
 
         # Decoder
         decoder = Sequential()
         decoder.add(InputLayer((encode_size,)))
-        decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
         decoder.add(Dropout(0.2))
-        decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
 
-        decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
 
-        decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
 
-        decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal', activity_regularizer=l2(0.001)))
+        decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
         decoder.add(Dense(np.prod(sig_shape), activation='linear'))
         decoder.add(Reshape(sig_shape))
 
@@ -283,8 +284,9 @@ def training_ae(num_epochs, reduced_dim, file_index):
     :return: None
     """
     normal, noise, abnormal, all = read_in(file_index, 1, 0, 0.3)
-    signal_shape = normal.shape[1:]
-    batch_size = round(len(normal) * 0.01)
+    train, valid = train_test_split(normal, train_size=0.85, random_state=1)
+    signal_shape = train.shape[1:]
+    batch_size = round(len(train) * 0.01)
     encoder, decoder = build_autoencoder(signal_shape, reduced_dim)
 
     inp = Input(signal_shape)
@@ -295,8 +297,8 @@ def training_ae(num_epochs, reduced_dim, file_index):
     opt = keras.optimizers.Adam(learning_rate=0.0008)
     autoencoder.compile(optimizer=opt, loss='mse')
 
-    # early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
-    autoencoder = autoencoder.fit(x=normal, y=normal, epochs=num_epochs, validation_split=0.2, batch_size = batch_size)
+    early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
+    autoencoder = autoencoder.fit(x=train, y=train, epochs=num_epochs, validation_data=(valid, valid), batch_size=batch_size, callbacks=early_stopping)
     # validation_split=0.25, callbacks=early_stopping
     plt.plot(autoencoder.history['loss'])
     plt.plot(autoencoder.history['val_loss'])
