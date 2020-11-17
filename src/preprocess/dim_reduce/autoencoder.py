@@ -44,13 +44,14 @@ def read_in(file_index, normalized, train, ratio):
             training, test, full = patient_split_all(filepath, ratio)
             noise_factor = 0.5
             noise_train = training + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=training.shape)
-            return training, noise_train, test, full
+            abnormal_valid = test[:len(training),:]
+            return training, noise_train, abnormal_valid, test, full
     else:
         data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + file_index + ".npy"))
         return data
 
 
-
+#
 # def build_autoencoder(sig_shape, encode_size):
 #     """
 #     Builds a deterministic autoencoder model, returning both the encoder and decoder models
@@ -90,20 +91,47 @@ def build_autoencoder(sig_shape, encode_size):
     :param encode_size: dimension that we want to reduce to
     :return: encoder, decoder models
     """
-    if encode_size == 10:
+    if encode_size == 1:
 
-        # Encoder
+        # # Encoder
+        # encoder = Sequential()
+        # encoder.add(InputLayer(sig_shape))
+        # encoder.add(Flatten())
+        # encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
+        # encoder.add(Dropout(0.2))
+        # encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+        #
+        # encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
+        #
+        # encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
+        #
+        # encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
+        # encoder.add(Dense(encode_size))
+        #
+        # # Decoder
+        # decoder = Sequential()
+        # decoder.add(InputLayer((encode_size,)))
+        # decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
+        # decoder.add(Dropout(0.2))
+        # decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
+        #
+        # decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
+        #
+        # decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
+        #
+        # decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
+        # decoder.add(Dense(np.prod(sig_shape), activation='linear'))
+        # decoder.add(Reshape(sig_shape))
+        #
+        # return encoder, decoder
+
         encoder = Sequential()
         encoder.add(InputLayer(sig_shape))
         encoder.add(Flatten())
         encoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
-        encoder.add(Dropout(0.2))
         encoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
-
         encoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
-
         encoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
-
         encoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
         encoder.add(Dense(encode_size))
 
@@ -111,13 +139,9 @@ def build_autoencoder(sig_shape, encode_size):
         decoder = Sequential()
         decoder.add(InputLayer((encode_size,)))
         decoder.add(Dense(25, activation='relu', kernel_initializer='glorot_normal'))
-        decoder.add(Dropout(0.2))
         decoder.add(Dense(50, activation='relu', kernel_initializer='glorot_normal'))
-
         decoder.add(Dense(100, activation='relu', kernel_initializer='glorot_normal'))
-
         decoder.add(Dense(125, activation='relu', kernel_initializer='glorot_normal'))
-
         decoder.add(Dense(200, activation='tanh', kernel_initializer='glorot_normal'))
         decoder.add(Dense(np.prod(sig_shape), activation='linear'))
         decoder.add(Reshape(sig_shape))
@@ -283,15 +307,18 @@ def training_ae(num_epochs, reduced_dim, file_index):
     :param file_index: patient number
     :return: None
     """
-    normal, noise, abnormal, all = read_in(file_index, 1, 0, 0.3)
-<<<<<<< HEAD
+    normal, noise, abnormal_valid, abnormal, all = read_in(file_index, 1, 0, 0.3)
+
     train, valid = train_test_split(normal, train_size=0.85, random_state=1)
+    normal_train = normal[:round(len(normal)*.85),:]
+    normal_valid = normal[round(len(normal)*.85):,:]
+    abnormal_valid = abnormal_valid[:round(len(abnormal_valid)*0.10),:]
     signal_shape = train.shape[1:]
     batch_size = round(len(train) * 0.01)
-=======
-    signal_shape = normal.shape[1:]
+
+    signal_shape = train.shape[1:]
     batch_size = round(len(normal) * 0.001)
->>>>>>> 7f373335db5c9a1cc0212287a1eaf6217a18786f
+
     encoder, decoder = build_autoencoder(signal_shape, reduced_dim)
 
     inp = Input(signal_shape)
@@ -303,7 +330,7 @@ def training_ae(num_epochs, reduced_dim, file_index):
     autoencoder.compile(optimizer=opt, loss='mse')
 
     early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
-    autoencoder = autoencoder.fit(x=train, y=train, epochs=num_epochs, validation_data=(valid, valid), batch_size=batch_size, callbacks=early_stopping)
+    autoencoder = autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, validation_data=(normal_valid, normal_valid), batch_size=batch_size, callbacks=early_stopping)
     # validation_split=0.25, callbacks=early_stopping
     plt.plot(autoencoder.history['loss'])
     plt.plot(autoencoder.history['val_loss'])
@@ -318,18 +345,18 @@ def training_ae(num_epochs, reduced_dim, file_index):
     # print('Model saved for ' + 'patient ' + str(file_index))
 
     # using AE to encode other data
-    encoded = encoder.predict(all)
-    reconstruction = decoder.predict(encoded)
+    # encoded = encoder.predict(all)
+    # reconstruction = decoder.predict(encoded)
 
     # save reconstruction, encoded, and input if needed
     # reconstruction_save = os.path.join("Working_Data", "reconstructed_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
     # encoded_save = os.path.join("Working_Data", "reduced_ae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
 
-    reconstruction_save = "Working_Data/Training_Subset/Model_Output/reconstructed_2hb_" + str(file_index) + ".npy"
-    encoded_save = "Working_Data/Training_Subset/Model_Output/encoded_2hb_" + str(file_index) + ".npy"
-
-    np.save(reconstruction_save, reconstruction)
-    np.save(encoded_save,encoded)
+    # reconstruction_save = "Working_Data/Training_Subset/Model_Output/reconstructed_2hb_" + str(file_index) + ".npy"
+    # encoded_save = "Working_Data/Training_Subset/Model_Output/encoded_2hb_" + str(file_index) + ".npy"
+    #
+    # np.save(reconstruction_save, reconstruction)
+    # np.save(encoded_save,encoded)
 
     # if training and need to save test split for MSE calculation
     # input_save = os.path.join("Working_Data","1000d", "original_data_test_ae" + str(100) + "d_Idx" + str(35) + ".npy")
@@ -354,6 +381,6 @@ def run(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
-run(100, 10)
+run(100, 1)
 
 # run(100,100)
