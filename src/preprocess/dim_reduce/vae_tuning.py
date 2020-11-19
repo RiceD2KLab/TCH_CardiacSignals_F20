@@ -24,6 +24,8 @@ def vae_alpha_dim_sweep(file_index, dim_rng, alpha_rng, learning_rate, num_epoch
 
     # Load heartbeat data
     data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    print(np.shape(data))
+
     alpha_mses = {}
     for alpha in alpha_rng:
         dim_mses = {}
@@ -122,6 +124,8 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
             z = vae.encoder.predict(data_test)
 
             # visualize the loss convergence as we iterate
+            print(vaefit.history.keys())
+
             plt.plot(vaefit.history['loss'])
             plt.plot(vaefit.history['reconstruction_loss'])
             plt.plot(vaefit.history['kl_loss'])
@@ -228,13 +232,13 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
 
 
 
-if __name__ == "__main__":
-    ## This code sweeps the VAE performance without any data split. Useful for optimization.
-    patient_mses = {}
-    for file_index in heartbeat_split.indicies:
-        patient_mses[file_index] = vae_alpha_dim_sweep(file_index, [10], [0.05], 0.001, 200, save_results=True)
+# if __name__ == "__main__":
+#     ## This code sweeps the VAE performance without any data split. Useful for optimization.
+#     patient_mses = {}
+#     for file_index in heartbeat_split.indicies:
+#         patient_mses[file_index] = vae_alpha_dim_sweep(file_index, [10], [0.05], 0.001, 10, save_results=True)
 
-# plot_data_splitting(4, 0.5, [1], [1], 0.005, 3)
+plot_data_splitting(4, 0.5, [1], [1], 0.005, 3)
 
     #
     # outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
