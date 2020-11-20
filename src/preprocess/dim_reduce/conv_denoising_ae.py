@@ -114,7 +114,8 @@ def training_ae(num_epochs, reduced_dim, file_index):
     # normal_valid = normal[round(len(normal)*.85):,:]
     signal_shape = normal.shape[1:]
     batch_size = round(len(normal) * 0.15)
-
+    # try using the first hour and second hour for train and validation and see if there are any differences
+    
     encoder, decoder = build_model(signal_shape, reduced_dim)
 
     inp = Input(signal_shape)
