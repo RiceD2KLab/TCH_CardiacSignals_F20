@@ -31,7 +31,7 @@ def read_in(file_index, normalized, train, ratio):
     """
     # filepath = os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + file_index + ".npy")
     # filepath = os.path.join("Working_Data", "1000d", "Normalized_Fixed_Dim_HBs_Idx35.npy")
-    filepath = "Working_Data/Training_Subset/Normalized/ten_hbs/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
+    filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
 
     if normalized == 1:
         if train == 1:
