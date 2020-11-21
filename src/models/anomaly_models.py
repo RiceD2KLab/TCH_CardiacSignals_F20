@@ -62,6 +62,7 @@ def isoforest_validate(k, dim, patient_idx, model_name, params):
         num_anomalies = np.count_nonzero(labels == -1) # number of anomalies in validation set
         anomaly_rate += (num_anomalies/X_test.shape[0]) # anomaly rate for the validation set
     anomaly_rate = anomaly_rate / k # compute average anomaly rate
+    print(anomaly_rate)
     return anomaly_rate
 
 
@@ -75,6 +76,7 @@ def train_isoforest(k, patient_idx, model_name):
     train_data = data[:num_hbs//3, :] # train on first third of data
 
     isoforest = IsolationForest(n_estimators=300, max_features=0.6, contamination=0.1)
+
     isoforest.fit(train_data)
     print("trained")
     return isoforest # -1 is outlier, 1 is inlier
@@ -121,15 +123,18 @@ def get_metrics(metric_type, dim, idx, model, window_size, PLOT=False):
     return anomaly_rate
 
 
-avg = []
-for i in range(60):
-    try:
-        isoforest = train_isoforest(10, i, 'ae')
-        anomaly_rate = anomaly_tracking(10, i, 'ae', isoforest, 500)
-        # avg.append(isoforest_validate(5, 10, i, 'ae'))
-        # print(avg[-1])
-    except:
-        continue
+if __name__ == '__main__':
+    avg = []
+    for i in range(60):
+        # params = {'n_estimators': 500, 'max_features': 0.6, 'contamination': 0.1}
+        # isoforest_validate(10,100,i,'cdae',params)
+        try:
+            isoforest = train_isoforest(100, i, 'cdae')
+            anomaly_rate = anomaly_tracking(100, i, 'cdae', isoforest, 500)
+            # avg.append(isoforest_validate(5, 10, i, 'ae'))
+            # print(avg[-1])
+        except:
+            continue
 
 # best_params = {}
 # best_score = 1.0
