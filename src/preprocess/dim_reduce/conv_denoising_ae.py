@@ -126,8 +126,9 @@ def training_ae(num_epochs, reduced_dim, file_index):
     opt = keras.optimizers.Adam(learning_rate=0.001) #0.0008, 0,0001
     autoencoder.compile(optimizer=opt, loss='mse')
 
-    early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
-    autoencoder.fit(x=normal, y=normal, epochs=num_epochs, batch_size=batch_size, callbacks=early_stopping)
+    # early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
+    autoencoder.fit(x=normal, y=normal, epochs=num_epochs, batch_size=batch_size)
+    # , callbacks=early_stopping
     #, validation_data=(normal_valid, normal_valid)
 
     # plt.plot(autoencoder.history['loss'])
@@ -176,5 +177,5 @@ def run(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
-run(100, 100)
+run(110, 100)
 
