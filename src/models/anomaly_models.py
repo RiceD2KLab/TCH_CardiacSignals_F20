@@ -47,7 +47,7 @@ def isoforest_validate(k, dim, patient_idx, model_name, params):
     float, average "false alarm" rate over each of the k-folds
     '''
 
-    data = np.load(os.path.join("Working_Data", "reduced_{}_{}d_Idx{}.npy".format(model_name, dim, patient_idx)))
+    data = np.load("Working_Data/" + "reduced_{}_{}d_Idx{}.npy".format(model_name, dim, patient_idx))
     num_hbs = data.shape[0] # total length of input data
     normal_data = data[:num_hbs//3, :] # use first third of data as train/validate set
 
@@ -67,6 +67,13 @@ def isoforest_validate(k, dim, patient_idx, model_name, params):
 
 
 def train_isoforest(k, patient_idx, model_name):
+    """
+
+    :param k: dimension of data
+    :param patient_idx: integer index of patient
+    :param model_name: name of model used in filename, ex. ae for autoencoder
+    :return: trained isoforest model
+    """
     data = np.load(os.path.join("Working_Data", "reduced_{}_{}d_Idx{}.npy".format(model_name, k, patient_idx)))
 
     # raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_idx))))
@@ -82,6 +89,15 @@ def train_isoforest(k, patient_idx, model_name):
     return isoforest # -1 is outlier, 1 is inlier
 
 def anomaly_tracking(k, patient_idx, model_name, detector, window_size):
+    """
+
+    :param k: dimension of data
+    :param patient_idx: integer index of patient
+    :param model_name: name of model used in filename, ex. ae for autoencoder
+    :param detector:
+    :param window_size:
+    :return: anomaly rate
+    """
     data = np.load(os.path.join("Working_Data", "reduced_{}_{}d_Idx{}.npy".format(model_name, k, patient_idx)))    
 
     # raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_idx))))
@@ -103,6 +119,7 @@ def anomaly_tracking(k, patient_idx, model_name, detector, window_size):
     plt.vlines(num_hbs//(3*window_size), -0.1, 1.1, colors='red')
     plt.show()
     return anomaly_rate
+# save anomaly rate array as windowed_var_100d_idx{idx}.npy
 
 def get_metrics(metric_type, dim, idx, model, window_size, PLOT=False):
     '''
@@ -124,33 +141,39 @@ def get_metrics(metric_type, dim, idx, model, window_size, PLOT=False):
 
 
 if __name__ == '__main__':
-    avg = []
-    for i in range(60):
-        # params = {'n_estimators': 500, 'max_features': 0.6, 'contamination': 0.1}
-        # isoforest_validate(10,100,i,'cdae',params)
-        try:
-            isoforest = train_isoforest(100, i, 'cdae')
-            anomaly_rate = anomaly_tracking(100, i, 'cdae', isoforest, 500)
-            # avg.append(isoforest_validate(5, 10, i, 'ae'))
-            # print(avg[-1])
-        except:
-            continue
+    # avg = []
+    # for i in range(60):
+    #     try:
+    #         params = {'n_estimators': 500, 'max_features': 0.6, 'contamination': 0.05}
+    #         isoforest_validate(10,100,i,'cdae',params)
+    #     except:
+    #         continue
+    #     # try:
+    #     #     isoforest = train_isoforest(100, i, 'cdae')
+    #     #     anomaly_rate = anomaly_tracking(100, i, 'cdae', isoforest, 500)
+    #     #     # avg.append(isoforest_validate(5, 10, i, 'ae'))
+    #     #     # print(avg[-1])
+    #     # except:
+    #     #     continue
 
-# best_params = {}
-# best_score = 1.0
-# for n_estimators in range(100, 1200, 100):
-#     for contamination in [0.1, 0.2, 0.3, 0.4, 0.5]:
-#         for max_features in np.linspace(0.1, 1.0, 10):
-#             params = {'n_estimators': n_estimators, 
-#               'contamination': contamination, 
-#               'max_features': max_features}
-#             score = isoforest_validate(5, 10, 1, 'ae', params)
-#             print(score)
-#             if score < best_score:
-#                 best_score = score
-#                 best_params = params
-# print(best_params)
-# print(best_score)
+    best_params = {}
+    best_score = 1.0
+    for n_estimators in range(100, 1200, 100):
+        for contamination in [0.05, 0.1, 0.015, 0.2]:
+            for max_features in np.linspace(0.1, 1.0, 10):
+                params = {'n_estimators': n_estimators,
+                  'contamination': contamination,
+                  'max_features': max_features}
+                score = isoforest_validate(5, 100, 11, 'cdae', params)
+                print(score)
+                if score < best_score:
+                    best_score = score
+                    best_params = params
+    print(best_params)
+    print(best_score)
+
+
+    # 800, 0.015 contamination, 0.8 max features
 
 ### {'n_estimators': 300, 'contamination': 0.1, 'max_features': 0.6} yields validation error of 0.09889838824352036
 
