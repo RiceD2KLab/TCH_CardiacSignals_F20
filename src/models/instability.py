@@ -5,6 +5,7 @@ from scipy.stats import entropy
 # from skimage.filters.rank import entropy
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
+from src.preprocess.heartbeat_split import heartbeat_split
 
 def calculate_streamed_variances(heartbeats, window_duration, step):
     """
@@ -21,6 +22,10 @@ def calculate_streamed_variances(heartbeats, window_duration, step):
         window = heartbeats[i-window_duration:i :]# n x k
         window_vars = np.apply_along_axis(lambda row: np.var(row), 0, window)
         variances.append(np.mean(window_vars))
+
+
+
+
 
     return variances
 
@@ -69,7 +74,14 @@ def plot_metrics(metric_name, k, patient_idx, model_name):
         data = data[2, :, :] if model_name == "vae" else data
 
     if metric_name == "variance":
-        variances = calculate_streamed_variances(data, 500, 50)  # assume 100 bpm with 5 min window = 500 samples
+        variances = calculate_streamed_variances(data, 50, 50)  # assume 100 bpm with 5 min window = 500 samples
+
+        variances_savename = os.path.join("Working_Data",
+                                          "windowed_var_100d_Idx{}.npy".format(patient_idx))
+        np.save(variances_savename, variances)
+
+
+
         metrics = [variance if variance < 20 else 0 for variance in variances]
     elif metric_name == "entropy":
         entropies = calculate_streamed_entropies(data, 500, 50, 20)  # assume 100 bpm with 5 min window = 500 samples
@@ -77,13 +89,13 @@ def plot_metrics(metric_name, k, patient_idx, model_name):
     elif metric_name == "cross entropy":
         metrics = calculate_streamed_entropies(data, 500, 50, 20)
 
-    plt.figure()
-    plt.plot(metrics)
-    plt.title("{} of 5 minute increments for Patient {} with model {} with latent dim {}".format(metric_name ,patient_idx,
-                                                                                                      model_name, k))
-    plt.ylabel("Mean of {} across latent dimensions".format(metric_name))
-    plt.xlabel("Window End Sample Idx")
-    plt.show()
+    # plt.figure()
+    # plt.plot(metrics)
+    # plt.title("{} of 5 minute increments for Patient {} with model {} with latent dim {}".format(metric_name ,patient_idx,
+    #                                                                                                   model_name, k))
+    # plt.ylabel("Mean of {} across latent dimensions".format(metric_name))
+    # plt.xlabel("Window End Sample Idx")
+    # plt.show()
 
 
 if __name__ == "__main__":
@@ -91,8 +103,9 @@ if __name__ == "__main__":
     # plot_metrics("variance", 10, 1, "pca")
     # plot_metrics("entropy", 10, 1, "pca")
     # plot_metrics("cross entropy", 10, 1, "pca")
-    plot_metrics("variance", 10, 1, "rawhb")
-    plot_metrics("variance", 10, 4, "rawhb")
+    for patient_idx in heartbeat_split.indicies:
+        plot_metrics("variance", 100, patient_idx, "cdae")
+    # plot_metrics("variance", 10, 4, "rawhb")
 
 
 
