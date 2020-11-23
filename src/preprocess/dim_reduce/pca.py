@@ -7,6 +7,7 @@ import matplotlib
 import sys
 from matplotlib import cm
 import sys
+from src.preprocess.heartbeat_split import heartbeat_split
 
 
 
@@ -53,7 +54,7 @@ def plot_first_2(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
+    data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     first_two_pca = PCA(n_components=2)
@@ -86,7 +87,7 @@ def plot_3d(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
+    data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     first_three_pca = PCA(n_components=3)
@@ -110,10 +111,7 @@ def save_pca_reconstructions(dim):
     Inputs: dimension to reduce to with PCA
     Returns: nothing -> saves an array of (# of heartbeats) x (100) x (4) for each patient index, containing reconstructed heartbeats after PCA
     '''
-    indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
-            '33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
-
-    for file_index in indices:
+    for file_index in heartbeat_split.indicies:
         print("Starting on index : " + str(file_index))
         raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))        
         flattened_data = raw_hbs.reshape(-1, 400) # reshape so each feature vector contains all 4 leads for each hearbeat
@@ -132,10 +130,7 @@ def save_pca_reduced(dim):
     Inputs: dimension to reduce to with PCA
     Returns: nothing -> saves an array of (# of heartbeats) x (dim) for each patient index, containing reduced dimension after PCA
     '''
-    indices = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
-            '33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
-
-    for file_index in indices:
+    for file_index in heartbeat_split.indicies:
         print("Starting on index : " + str(file_index))
         raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
         flattened_data = raw_hbs.reshape(-1, 400) # reshape so each feature vector contains all 4 leads for each hearbeat
