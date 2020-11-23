@@ -109,7 +109,7 @@ def training_ae(num_epochs, reduced_dim, file_index):
     :return: None
     """
     normal, abnormal, all = read_in(file_index, 1, 2, 0.3)
-    # normal_train, normal_valid = train_test_split(normal, train_size=0.85, random_state=1)
+    normal_train, normal_valid = train_test_split(normal, train_size=0.85, random_state=1)
     # normal_train = normal[:round(len(normal)*.85),:]
     # normal_valid = normal[round(len(normal)*.85):,:]
     signal_shape = normal.shape[1:]
@@ -126,8 +126,8 @@ def training_ae(num_epochs, reduced_dim, file_index):
     opt = keras.optimizers.Adam(learning_rate=0.001) #0.0008, 0,0001
     autoencoder.compile(optimizer=opt, loss='mse')
 
-    # early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
-    autoencoder.fit(x=normal, y=normal, epochs=num_epochs, batch_size=batch_size)
+    early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
+    autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, batch_size=batch_size, validation_data=(normal_valid,normal_valid), callbacks=early_stopping)
     # , callbacks=early_stopping
     #, validation_data=(normal_valid, normal_valid)
 
@@ -177,5 +177,5 @@ def run(num_epochs, encoded_dim):
 
 
 #################### Training to be done for 100 epochs for all dimensions ############################################
-run(110, 100)
+run(200, 100)
 

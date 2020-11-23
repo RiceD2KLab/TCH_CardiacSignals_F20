@@ -139,6 +139,7 @@ def anomaly_tracking(k, patient_idx, model_name, detector, window_size):
         anomaly_rate.append(num_anomalies/window_size)
     plt.plot(anomaly_rate)
     plt.ylim(-0.1, 1.1)
+    plt.rcParams.update({'font_size':30})
     plt.xlabel("Window Index")
     plt.ylabel("Percentage of heartbeats classified as anomalies")
     plt.title(f'Isolation Forest: anomaly rate over time for patient {patient_idx}')
