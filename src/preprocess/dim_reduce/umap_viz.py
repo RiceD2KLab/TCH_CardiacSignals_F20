@@ -41,7 +41,8 @@ def plot_umap(file_index, lead_num):
     plt.xlabel('Primary Axis')
     plt.ylabel('Secondary Axis')
     plt.clim(0,len(colors))
-    plt.colorbar(sc)
+    cbar = plt.colorbar(sc)
+    cbar.set_label("Heartbeat Time Index")
     plt.show()
 
 
