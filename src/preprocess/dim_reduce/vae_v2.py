@@ -157,26 +157,92 @@ def train_vae(data, normal_valid, latent_dim, alpha, learning_rate, num_epoch):
 
     #vae.fit()
     vaefit = vae.fit(data, epochs=num_epoch, batch_size=len(data))
+
+
+
     return vae, vaefit
 
 
 if __name__ == "__main__":
-    for patient_ in [1,4,11,10,16,20]:  # heartbeat_split.indicies:
+    for patient_ in heartbeat_split.indicies:
+        ################################################################################################################
         print("Starting on index: " + str(patient_))
 
+        ################################################################################################################
         normal, noise, abnormal_valid, abnormal, all = read_in(patient_, 1, 0, 0.3)
 
         train, valid = train_test_split(normal, train_size=0.85, random_state=1)
         normal_train = normal[:round(len(normal) * .85), :]
         normal_valid = normal[round(len(normal) * .85):, :]
         abnormal_valid = abnormal_valid[:round(len(abnormal_valid) * 0.10), :]
-        print(np.shape(normal_train))
-        print(np.shape(normal_valid))
 
-        signal_shape = train.shape[1:]
-        batch_size = round(len(normal) * 0.001)
+        ################################################################################################################
+        vae, vaefit = train_vae(normal_train, normal_valid, 10, 1, 0.002, 100)
 
-        vae, vaefit = train_vae(normal_train, normal_valid, 10, 1, 0.002, 10)
+        ################################################################################################################
+        vae.encoder.save_weights('Working_Data\encoder_weights_Idx'+str(patient_)+'_d.h5')
+        vae.decoder.save_weights('Working_Data\decoder_weights_Idx'+str(patient_)+'_d.h5')
+
+
+        ###############################################################################################################
+        # PUT TRAIN DATA IN
+        # save the z parameter? save the z-mean or z-variance? --> YES
+        all = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx" + str(patient_) + ".npy"))
+        z = vae.encoder.predict(all)
+        # z_savename = os.path.join("Working_Data",
+        #                           "reduced_vae_" + str(latent_dim) + "d_Idx" + str(file_index) + ".npy")
+        # np.save(z_savename, z)
+
+
+        reconstruction = vae.decoder.predict(z)
+        reconstruction_savename = os.path.join("Working_Data",
+                                               "reconstructed_vaeAlpha{}_{}d_Idx{}.npy".format(1, 10, patient_))
+        np.save(reconstruction_savename, reconstruction)
+        ################################################################################################################
+        # print(np.shape(z))
+        # plt.figure()
+        # data_stack = z[0]
+        # plt.hist(data_stack, bins=np.linspace(-1.2, 1.2, num=401))
+        # plt.title("Latent Variable Means - Test Data")
+        # plt.legend('feature 1', 'feature 2')
+        # plt.show()
+        #
+        # plt.figure()
+        # data_stack = z[1]
+        # plt.hist(data_stack, bins=np.linspace(-1.2, -1.2, num=401))
+        # plt.title("Latent Variable log(Variance) - Test Data")
+        # plt.show()
+        #
+        # plt.figure()
+        # data_stack = z[2]
+        # plt.hist(data_stack, bins=np.linspace(-5, 5, num=401))
+        # plt.title("Sampled Latent Variable - Test Data")
+        # plt.show()
+
+        ################################################################################################################
+        """
+        means = np.mean(z[0], 0)
+        variances = np.mean(np.exp(z[0]), 0)
+        print(means)
+        print('')
+        for lead in range(0,4):
+            for iter in range(0,500):
+                X = np.sqrt(variances) * np.random.randn(1, 10) + means
+                fake_heartbeat = vae.decoder.predict(X)
+
+                #print(np.shape(fake_heartbeat[0][:, 0]))
+                plt.plot(fake_heartbeat[0][:, lead], 'b')
+
+            plt.title("500 artificial heartbeats, patient "+str(patient_)+', lead '+str(lead))
+            plt.xlabel("Sample Index")
+
+            plt.show()
+        """
+        # print(np.shape(all))
+        # print(np.shape(all[0][:, 0]))
+
+        # plt.plot(all[0][:, 0], 'b')
+        # plt.show()
 
         # plt.plot(vaefit.history['loss'])
         # plt.plot(vaefit.history['reconstruction_loss'])
@@ -186,26 +252,16 @@ if __name__ == "__main__":
         # plt.xlabel('epoch')
         # plt.legend(['loss', 'reconstruction loss', 'KL loss'], loc='upper left')
         # plt.show()
-        print(type(vae))
-        print(type(vaefit))
 
-        f = open('test', 'w')
-        pickle.dump(vae, f)
 
-        #object = pickle.load('test')
-        #filename = Working_Data / vae_obj_save.py
-        # f = open(filename, 'r')
-        # vae = pickle.load(f)
-        #vaefit.save('test1')
-        #vae.save('test')
 
-        plt.plot(vaefit.history['reconstruction_loss'])
-        plt.plot(vaefit.history['val_loss'])
-        plt.title('model loss: patient '+str(patient_))
-        plt.ylabel('loss')
-        plt.xlabel('epoch')
-        plt.legend(['reconstruction loss', 'validation loss'], loc='upper left')
-        plt.show()
+        # plt.plot(vaefit.history['reconstruction_loss'])
+        # plt.plot(vaefit.history['val_loss'])
+        # plt.title('model loss: patient '+str(patient_))
+        # plt.ylabel('loss')
+        # plt.xlabel('epoch')
+        # plt.legend(['reconstruction loss', 'validation loss'], loc='upper left')
+        # plt.show()
         #model = ...  # Get model (Sequential, Functional Model, or Model subclass)
 
 
