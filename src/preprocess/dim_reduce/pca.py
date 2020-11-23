@@ -26,7 +26,7 @@ def plot_pca_eigenvalues(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
+    data = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
     lead_data = data[:, :, lead_num - 1]
 
     # create a PCA object that will compute on the full n components
@@ -40,11 +40,9 @@ def plot_pca_eigenvalues(file_index, lead_num):
     print(sum(sorted_eigenvalues[:2]) / np.var(sorted_eigenvalues))
     plt.plot([i for i in range(len(sorted_eigenvalues))], sorted_eigenvalues)
     plt.title("Covariance Matrix Eigenvalues for the {}th file on lead {}".format(file_index, lead_num))
-    plt.show()
-    plt.savefig(os.path.join("images", "pca_eigenvalues_{}.png".format(file_index)))
     return full_pca_lead
 
-def plot_first_2(file_index, lead_num):
+def plot_2d(file_index, lead_num):
     """
     Plots 2-dimensional representation of the PCA matrix for a particular lead of the ith file
     :param file_index: index of the file (1-indexed)
@@ -66,11 +64,14 @@ def plot_first_2(file_index, lead_num):
     # coordinates = np.matmul(lead_data, components.transpose())
 
     print(coordinates)
-    cm = matplotlib.cm.get_cmap('RdYlBu')
+    cm = matplotlib.cm.get_cmap('viridis')
+    plt.style.use('ggplot')
     colors = [cm(1. * i / len(coordinates)) for i in range(len(coordinates))]
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
     plt.title("2-Dimensional PCA for the {}th file for lead {}".format(file_index, lead_num))
-    plt.colorbar(sc)
+    cbar = plt.colorbar(sc)
+    cbar.set_label("Heartbeat Time Index")
+    plt.clim(0,len(colors))
     plt.show()
     
 def plot_3d(file_index, lead_num):
@@ -143,12 +144,12 @@ def save_pca_reduced(dim):
         np.save(data_savename, lowered_dim_hbs)
 
 if __name__ == "__main__":
-    sys.path.insert(0, os.getcwd()) # lmao "the tucker hack"
-    # plot_pca_eigenvalues(1,1)
+    plot_2d(1, 1)
     # save_pca_reconstructions(dim=10)
     # save_pca_reduced(dim=15)
-    # for file_index in heartbeat_split.indicies:
-    #     plot_first_2(file_index, 1)
+    # for file_index in heartbeat_split.indicies[:10]:
+    #     plot_pca_eigenvalues(file_index, 1)
+    # plt.show()
     # for i in range(2,3):
     #     save_pca_reconstructions(dim=i)
     # plot_3d(16,1)
