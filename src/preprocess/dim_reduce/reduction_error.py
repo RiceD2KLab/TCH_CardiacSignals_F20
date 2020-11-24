@@ -1,6 +1,12 @@
 """"
 Assesses the dimensionality reduction technique by first reducing the heartbeat dimension with the technique, then projecting
 the reduced data back to the original dimension and calculating the mean squared error
+
+Also contains a library of error visualization functions, such as
+- comparing original with reconstructed heartbeats
+- creating boxplots of the MSE over time
+- displaying a windowed version of the MSE over time
+- comparing the MSE from reductions/reprojections from different k=latent dimensions
 """
 
 import sys
@@ -98,6 +104,7 @@ def compare_patients(model_name, reduced_dimensions, file_range=":", save_errors
 def compare_dimensions(model_name, patient_list, plot=False, save_errors=False):
     """
     Compares the mean squared error of the different dimensions for dimensionality reduction for the patients in patient_list
+    Requires intermediate reconstruction data for the dimensions that this sweeps over
     :param patient_list: the list of indices of the patients
     :param save_errors: save the heartbeat MSEs
     :param model_name: ae (for autoencoders) or vae (for variational autoencoders)
@@ -147,6 +154,9 @@ def plot_loaded_mses(special=False):
     plt.show()
 
 def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_num):
+    """
+    Compares an original normalized heartbeat to its reconstructed version based on the model and k=latent dimension
+    """
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
     reconstructed_signals = np.load(
@@ -158,6 +168,23 @@ def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_n
         plt.title("Reconstructed {} vs Original Signal for heartbeat {} on patient {} for lead {} reduced to {} dims".format(model_name, heartbeat_num, patient_num, lead_num, dimension_num))
         plt.xlabel("Sample Index")
         plt.show()
+
+
+def boxplot_error(patient_num, model_name, dimension_num, show_outliers=True):
+    """
+    Plots a series of boxplots over time, where each boxplot consists of the mean squared errors from that 30-minute time period
+    """
+    errors = mean_squared_error(dimension_num, model_name, patient_num, False)
+
+    # 12 b/c 6 hours and 2 half-hour windows per hour
+    boxes = np.array_split(errors, 12)
+    plt.boxplot(boxes, vert=True, positions=np.arange(12) / 2, showfliers=show_outliers)
+    plt.title("Boxplots of Mean Squared Errors over Half-Hour Windows")
+    plt.xlabel("Window Start Time (Hour)")
+    plt.ylabel("Mean Squared Error")
+    plt.show()
+    return
+
 
 def mse_over_time(patient_num, model_name, dimension_num, smooth=False):
     """
@@ -174,6 +201,7 @@ def mse_over_time(patient_num, model_name, dimension_num, smooth=False):
     plt.xlabel("Sample Index")
     plt.ylabel("Relative MSE")
     plt.show()
+
 
 def windowed_mse_over_time(patient_num, model_name, dimension_num):
     errors = mean_squared_error(dimension_num, model_name, patient_num, False)
@@ -214,14 +242,15 @@ if __name__ == "__main__":
     # mse_over_time(35, "ae", 13)
     # windowed_mse_over_time(27, "ae", 10)
 
-    for patient in heartbeat_split.indicies:
-        # try:
-        #     windowed_mse_over_time(patient, "ae", 10)
-        # except:
-        #     continue
-        windowed_mse_over_time(patient, "ae", 10)
+    # for patient in heartbeat_split.indicies:
+    #     # try:
+    #     #     windowed_mse_over_time(patient, "ae", 10)
+    #     # except:
+    #     #     continue
+    #     windowed_mse_over_time(patient, "ae", 10)
 
-
+    # windowed_mse_over_time(1, "cdae", 100)
+    boxplot_error(1, "cdae", 100, False)
 
     # errors = [err for err in errors if err < 5]
     # print(list(errors))
