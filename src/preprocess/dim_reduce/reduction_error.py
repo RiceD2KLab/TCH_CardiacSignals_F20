@@ -17,6 +17,7 @@ import random
 import statistics
 import matplotlib.pyplot as plt
 from scipy import signal
+from src.utils.plotting_utils import set_font_size
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error as sklearn_mse
@@ -179,6 +180,7 @@ def boxplot_error(patient_num, model_name, dimension_num, show_outliers=True):
     # 12 b/c 6 hours and 2 half-hour windows per hour
     boxes = np.array_split(errors, 12)
     plt.boxplot(boxes, vert=True, positions=np.arange(12) / 2, showfliers=show_outliers)
+    set_font_size()
     plt.title(f"Boxplots of Mean Squared Errors over Half-Hour Windows\n For Patient {patient_num} with {model_name} model")
     plt.xlabel("Window Start Time (Hour)")
     plt.ylabel("Mean Squared Error")
@@ -196,6 +198,7 @@ def mse_over_time(patient_num, model_name, dimension_num, smooth=False):
     errors = signal.sosfilt(sos, errors)
 
     sample_idcs = [i for i in range(len(errors))]
+    set_font_size()
     plt.plot(sample_idcs, errors)
     plt.title("MSE over time for patient {} with model {} reduced to {} dimensions".format(patient_num, model_name, dimension_num))
     plt.xlabel("Sample Index")
@@ -214,6 +217,7 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num):
 
     sample_idcs = [i for i in range(len(windowed_errors))]
     print(windowed_errors)
+    set_font_size()
     plt.plot(sample_idcs, windowed_errors)
     plt.title("5-min Windowed MSE over time for patient {} with {} model".format(patient_num, model_name))
     plt.xlabel("Window Index")

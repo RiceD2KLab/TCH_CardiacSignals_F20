@@ -8,6 +8,7 @@ import sys
 from matplotlib import cm
 import sys
 from src.preprocess.heartbeat_split import heartbeat_split
+from src.utils.plotting_utils import set_font_size
 
 
 
@@ -67,6 +68,7 @@ def plot_2d(file_index, lead_num):
     cm = matplotlib.cm.get_cmap('viridis')
     plt.style.use('ggplot')
     colors = [cm(1. * i / len(coordinates)) for i in range(len(coordinates))]
+    set_font_size()
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
     plt.title("Evolution of 2-D PCA projection over time\n for Patient {}, EKG Lead {}".format(file_index, lead_num))
     cbar = plt.colorbar(sc)
