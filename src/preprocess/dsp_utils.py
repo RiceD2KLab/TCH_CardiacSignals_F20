@@ -112,3 +112,24 @@ def combine_four_lead(data):
 		#pos_sum += np.clip(data[i,:], 0, None) #clip negative values
 		pos_sum += np.absolute(data[i,:])
 	return pos_sum
+
+
+
+def get_windowed_time(patient_idx, num_hbs=10, window_size=50):
+	'''
+	Get time indices which correspond to the first index of each window
+	(in units of hours before cardiac arrest)
+	
+	Inputs:
+	patient_idx - int, patient's index
+	num_hbs - int, number of heartbeats used per data point (usually 10)
+	window_size - int, window size used for computing windowed metrics (usually 50)
+	
+	Outputs:
+	list of time indices spaced by "window_size" indices, in units of hrs before
+	cardiac arrest
+	'''
+	time_stamps = np.load(f"Working_Data/HB_Timestamps_Idx{patient_idx}.npy") # load raw time vector (seconds)
+	time_stamps = time_stamps - time_stamps[-1] # convert units to seconds before end of data (negative time)
+	time_stamps = time_stamps/3600 # convert to hours
+	return time_stamps[0::(window_size*num_hbs)] # corresponding time stamps (x axis values)

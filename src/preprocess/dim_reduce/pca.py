@@ -68,7 +68,7 @@ def plot_2d(file_index, lead_num):
     plt.style.use('ggplot')
     colors = [cm(1. * i / len(coordinates)) for i in range(len(coordinates))]
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
-    plt.title("2-Dimensional PCA for the {}th file for lead {}".format(file_index, lead_num))
+    plt.title("Evolution of 2-D PCA projection over time\n for Patient {}, EKG Lead {}".format(file_index, lead_num))
     cbar = plt.colorbar(sc)
     cbar.set_label("Heartbeat Time Index")
     plt.clim(0,len(colors))
