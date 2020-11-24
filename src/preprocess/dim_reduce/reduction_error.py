@@ -179,7 +179,7 @@ def boxplot_error(patient_num, model_name, dimension_num, show_outliers=True):
     # 12 b/c 6 hours and 2 half-hour windows per hour
     boxes = np.array_split(errors, 12)
     plt.boxplot(boxes, vert=True, positions=np.arange(12) / 2, showfliers=show_outliers)
-    plt.title("Boxplots of Mean Squared Errors over Half-Hour Windows")
+    plt.title(f"Boxplots of Mean Squared Errors over Half-Hour Windows\n For Patient {patient_num} with {model_name} model")
     plt.xlabel("Window Start Time (Hour)")
     plt.ylabel("Mean Squared Error")
     plt.show()
@@ -215,7 +215,7 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num):
     sample_idcs = [i for i in range(len(windowed_errors))]
     print(windowed_errors)
     plt.plot(sample_idcs, windowed_errors)
-    plt.title("5-min Windowed MSE over time for patient {} with k = {}".format(patient_num, model_name, dimension_num))
+    plt.title("5-min Windowed MSE over time for patient {} with {} model".format(patient_num, model_name))
     plt.xlabel("Window Index")
     plt.ylabel("Relative MSE")
     plt.show()
@@ -249,8 +249,8 @@ if __name__ == "__main__":
     #     #     continue
     #     windowed_mse_over_time(patient, "ae", 10)
 
-    # windowed_mse_over_time(1, "cdae", 100)
-    boxplot_error(1, "cdae", 100, False)
+    windowed_mse_over_time(55, "cdae", 100)
+    # boxplot_error(55, "cdae", 100, False)
 
     # errors = [err for err in errors if err < 5]
     # print(list(errors))
