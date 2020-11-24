@@ -82,11 +82,37 @@ def train_isoforest(k, patient_idx, model_name):
     num_hbs = data.shape[0]
     train_data = data[:num_hbs//3, :] # train on first third of data
 
-    isoforest = IsolationForest(n_estimators=300, max_features=0.6, contamination=0.1)
+    isoforest = IsolationForest(n_estimators=800, max_features=0.72, contamination=0.01)
+    # 800,0.8,0.015
 
     isoforest.fit(train_data)
     print("trained")
     return isoforest # -1 is outlier, 1 is inlier
+
+def isoforest_hyperparams(n_estimator, contamination, max_features):
+    """
+    Hyperparameter tuning for isolation forest model
+    :param n_estimator: list of potential n_estimator values
+    :param contamination: list of potential contamination values (must be 0 to 0.5_
+    :param max_features: list of potential max_features
+    :return: prints best_params and best score
+    """
+    # TODO: remove the hardcoded values and put the variables
+    best_params = {}
+    best_score = 1.0
+    for n_estimators in range(700, 1100, 100):
+        for contamination in [0.01, 0.015, 0.02, 0.025, 0.05]:
+            for max_features in np.linspace(0.5, 1.0, 10):
+                params = {'n_estimators': n_estimators,
+                  'contamination': contamination,
+                  'max_features': max_features}
+                score = isoforest_validate(5, 100, 11, 'cdae', params)
+                print(score)
+                if score < best_score:
+                    best_score = score
+                    best_params = params
+    print(best_params)
+    print(best_score)
 
 def anomaly_tracking(k, patient_idx, model_name, detector, window_size):
     """
@@ -95,7 +121,7 @@ def anomaly_tracking(k, patient_idx, model_name, detector, window_size):
     :param patient_idx: integer index of patient
     :param model_name: name of model used in filename, ex. ae for autoencoder
     :param detector:
-    :param window_size:
+    :param window_size: probably need to add a blurb about how to modify this
     :return: anomaly rate
     """
     data = np.load(os.path.join("Working_Data", "reduced_{}_{}d_Idx{}.npy".format(model_name, k, patient_idx)))    
@@ -113,6 +139,7 @@ def anomaly_tracking(k, patient_idx, model_name, detector, window_size):
         anomaly_rate.append(num_anomalies/window_size)
     plt.plot(anomaly_rate)
     plt.ylim(-0.1, 1.1)
+    plt.rcParams.update({'font_size':30})
     plt.xlabel("Window Index")
     plt.ylabel("Percentage of heartbeats classified as anomalies")
     plt.title(f'Isolation Forest: anomaly rate over time for patient {patient_idx}')
@@ -141,42 +168,22 @@ def get_metrics(metric_type, dim, idx, model, window_size, PLOT=False):
 
 
 if __name__ == '__main__':
-    # avg = []
-    # for i in range(60):
-    #     try:
-    #         params = {'n_estimators': 500, 'max_features': 0.6, 'contamination': 0.05}
-    #         isoforest_validate(10,100,i,'cdae',params)
-    #     except:
-    #         continue
-    #     # try:
-    #     #     isoforest = train_isoforest(100, i, 'cdae')
-    #     #     anomaly_rate = anomaly_tracking(100, i, 'cdae', isoforest, 500)
-    #     #     # avg.append(isoforest_validate(5, 10, i, 'ae'))
-    #     #     # print(avg[-1])
-    #     # except:
-    #     #     continue
-
-    best_params = {}
-    best_score = 1.0
-    for n_estimators in range(100, 1200, 100):
-        for contamination in [0.05, 0.1, 0.015, 0.2]:
-            for max_features in np.linspace(0.1, 1.0, 10):
-                params = {'n_estimators': n_estimators,
-                  'contamination': contamination,
-                  'max_features': max_features}
-                score = isoforest_validate(5, 100, 11, 'cdae', params)
-                print(score)
-                if score < best_score:
-                    best_score = score
-                    best_params = params
-    print(best_params)
-    print(best_score)
+    avg = []
+    for i in range(60):
+        try:
+            isoforest = train_isoforest(100, i, 'cdae')
+            anomaly_rate = anomaly_tracking(100, i, 'cdae', isoforest, 50)
+            filename = "Working_Data/windowed_if_100d_idx{}.npy".format(i)
+            np.save(filename, anomaly_rate)
+            # avg.append(isoforest_validate(5, 10, i, 'ae'))
+            # print(avg[-1])
+        except:
+            continue
 
 
-    # 800, 0.015 contamination, 0.8 max features
+
+
+ # 800, 0.015 contamination, 0.8 max features
 
 ### {'n_estimators': 300, 'contamination': 0.1, 'max_features': 0.6} yields validation error of 0.09889838824352036
 
-# print(isoforest_validate(5, 10, 1, 'ae', params = {'n_estimators': 300, 
-#               'contamination': 0.1, 
-#               'max_features': 0.6}))
