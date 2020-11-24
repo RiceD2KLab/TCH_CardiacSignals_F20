@@ -9,6 +9,7 @@ from matplotlib import cm
 import seaborn as sns
 import umap
 import time
+from src.utils.plotting_utils import *
 
 def plot_umap(file_index, lead_num):
     """
@@ -20,7 +21,7 @@ def plot_umap(file_index, lead_num):
     if lead_num < 1 or lead_num > 4:
         sys.stderr.write("bad lead number - check for 1-indexing\n")
 
-    data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"))
+    data = np.load("Working_Data/Normalized_Fixed_Dim_HBs_Idx{}.npy".format(file_index))
     lead_data = data[:, :, lead_num - 1]
     start_time = time.time()
     reducer = umap.UMAP()
@@ -44,6 +45,7 @@ def plot_umap(file_index, lead_num):
     cbar = plt.colorbar(sc)
     cbar.set_label("Heartbeat Time Index")
     plt.show()
+    plt.save
 
 
-plot_umap(1,1)
+plot_umap(11,1)
