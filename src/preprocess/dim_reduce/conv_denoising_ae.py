@@ -125,7 +125,11 @@ def training_ae(num_epochs, reduced_dim, file_index):
     autoencoder = Model(inp, reconstruction)
     opt = keras.optimizers.Adam(learning_rate=0.001) #0.0008, 0,0001
     autoencoder.compile(optimizer=opt, loss='mse')
-
+    tensorflow.keras.utils.plot_model(
+        autoencoder,
+        to_file="Working_Data/Visualizations/model.png",
+        dpi=96,
+    )
 
     early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
     autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, batch_size=batch_size, validation_data=(normal_valid,normal_valid), callbacks=early_stopping)
@@ -178,53 +182,7 @@ def run(num_epochs, encoded_dim):
 
 
 # #################### Training to be done for 100 epochs for all dimensions ############################################
-# run(200, 100)
-# encoder = Sequential()
-# encoder.add(InputLayer((1000,4)))
-# encoder.add(Conv1D(5, 11, activation="tanh", padding="same"))
-# encoder.add(Conv1D(7, 7, activation="relu", padding="same"))
-# encoder.add(MaxPooling1D(2))
-# encoder.add(Conv1D(11, 5, activation="tanh", padding="same"))
-# encoder.add(Conv1D(11, 3, activation="tanh", padding="same"))
-# encoder.add(MaxPooling1D(2))
-# encoder.add(Flatten())
-# encoder.add(Dense(750, activation = 'tanh', kernel_initializer='glorot_normal'))
-# # encoder.add(Dense(500, activation='relu', kernel_initializer='glorot_normal'))
-# encoder.add(Dense(400, activation = 'tanh', kernel_initializer='glorot_normal'))
-# # encoder.add(Dense(300, activation='relu', kernel_initializer='glorot_normal'))
-# encoder.add(Dense(200, activation = 'tanh', kernel_initializer='glorot_normal'))
-# encoder.add(Dense(100,))
-
-from tensorflow import keras
-from tensorflow.keras import layers
-import visualkeras
-
-
-# encoder_input = keras.Input(shape=(1000, 4))
-# x = layers.Conv1D(5, 11, activation='relu')(encoder_input)
-# x = layers.Conv1D(7, 7, activation='relu')(x)
-# x = layers.MaxPooling1D(2)(x)
-# x = layers.Conv1D(11, 5, activation='relu')(x)
-# x = layers.Conv1D(11, 3, activation='relu')(x)
-# x = layers.MaxPooling1D(2)(x)
-# x = layers.Flatten()(x)
-# x = layers.Dense(10)(x)
-# encoder_output = layers.Dense(1)(x)
-# encoder = keras.Model(encoder_input, encoder_output, name='encoder')
-#
-# visualkeras.layered_view(encoder).show()
-
-x = layers.Reshape((4, 4, 1))(encoder_output)
-x = layers.Conv2DTranspose(16, 3, activation='relu')(x)
-x = layers.Conv2DTranspose(32, 3, activation='relu')(x)
-x = layers.UpSampling2D(3)(x)
-x = layers.Conv2DTranspose(16, 3, activation='relu')(x)
-decoder_output = layers.Conv2DTranspose(1, 3, activation='relu')(x)
-autoencoder = keras.Model(encoder_input, decoder_output, name='autoencoder')
-
-visualkeras.layered_view(autoencoder).show()
-# import visualkeras
-# visualkeras.layered_view(encoder).show()
+run(200, 100)
 
 
 
