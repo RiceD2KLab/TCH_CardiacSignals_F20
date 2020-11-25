@@ -10,6 +10,7 @@ import seaborn as sns
 import umap
 import time
 from src.utils.plotting_utils import *
+from src.preprocess.heartbeat_split import heartbeat_split
 
 def plot_umap(file_index, lead_num):
     """
@@ -49,4 +50,10 @@ def plot_umap(file_index, lead_num):
     plt.save
 
 
-plot_umap(11,1)
+if __name__ == '__main__':
+    set_font_size()
+    for i in heartbeat_split.indicies:
+        try:
+            plot_umap(i,1)
+        except:
+            continue
