@@ -3,11 +3,14 @@ import sklearn
 import numpy as np
 from sklearn import svm
 import matplotlib.pyplot as plt
+from src.preprocess.heartbeat_split import heartbeat_split
+from src.utils.plotting_utils import set_font_size
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.model_selection import KFold
 from sklearn.metrics import make_scorer, f1_score
 from sklearn import model_selection
+from src.preprocess.dsp_utils import get_windowed_time
 
 
 def train_svm(k, patient_idx, model_name):
@@ -56,7 +59,7 @@ def isoforest_validate(k, dim, patient_idx, model_name, params):
     for train_index, test_index in kf.split(normal_data): # for each fold
 
         X_train, X_test = normal_data[train_index], normal_data[test_index]
-        isoforest = IsolationForest(n_estimators=params['n_estimators'], max_features=params['max_features'], contamination=params['contamination'])
+        isoforest = IsolationForest(n_estimators=params['n_estimators'], max_features=params['max_features'])
         isoforest.fit(X_train)
         labels = isoforest.predict(X_test) # predict on validation set
         num_anomalies = np.count_nonzero(labels == -1) # number of anomalies in validation set
@@ -82,7 +85,7 @@ def train_isoforest(k, patient_idx, model_name):
     num_hbs = data.shape[0]
     train_data = data[:num_hbs//3, :] # train on first third of data
 
-    isoforest = IsolationForest(n_estimators=800, max_features=0.72, contamination=0.01)
+    isoforest = IsolationForest(n_estimators=800, max_features=0.5)
     # 800,0.8,0.015
 
     isoforest.fit(train_data)
@@ -101,16 +104,14 @@ def isoforest_hyperparams(n_estimator, contamination, max_features):
     best_params = {}
     best_score = 1.0
     for n_estimators in range(700, 1100, 100):
-        for contamination in [0.01, 0.015, 0.02, 0.025, 0.05]:
-            for max_features in np.linspace(0.5, 1.0, 10):
-                params = {'n_estimators': n_estimators,
-                  'contamination': contamination,
-                  'max_features': max_features}
-                score = isoforest_validate(5, 100, 11, 'cdae', params)
-                print(score)
-                if score < best_score:
-                    best_score = score
-                    best_params = params
+        for max_features in np.linspace(0.1, 1.0, 10):
+            params = {'n_estimators': n_estimators,
+                'max_features': max_features}
+            score = isoforest_validate(5, 100, 1, 'cdae', params)
+            print(score)
+            if score < best_score:
+                best_score = score
+                best_params = params
     print(best_params)
     print(best_score)
 
@@ -134,17 +135,18 @@ def anomaly_tracking(k, patient_idx, model_name, detector, window_size):
     test_data = data
     labels = detector.predict(test_data)
     anomaly_rate = []
+
     for i in range(0, test_data.shape[0], window_size):
         num_anomalies = np.count_nonzero(labels[i:i+window_size] == -1)
         anomaly_rate.append(num_anomalies/window_size)
-    plt.plot(anomaly_rate)
-    plt.ylim(-0.1, 1.1)
-    plt.rcParams.update({'font_size':30})
-    plt.xlabel("Window Index")
-    plt.ylabel("Percentage of heartbeats classified as anomalies")
-    plt.title(f'Isolation Forest: anomaly rate over time for patient {patient_idx}')
-    plt.vlines(num_hbs//(3*window_size), -0.1, 1.1, colors='red')
-    plt.show()
+    # plt.plot(anomaly_rate)
+    # plt.ylim(-0.1, 1.1)
+    # plt.rcParams.update({'font_size':30})
+    # plt.xlabel("Window Index")
+    # plt.ylabel("Percentage of heartbeats classified as anomalies")
+    # plt.title(f'Isolation Forest: anomaly rate over time for patient {patient_idx}')
+    # plt.vlines(num_hbs//(3*window_size), -0.1, 1.1, colors='red')
+    # plt.show()
     return anomaly_rate
 # save anomaly rate array as windowed_var_100d_idx{idx}.npy
 
@@ -167,18 +169,62 @@ def get_metrics(metric_type, dim, idx, model, window_size, PLOT=False):
     return anomaly_rate
 
 
-if __name__ == '__main__':
-    avg = []
-    for i in range(60):
+
+def isoforest_box_plot(indices, model_name, dimension):
+    anomaly_rates = []
+    window_times = np.linspace(-4, 0, 49)
+
+    for idx in indices:
         try:
-            isoforest = train_isoforest(100, i, 'cdae')
-            anomaly_rate = anomaly_tracking(100, i, 'cdae', isoforest, 50)
-            filename = "Working_Data/windowed_if_100d_idx{}.npy".format(i)
-            np.save(filename, anomaly_rate)
-            # avg.append(isoforest_validate(5, 10, i, 'ae'))
-            # print(avg[-1])
+            current_values = np.load(f"Working_Data/unwindowed_if_100d_Idx{idx}.npy") # load anomaly rates for this patient
+            patient_times = get_windowed_time(idx, num_hbs=10, window_size=1)
+            test_values = []
+            for i in range(len(window_times) - 1):
+                indices = np.squeeze(np.argwhere(np.logical_and(patient_times >= window_times[i], patient_times < window_times[i+1])))
+                if len(indices) == 0:
+                    test_values.append(-1) # marker for no data available in this window
+                else:
+                    window_labels = current_values[indices] # labels for all data points found in current window
+                    test_values.append(np.mean(window_labels))
+            anomaly_rates.append(test_values)
         except:
+            print("No File Found: Patient " + idx)
             continue
+    anomaly_rates = np.array(anomaly_rates).T.tolist()
+
+    for row in anomaly_rates:
+        while -1 in row: row.remove(-1)
+
+    set_font_size()
+    plt.boxplot(anomaly_rates, showfliers=False, positions=window_times[:-1], widths=1/15,
+        medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'), capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
+    
+    plt.title("Isolation Forest Anomaly Rate Distribution Over Time")
+    plt.xlabel("Time before cardiac arrest (hours)")
+    plt.ylabel("Anomaly Rate")
+    plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
+    plt.xlim(-4.2, 0.2)
+    plt.savefig('Working_Data/isoforest_boxplot.png', dpi=500)
+
+    plt.show()
+
+
+if __name__ == '__main__':
+    # isoforest_hyperparams(1, 2, 3)
+    isoforest_box_plot(heartbeat_split.indicies[:-5], "cdae", 100)
+    # avg = []
+    # for i in range(60):
+    #     try:
+    #         isoforest = train_isoforest(100, i, "cdae")
+    #         anomaly_rate = anomaly_tracking(100, i, "cdae", isoforest, 1)
+    #         # filename = "Working_Data/windowed_if_100d_idx{}_NEW.npy".format(i)
+    #         filename = os.path.join("Working_Data", f"unwindowed_if_100d_Idx{i}.npy")
+    #         np.save(filename, anomaly_rate)
+    #         print("Done")
+    # #         # avg.append(isoforest_validate(5, 10, i, 'ae'))
+    # #         # print(avg[-1])
+    #     except:
+    #         continue
 
 
 
