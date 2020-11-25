@@ -132,4 +132,4 @@ def get_windowed_time(patient_idx, num_hbs=10, window_size=50):
 	time_stamps = np.load(f"Working_Data/HB_Timestamps_Idx{patient_idx}.npy") # load raw time vector (seconds)
 	time_stamps = time_stamps - time_stamps[-1] # convert units to seconds before end of data (negative time)
 	time_stamps = time_stamps/3600 # convert to hours
-	return time_stamps[0::(window_size*num_hbs)] # corresponding time stamps (x axis values)
+	return time_stamps[0::(window_size*num_hbs)][1:] # corresponding time stamps (x axis values)
