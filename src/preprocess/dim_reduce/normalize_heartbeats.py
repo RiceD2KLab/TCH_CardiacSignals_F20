@@ -18,5 +18,11 @@ def normalize_heartbeats():
 
     return
 
+def normalize_heartbeat(input_filename, output_filename):
+    original_signals = np.load(os.path.join("Working_Data" , input_filename))
+    for i in range(np.shape(original_signals)[0]):
+        original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
+
+    np.save(os.path.join("Working_Data", output_filename), original_signals)
 if __name__ == "__main__":
     normalize_heartbeats()

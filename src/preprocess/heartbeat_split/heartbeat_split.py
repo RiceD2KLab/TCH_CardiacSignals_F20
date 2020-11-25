@@ -156,7 +156,7 @@ def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
 	#plt.show()
 	return fixed_dimension_hbs
 
-def build_hb_matrix(four_lead, peaks, dimension, beats_per_vector = 1, plotting = False):
+def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plotting = False):
 	peaks = np.concatenate((np.array([0]), peaks, np.array([four_lead.shape[1]])))
 	if not beats_per_vector == 1:
 		num_beats = len(peaks) - 1
@@ -201,7 +201,7 @@ def load_np(filename):
 	pos_sum = dsp_utils.combine_four_lead(four_lead)
 
 	return lead1, lead2, lead3, lead4, time, heartrate, pos_sum
-def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time):
+def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, prefix = ""):
 	#logging setup
 	log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
 	os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
@@ -212,24 +212,24 @@ def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate
 	log.write("Total invalid/removed heartbeats : " + str(orig_num_hbs - len(peaks))+ "\n")
 
 	#Save the four lead signals with gaps cut out
-	mod_four_lead_savename = os.path.join("Working_Data", "Mod_Four_Lead_Idx" + curr_index + ".npy")
+	mod_four_lead_savename = os.path.join("Working_Data", prefix + "Mod_Four_Lead_Idx" + curr_index + ".npy")
 	#Save the processed heartbeat arrays
-	data_savename = os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
+	data_savename = os.path.join("Working_Data", prefix + "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
 	#Save the clipped heartrate vector from the ECG machine
-	hr_savename = os.path.join("Working_Data", "Cleaned_HR_Idx" + curr_index + ".npy")
+	hr_savename = os.path.join("Working_Data", prefix + "Cleaned_HR_Idx" + curr_index + ".npy")
 	#Save the peak indicies
-	peaks_savename = os.path.join("Working_Data", "HB_Peaks_Idx" + curr_index + ".npy")
+	peaks_savename = os.path.join("Working_Data", prefix + "HB_Peaks_Idx" + curr_index + ".npy")
 	#Save the heartbeat lengths
-	HB_lens_savename = os.path.join("Working_Data", "HB_Lens_Idx" + curr_index + ".npy")
+	HB_lens_savename = os.path.join("Working_Data", prefix + "HB_Lens_Idx" + curr_index + ".npy")
 	#Save the heartbeat timestamps
-	HB_timestamps_savename = os.path.join("Working_Data", "HB_Timestamps_Idx" + curr_index + ".npy")
+	HB_timestamps_savename = os.path.join("Working_Data", prefix + "HB_Timestamps_Idx" + curr_index + ".npy")
 	
 	np.save(mod_four_lead_savename, four_lead)
 	np.save(data_savename, fixed_dimension_hbs)
 	np.save(hr_savename, heartrate)
 	np.save(peaks_savename, peaks)
 	np.save(HB_lens_savename, hb_lengths)
-	np.save(HB_timestamps_savename, time[peaks])
+	np.save(HB_timestamps_savename, time[peaks[:-1]])
 	log.close()
 
 def preprocess_seperate(filename, curr_index):
@@ -281,7 +281,7 @@ def preprocess_seperate(filename, curr_index):
 Inputs: Indicies of the patient files to process
 Outputs: Saves multiple files of processed data, in addition to a text file log for each
 '''
-def preprocess_sum(filename, curr_index, beats_per_datapoint = 1):
+def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = ""):
 	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename)
 
 	peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
@@ -338,14 +338,14 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1):
 	plt.show()
 	"""
 	if not beats_per_datapoint == 2:
-		fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, beats_per_vector = beats_per_datapoint, plotting = False)
+		fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, time, beats_per_vector = beats_per_datapoint, plotting = False)
 	else:
 		fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = False)
 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks, four_lead.shape[1])
 
-	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time)
+	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, prefix = file_prefix)
 if __name__ == "__main__":
 	for idx, filename in zip(indicies, get_filenames()):
 		# TODO : Fix this index problem. Need to call resulting files the correct index
