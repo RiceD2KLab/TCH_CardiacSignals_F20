@@ -72,10 +72,11 @@ def plot_2d(file_index, lead_num):
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
     plt.title("Evolution of 2-D PCA projection over time\n for Patient {}, EKG Lead {}".format(file_index, lead_num))
     cbar = plt.colorbar(sc)
-    cbar.set_label("Heartbeat Time Index")
-    plt.clim(0,len(colors))
+    cbar.set_label("Time (hours)")
+    plt.clim(0,6)
+    plt.savefig(f"images/pca_2d_Idx{file_index}.png", dpi=1000)
     plt.show()
-    
+
 def plot_3d(file_index, lead_num):
     """
     Plots 3-dimensional representation of the PCA matrix for a particular lead of the ith file

@@ -43,17 +43,19 @@ def plot_umap(file_index, lead_num):
     plt.title("Evolution of 2-D UMAP projection over time\n for Patient {}, EKG lead {}".format(file_index, lead_num))
     plt.xlabel('Primary Axis')
     plt.ylabel('Secondary Axis')
-    plt.clim(0,len(colors))
+    plt.clim(0,6)
     cbar = plt.colorbar(sc)
-    cbar.set_label("Heartbeat Time Index")
+    cbar.set_label("Time (hours)")
+    plt.savefig(f"images/umap_2d_Idx{file_index}.png", dpi=1000)
     plt.show()
-    plt.save
 
 
 if __name__ == '__main__':
     set_font_size()
-    for i in heartbeat_split.indicies:
-        try:
-            plot_umap(i,1)
-        except:
-            continue
+    # for i in heartbeat_split.indicies:
+    #     try:
+    #         plot_umap(i,1)
+    #     except:
+    #         continue
+
+    plot_umap(16, 1)
