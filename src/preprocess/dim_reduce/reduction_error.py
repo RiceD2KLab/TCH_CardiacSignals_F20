@@ -21,6 +21,8 @@ from src.utils.plotting_utils import set_font_size
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error as sklearn_mse
+from src.preprocess.dsp_utils import get_windowed_time
+
 
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
@@ -171,11 +173,19 @@ def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_n
         plt.show()
 
 
-def boxplot_error(patient_num, model_name, dimension_num, show_outliers=True):
+def boxplot_error(model_name, dimension_num, show_outliers=True):
     """
     Plots a series of boxplots over time, where each boxplot consists of the mean squared errors from that 30-minute time period
+    The boxplots show distributions across all patients
     """
-    errors = mean_squared_error(dimension_num, model_name, patient_num, False)
+    # the errors are taken across the last 50 windows, where each window size is 50 samples (and each sample is 10hbs) -> 25k hbs total
+    trimmed_errors = []
+    for patient_num in heartbeat_split.indicies:
+        errors = mean_squared_error(dimension_num, model_name, patient_num, False)
+        if errors.shape[0] > 2500:
+            trimmed_errors.append(errors[-2500:, :, :])
+
+
 
     # 12 b/c 6 hours and 2 half-hour windows per hour
     boxes = np.array_split(errors, 12)
@@ -206,22 +216,22 @@ def mse_over_time(patient_num, model_name, dimension_num, smooth=False):
     plt.show()
 
 
-def windowed_mse_over_time(patient_num, model_name, dimension_num):
+def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size):
     errors = mean_squared_error(dimension_num, model_name, patient_num, False)
 
-    # window the errors - assume 500 samples ~ 5 min
-    window_duration = 250
-    windowed_errors = []
-    for i in range(0, len(errors) - window_duration, window_duration):
-        windowed_errors.append(np.mean(errors[i:i+window_duration]))
+    window_times = get_windowed_time(patient_num, num_hbs=10, window_size=window_size)
 
-    sample_idcs = [i for i in range(len(windowed_errors))]
-    print(windowed_errors)
+    # window the errors - assume 500 samples ~ 5 min
+    windowed_errors = []
+    for i in range(0, len(errors) - window_size, window_size):
+        windowed_errors.append(np.mean(errors[i:i+window_size]))
+
     set_font_size()
-    plt.plot(sample_idcs, windowed_errors)
-    plt.title("5-min Windowed MSE over time for patient {} with {} model".format(patient_num, model_name))
-    plt.xlabel("Window Index")
+    plt.plot(window_times, windowed_errors)
+    plt.title("5-min Windowed (size={} samples) MSE over time\n for patient {} with {} model".format(window_size, patient_num, model_name.upper()))
+    plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("Relative MSE")
+    plt.savefig(f"images/windowed_mse_Idx{patient_num}.png", dpi=1000)
     plt.show()
 
 
@@ -253,9 +263,9 @@ if __name__ == "__main__":
     #     #     continue
     #     windowed_mse_over_time(patient, "ae", 10)
 
-    windowed_mse_over_time(55, "cdae", 100)
-    # boxplot_error(55, "cdae", 100, False)
-
+    windowed_mse_over_time(16, "cdae", 100, 50)
+    # boxplot_error("cdae", 100, False)
+    #
     # errors = [err for err in errors if err < 5]
     # print(list(errors))
     # # print(errors.mean())
