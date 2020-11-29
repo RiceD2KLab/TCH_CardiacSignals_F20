@@ -178,22 +178,25 @@ def boxplot_error(model_name, dimension_num, show_outliers=True):
     Plots a series of boxplots over time, where each boxplot consists of the mean squared errors from that 30-minute time period
     The boxplots show distributions across all patients
     """
-    # the errors are taken across the last 50 windows, where each window size is 50 samples (and each sample is 10hbs) -> 25k hbs total
-    trimmed_errors = []
+
+    num_boxes = 12
+
+    combined_errors = [np.empty(0) for i in range(num_boxes)]
     for patient_num in heartbeat_split.indicies:
         errors = mean_squared_error(dimension_num, model_name, patient_num, False)
-        if errors.shape[0] > 2500:
-            trimmed_errors.append(errors[-2500:, :, :])
-
+        boxes = np.array_split(errors, num_boxes)
+        for i, box in enumerate(boxes):
+            combined_errors[i] = np.concatenate([combined_errors[i], box])
 
 
     # 12 b/c 6 hours and 2 half-hour windows per hour
-    boxes = np.array_split(errors, 12)
-    plt.boxplot(boxes, vert=True, positions=np.arange(12) / 2, showfliers=show_outliers)
+    plt.boxplot(combined_errors, vert=True, positions=np.arange(-6, 0, 0.5), showfliers=show_outliers,
+                medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'), capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
     set_font_size()
-    plt.title(f"Boxplots of Mean Squared Errors over Half-Hour Windows\n For Patient {patient_num} with {model_name} model")
+    plt.title(f"Boxplots of Mean Squared Errors on Half-Hour Windows\n over all patients with {model_name.upper()} model")
     plt.xlabel("Window Start Time (Hour)")
     plt.ylabel("Mean Squared Error")
+    plt.savefig(f"images/boxplot_mse.png", dpi=1000)
     plt.show()
     return
 
@@ -208,6 +211,7 @@ def mse_over_time(patient_num, model_name, dimension_num, smooth=False):
     errors = signal.sosfilt(sos, errors)
 
     sample_idcs = [i for i in range(len(errors))]
+
     set_font_size()
     plt.plot(sample_idcs, errors)
     plt.title("MSE over time for patient {} with model {} reduced to {} dimensions".format(patient_num, model_name, dimension_num))
@@ -240,12 +244,6 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size):
 
 if __name__ == "__main__":
 
-    # sys.path.insert(0, os.getcwd())  # lmao "the tucker hack"
-    # generate_reduction_test_files()
-    #
-    # compare_patients("pca", 10)
-    # print(compare_dimensions("pca", "4"))
-
     # errors = mean_squared_error(1, "pca", "1")
 
     # compare_dimensions("pca", heartbeat_split.indicies[:10])
@@ -263,16 +261,9 @@ if __name__ == "__main__":
     #     #     continue
     #     windowed_mse_over_time(patient, "ae", 10)
 
-    windowed_mse_over_time(16, "cdae", 100, 50)
-    # boxplot_error("cdae", 100, False)
-    #
-    # errors = [err for err in errors if err < 5]
-    # print(list(errors))
-    # # print(errors.mean())
-    # # print(np.mean(errors))
-    # plt.plot(errors)
-    # plt.show()
-    # print(mean_squared_error(10, "pca", "1").mean())
+    # windowed_mse_over_time(16, "cdae", 100, 50)
+    boxplot_error("cdae", 100, False)
+
 
     # compare_dimensions("pca", "1")
 
