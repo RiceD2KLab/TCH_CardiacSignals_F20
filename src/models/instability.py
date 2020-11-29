@@ -93,8 +93,9 @@ def plot_metrics(metric_name, k, patient_idx, model_name, window_size):
     plt.figure()
     window_times = get_windowed_time(patient_idx, 10, window_size)
     plt.plot(window_times, metrics)
-    plt.title("{} of {}-sample windows for Patient {}\n with {} model".format(metric_name.capitalize(), window_size,patient_idx,
-                                                                                                      model_name.upper()))
+    # plt.title("{} of {}-sample windows for Patient {}\n with {} model".format(metric_name.capitalize(), window_size,patient_idx,
+    #                                                                                                   model_name.upper()))
+    plt.title("{} of {}-sample windows with {} model".format(metric_name.capitalize(), window_size, model_name.upper()))
     plt.ylabel("Mean of {} across latent dimensions".format(metric_name))
     plt.xlabel("Window End Sample Idx")
     plt.savefig(f"images/{metric_name.capitalize()}_Idx{patient_idx}.png", dpi=1000)

@@ -70,7 +70,8 @@ def plot_2d(file_index, lead_num):
     colors = [cm(1. * i / len(coordinates)) for i in range(len(coordinates))]
     set_font_size()
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
-    plt.title("Evolution of 2-D PCA projection over time\n for Patient {}, EKG Lead {}".format(file_index, lead_num))
+    # plt.title("Evolution of 2-D PCA projection over time\n for Patient {}, EKG Lead {}".format(file_index, lead_num))
+    plt.title("Evolution of 2-D PCA projection over time\n for EKG Lead {}".format(lead_num))
     cbar = plt.colorbar(sc)
     cbar.set_label("Time (hours)")
     plt.clim(0,6)

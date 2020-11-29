@@ -40,7 +40,8 @@ def plot_umap(file_index, lead_num):
     colors = [cm(1. * i / len(coordinates)) for i in range(len(coordinates))]
     sc = plt.scatter(coordinates[:,0], coordinates[:,1], c=colors)
     set_font_size()
-    plt.title("Evolution of 2-D UMAP projection over time\n for Patient {}, EKG lead {}".format(file_index, lead_num))
+    # plt.title("Evolution of 2-D UMAP projection over time\n for Patient {}, EKG lead {}".format(file_index, lead_num))
+    plt.title("Evolution of 2-D UMAP projection over time\n EKG lead {}".format(lead_num))
     plt.xlabel('Primary Axis')
     plt.ylabel('Secondary Axis')
     plt.clim(0,6)

@@ -232,7 +232,7 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size):
 
     set_font_size()
     plt.plot(window_times, windowed_errors)
-    plt.title("5-min Windowed (size={} samples) MSE over time\n for patient {} with {} model".format(window_size, patient_num, model_name.upper()))
+    plt.title("5-min Windowed (size={} samples) MSE over time\n with {} model".format(window_size, model_name.upper()))
     plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("Relative MSE")
     plt.savefig(f"images/windowed_mse_Idx{patient_num}.png", dpi=1000)
@@ -261,8 +261,8 @@ if __name__ == "__main__":
     #     #     continue
     #     windowed_mse_over_time(patient, "ae", 10)
 
-    # windowed_mse_over_time(16, "cdae", 100, 50)
-    boxplot_error("cdae", 100, False)
+    windowed_mse_over_time(16, "cdae", 100, 50)
+    # boxplot_error("cdae", 100, False)
 
 
     # compare_dimensions("pca", "1")
