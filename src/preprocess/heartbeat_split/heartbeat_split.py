@@ -27,6 +27,8 @@ from src.utils.file_indexer import get_filenames
 from src.preprocess import dsp_utils, h5_interface
 from src.preprocess.heartbeat_split.noise_filtering import remove_noise
 
+from src.utils import plotting_utils
+
 indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
 				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
 '''
@@ -190,18 +192,16 @@ def load_np(filename):
 
 	lead1, lead2, lead3, lead4, time, heartrate = h5_interface.ecg_np(h5f, split = True)
 
-	# Removing baseline wander and high frequency noise
-	lead1 = remove_noise(time, lead1)
-	lead2 = remove_noise(time, lead2)
-	lead3 = remove_noise(time, lead3)
-	lead4 = remove_noise(time, lead4)
-
 	four_lead = np.vstack((lead1, lead2, lead3, lead4))
 
 	pos_sum = dsp_utils.combine_four_lead(four_lead)
-
+	'''
+	plt.plot(pos_sum)
+	plt.title("Example Heartbeat")
+	plt.show()
+	'''
 	return lead1, lead2, lead3, lead4, time, heartrate, pos_sum
-def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, prefix = ""):
+def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent, prefix = ""):
 	#logging setup
 	log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
 	os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
@@ -210,7 +210,7 @@ def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate
 	log.write("Average valid heartbeat length : " + str(np.average(hb_lengths)) + "\n")
 	log.write("Total valid heartbeats : " + str(len(peaks))+ "\n")
 	log.write("Total invalid/removed heartbeats : " + str(orig_num_hbs - len(peaks))+ "\n")
-
+	log.write("Percent unavaliable : " + str(percent))
 	#Save the four lead signals with gaps cut out
 	mod_four_lead_savename = os.path.join("Working_Data", prefix + "Mod_Four_Lead_Idx" + curr_index + ".npy")
 	#Save the processed heartbeat arrays
@@ -277,21 +277,36 @@ def preprocess_seperate(filename, curr_index):
 
 	plt.plot(stds)
 	plt.show()
+
+def denoise(time, lead1, lead2, lead3, lead4):
+	# Removing baseline wander and high frequency noise
+	lead1 = remove_noise(time, lead1)
+	lead2 = remove_noise(time, lead2)
+	lead3 = remove_noise(time, lead3)
+	lead4 = remove_noise(time, lead4)
+	return lead1, lead2, lead3, lead4, np.vstack((lead1, lead2, lead3, lead4))
 '''
 Inputs: Indicies of the patient files to process
 Outputs: Saves multiple files of processed data, in addition to a text file log for each
 '''
 def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = ""):
 	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename)
-
+	
 	peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
 	peaks = peaks.astype(int)
 
+	orig_len = len(lead1)
 	orig_num_hbs = len(peaks)
 
 	#get the bad "heartbeats"
 	gap_beats = detect_gaps(pos_sum, peaks)
-
+	'''
+	for gap in gap_beats:
+		plt.plot(lead1[gap])
+		plt.title("Flatline \"Lead-off\" heartbeat")
+		plt.xlabel("Time")
+		plt.show()
+	'''
 	#Delete the bad heartbeats
 	if gap_beats:
 		if heartrate is not None:
@@ -302,6 +317,8 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 		peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
 		peaks = peaks.astype(int)
 		
+	lead1, lead2, lead3, lead4, four_lead = denoise(time, lead1, lead2, lead3, lead4)
+
 	#hb_lengths = find_lengths(peaks, len(pos_sum), pos_sum = pos_sum)
 	#print(min(hb_lengths), sum(hb_lengths) / len(hb_lengths))
 	#try to refind peaks on long heartbeats, mostly to split missed edge beats
@@ -328,15 +345,17 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 			pos_sum, time, lead1, lead2, lead3, lead4 = delete_slices(too_longs, len(pos_sum), [pos_sum, time, lead1, lead2, lead3, lead4])
 	#print(len(peaks), len(pos_sum),peaks[-1])
 	four_lead = np.vstack((lead1, lead2, lead3, lead4))
+	percent_unavaliable = len(lead1) / orig_len
 	#print(four_lead.shape)
 
-	"""
+	'''
 	#Visual Test for R-Peak identification
 	plt.plot(pos_sum)
-	# plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
+	plt.title("Example Heartbeat")
+	#plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
 	plt.plot(peaks, pos_sum[peaks], "x")
 	plt.show()
-	"""
+	'''
 	if not beats_per_datapoint == 2:
 		fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, time, beats_per_vector = beats_per_datapoint, plotting = False)
 	else:
@@ -345,10 +364,12 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks, four_lead.shape[1])
 
-	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, prefix = file_prefix)
+	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
+	
 if __name__ == "__main__":
+	plotting_utils.set_font_size()
 	for idx, filename in zip(indicies, get_filenames()):
 		# TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
-		preprocess_sum(filename, idx, beats_per_datapoint = 10)
+		preprocess_sum(filename, idx, beats_per_datapoint = 2)
 		# preprocess_seperate(filename, idx)
