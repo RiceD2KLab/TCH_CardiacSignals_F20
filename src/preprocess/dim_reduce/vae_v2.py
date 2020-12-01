@@ -164,7 +164,7 @@ def train_vae(data, normal_valid, latent_dim, alpha, learning_rate, num_epoch):
 
 
 if __name__ == "__main__":
-    for patient_ in heartbeat_split.indicies:
+    for patient_ in [1]: #heartbeat_split.indicies:
         ################################################################################################################
         print("Starting on index: " + str(patient_))
 
@@ -220,24 +220,24 @@ if __name__ == "__main__":
         # plt.show()
 
         ################################################################################################################
-        """
+
         means = np.mean(z[0], 0)
         variances = np.mean(np.exp(z[0]), 0)
         print(means)
         print('')
         for lead in range(0,4):
-            for iter in range(0,500):
+            for iter in range(0,1000):
                 X = np.sqrt(variances) * np.random.randn(1, 10) + means
                 fake_heartbeat = vae.decoder.predict(X)
 
                 #print(np.shape(fake_heartbeat[0][:, 0]))
                 plt.plot(fake_heartbeat[0][:, lead], 'b')
 
-            plt.title("500 artificial heartbeats, patient "+str(patient_)+', lead '+str(lead))
-            plt.xlabel("Sample Index")
-
+            plt.title("1000 artificial heartbeats, patient "+str(patient_)+', lead '+str(lead), fontsize=18)
+            plt.xlabel("Sample Index", fontsize=12)
+            plt.savefig('images//frank_fake_hb_patient1_lead'+str(lead)+'.png')
             plt.show()
-        """
+
         # print(np.shape(all))
         # print(np.shape(all[0][:, 0]))
 

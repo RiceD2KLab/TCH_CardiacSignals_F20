@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.fft import fft
+from src.utils.plotting_utils import set_font_size
 
 from src.preprocess import h5_interface
 
@@ -33,42 +34,48 @@ def remove_noise(time, lead_data, plots=False):
     lead_data_filtered = signal.filtfilt(b, a, lead_data, padlen=150)
 
     if plots:
+        set_font_size()
         # Transfer function of filter ##################################################################################
         w, h = signal.freqz(b, a, worN=4096, fs=240)
 
         plt.semilogx(w, abs(h)**2)
-        plt.title('Zero phase filter frequency response (Butterworth)')
-        plt.xlabel('Frequency [Hz]')
-        plt.ylabel('Amplitude')
-        plt.xlim(0.1, 120)
-        plt.margins(0, 0.1)
-        plt.grid(which='both', axis='both')
         plt.axvline(lowf, color='green')  # cutoff frequency
         plt.axvline(highf, color='green')  # cutoff frequency
+
+        plt.title('Butterworth filter transfer function', fontsize=18)
+        plt.xlabel('Frequency (Hz)', fontsize=12)
+        plt.xticks(fontsize=10)
+        plt.xlim(0.1, 120)
+        plt.ylabel('Amplitude', fontsize=12)
+        plt.yticks(fontsize=10)
+        plt.grid(which='both', axis='both')
+
+        plt.savefig('images//frank_butterworth_transfer_function.png', dpi=500)
         plt.show()
 
         # Original signal spectrum #####################################################################################
         freq = np.linspace(0.0, fs / 2, len(time) // 2)
         lead_spectrum = fft(lead_data)
 
-        plt.loglog(freq[1:len(time) // 2], 2 / len(time) * np.abs(lead_spectrum[1:len(time) // 2]), '-b')
-        plt.title('Spectrum of input lead data')
-        plt.xlabel('Frequency [Hz]')
-        plt.ylabel('Amplitude')
-        plt.grid()
+        plt.loglog(freq[1:len(time) // 2], 2 / len(time) * np.abs(lead_spectrum[1:len(time) // 2]), '-b', alpha=0.7)
+        plt.title('ECG Spectrum', fontsize=18)
+        plt.xlabel('Frequency (Hz)', fontsize=12)
+        plt.xticks(fontsize=10)
         plt.xlim(0.1, 120)
-        plt.show()
+
+        plt.ylabel('Amplitude', fontsize=12)
+        plt.yticks(fontsize=10)
+        plt.grid(which='both', axis='both')
+
+        #plt.show()
 
         # Filtered signal spectrum #####################################################################################
         freq = np.linspace(0.0, fs / 2, len(time) // 2)
         lead_spectrum_filtered = fft(lead_data_filtered)
 
-        plt.loglog(freq[1:len(time) // 2], 2 / len(time) * np.abs(lead_spectrum_filtered[1:len(time) // 2]), '-b')
-        plt.title('Spectrum of filtered lead data')
-        plt.xlabel('Frequency [Hz]')
-        plt.ylabel('Amplitude')
-        plt.grid()
-        plt.xlim(0.1, 120)
+        plt.loglog(freq[1:len(time) // 2], 2 / len(time) * np.abs(lead_spectrum_filtered[1:len(time) // 2]), '-r', alpha=0.7)
+        plt.legend(['Original', 'Filtered'], fontsize=12)
+        plt.savefig('images//frank_ECG_filtering.png', dpi=500)
         plt.show()
 
         ###############################################################################################################
@@ -76,16 +83,16 @@ def remove_noise(time, lead_data, plots=False):
 
 
 
-# # Test the noise removal on patient 1
-# filename = 'Reference_idx_1_Time_block_1.h5'
-# h5f = h5_interface.readh5(filename)
-#
-# four_lead, time, heartrate = h5_interface.ecg_np(h5f)
-# lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
-# lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
-#
-# lead1_filtered = remove_noise(time, lead1)
-#
+# Test the noise removal on patient 1
+filename = 'Reference_idx_16_Time_block_1.h5'
+h5f = h5_interface.readh5(filename)
+
+four_lead, time, heartrate = h5_interface.ecg_np(h5f)
+lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
+lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
+
+#lead1_filtered = remove_noise(time, lead1, plots=True)
+
 # plt.plot(time, lead1, 'k-', label='input')
 # plt.plot(time, lead1_filtered, 'c-', linewidth=1.5, label='filtered')
 # plt.title('Lead Data')
