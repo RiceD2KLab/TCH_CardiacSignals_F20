@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 from src.preprocess.dsp_utils import get_windowed_time
 from src.preprocess.dim_reduce.reduction_error import mean_squared_error
 
-indices = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '16', '17', '18', '19', '20', '21', '22', '25', '27',
-           '28', '31', '32',
-           '33', '34', '35', '37', '38', '39', '40', '41', '42', '44', '45', '46', '47', '48', '49', '50'] #, '52', '53',
-           #'54', '55', '56']
+# indices = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '16', '17', '18', '19', '20', '21', '22', '25', '27',
+#            '28', '31', '32',
+#            '33', '34', '35', '37', '38', '39', '40', '41', '42', '44', '45', '46', '47', '48', '49', '50'] #, '52', '53',
+#            #'54', '55', '56']
 
+indices = [52, 53, 54, 55, 56]
 ########################################################################################################################
 # THIS IS SOME OLD CODE TO GENERATE THE AE ERRORS. JUST GO ON BOX AND DOWNLOAD THE FOLDERS ten_heartbeat_ae_errors
 # AND two_heartbeat_ae_errors TO GET THIS. PUT THESE FOLDERS IN Working_Data.
@@ -62,10 +63,14 @@ num_true_tests = 0
 
 for idx in indices:
     # IMPORT DATA
-    mse = np.load(f"Working_Data/windowed_mse_100d_Idx{idx}.npy")
-    #print(np.shape(mse))
+    mse = np.load(f"Working_Data/windowed_var_100d_Idx{idx}.npy")
+    print(np.shape(mse))
     #print(len(mse))
     time_vector = get_windowed_time(idx, num_hbs=10, window_size=50)
+    #print(np.shape(time_vector))
+
+
+    mse = mse[-len(time_vector):]
     time_vector = time_vector[-len(mse):]
     #print(np.shape(time_vector))
 
