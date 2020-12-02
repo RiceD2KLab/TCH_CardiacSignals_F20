@@ -179,7 +179,7 @@ def boxplot_error(model_name, dimension_num, show_outliers=True):
     The boxplots show distributions across all patients
     """
 
-    num_boxes = 12
+    num_boxes = 48
 
     combined_errors = [np.empty(0) for i in range(num_boxes)]
     for patient_num in heartbeat_split.indicies:
@@ -190,11 +190,12 @@ def boxplot_error(model_name, dimension_num, show_outliers=True):
 
 
     # 12 b/c 6 hours and 2 half-hour windows per hour
-    plt.boxplot(combined_errors, vert=True, positions=np.arange(-6, 0, 0.5), showfliers=show_outliers,
+    plt.boxplot(combined_errors, vert=True, positions=np.arange(-6, 0, 0.125), showfliers=show_outliers, widths=1/13,
                 medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'), capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
     set_font_size()
     plt.title(f"Boxplots of Mean Squared Errors on Half-Hour Windows\n over all patients with {model_name.upper()} model")
     plt.xlabel("Window Start Time (Hour)")
+    plt.xticks(np.arange(-6, 1, 1), np.arange(-6, 1, 1))
     plt.ylabel("Mean Squared Error")
     plt.savefig(f"images/boxplot_mse.png", dpi=1000)
     plt.show()
@@ -220,7 +221,7 @@ def mse_over_time(patient_num, model_name, dimension_num, smooth=False):
     plt.show()
 
 
-def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size):
+def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size, last_four_hours=False):
     errors = mean_squared_error(dimension_num, model_name, patient_num, False)
 
     window_times = get_windowed_time(patient_num, num_hbs=10, window_size=window_size)
@@ -230,17 +231,50 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size):
     for i in range(0, len(errors) - window_size, window_size):
         windowed_errors.append(np.mean(errors[i:i+window_size]))
 
+    if last_four_hours:
+        # finds the nearest point in time to four hours
+        def find_nearest(array, value):
+            array = np.asarray(array)
+            idx = (np.abs(array - value)).argmin()
+            return idx
+
+        start_idx = find_nearest(window_times, -4.0)
+        window_times = window_times[start_idx:]
+        windowed_errors = windowed_errors[start_idx:]
+
     set_font_size()
     plt.plot(window_times, windowed_errors)
-    plt.title("5-min Windowed (size={} samples) MSE over time\n with {} model".format(window_size, model_name.upper()))
+    # plt.title("5-min Windowed (size={} samples) MSE over time\n with {} model".format(window_size, model_name.upper()))
+    plt.title("Mean Squared Error Over Time")
     plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("Relative MSE")
     plt.savefig(f"images/windowed_mse_Idx{patient_num}.png", dpi=1000)
     plt.show()
-
-
     np.save(f"Working_Data/windowed_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
 
+def raw_mse_over_time(patient_num, model_name, dimension_num, window_size, last_four_hours=False):
+    errors = mean_squared_error(dimension_num, model_name, patient_num, False)
+    window_times = get_windowed_time(patient_num, num_hbs=10, window_size=1)
+
+    if last_four_hours:
+        # finds the nearest point in time to four hours
+        def find_nearest(array, value):
+            array = np.asarray(array)
+            idx = (np.abs(array - value)).argmin()
+            return idx
+
+        start_idx = find_nearest(window_times, -4.0)
+        window_times = window_times[start_idx:]
+        windowed_errors = errors[start_idx:]
+
+    set_font_size()
+    plt.plot(window_times, windowed_errors)
+    plt.title("MSE over time\n with {} model".format(window_size, model_name.upper()))
+    plt.xlabel("Time before cardiac arrest (hours)")
+    plt.ylabel("Relative MSE")
+    plt.savefig(f"images/raw_mse_Idx{patient_num}.png", dpi=1000)
+    plt.show()
+    np.save(f"Working_Data/raw_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
 
 if __name__ == "__main__":
 
@@ -261,7 +295,10 @@ if __name__ == "__main__":
     #     #     continue
     #     windowed_mse_over_time(patient, "ae", 10)
 
-    windowed_mse_over_time(16, "cdae", 100, 50)
+    # windowed_mse_over_time(16, "cdae", 100, 50)
+    windowed_mse_over_time(16, "cdae", 100, 25, last_four_hours=True)
+    # raw_mse_over_time(16, "cdae", 100, 50, last_four_hours=True)
+
     # boxplot_error("cdae", 100, False)
 
 
