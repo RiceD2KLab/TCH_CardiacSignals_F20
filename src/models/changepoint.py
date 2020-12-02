@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.collections import PolyCollection
 from src.preprocess.dsp_utils import get_windowed_time
 from src.utils.plotting_utils import set_font_size
+from src.preprocess.dim_reduce.reduction_error import mean_squared_error
 import os
 
 def detect_change(patient, model_name, dimension):
@@ -32,7 +33,8 @@ def cusum(patient, model_name, dimension):
     Outputs:
     None: plots the CUSUM statistic over time
     '''
-    error_signal = np.load(f"Working_Data/unwindowed_mse_{dimension}d_Idx{patient}.npy")
+    # error_signal = np.load(f"Working_Data/unwindowed_mse_{dimension}d_Idx{patient}.npy")
+    error_signal = mean_squared_error(dimension, model_name, patient)
     time_stamps = get_windowed_time(patient, 10, 1)
 
     # print(len(error_signal))
@@ -131,7 +133,7 @@ def cusum_box_plot(indices, model_name, dimension):
     plt.savefig('Working_Data/cusum_boxplot.png', dpi=500)
     plt.show()
 
-cusum_box_plot(heartbeat_split.indicies[:-5], "cdae", 100)
+# cusum_box_plot(heartbeat_split.indicies[:-5], "cdae", 100)
 
 # for idx in [16]:
 #     cusum(idx, "cdae", 100)
@@ -141,3 +143,4 @@ cusum_box_plot(heartbeat_split.indicies[:-5], "cdae", 100)
 # for idx in heartbeat_split.indicies:
 #     cusum_vals = cusum(idx, "cdae", dimension=100)
 
+cusum(16, "cdae", dimension=100)
