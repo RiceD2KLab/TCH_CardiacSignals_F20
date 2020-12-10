@@ -73,27 +73,34 @@ def cusum(patient, model_name, dimension):
 
 def cusum_threshold(threshold):
     '''
-    Given a threshold, returns the number of patients for whom the CUSUM score exceeds the threshold within 3 hours of cardiac arrest
-    '''
-    count = 0
-    overfit = 0
-    total = 0
-    for i in heartbeat_split.indicies:
-        try:
-            cusum_vals = cusum(i, "ae", 10)
-            stop_time = next((i for i in range(len(cusum_vals)) if cusum_vals[i] > threshold), -1) # first index where cusum > threshold
-            if stop_time > len(cusum_vals)/2: # don't count overfitting
-                count += 1
-            elif (stop_time > 0) and (stop_time < len(cusum_vals)/2):
-                overfit += 1
-            total += 1
-        except:
-            continue
+    Given a threshold, 
+    Outputs:
+    The number of patients for whom the CUSUM score exceeds the threshold within 3 hours of cardiac arrest
+    The average time before the arrest (in hours) that the threshold was crossed
 
-    print(f"Threshold crossed within final 3 hours: {count}")
-    # print(f"Threshold crossed before final 3 hours (assumed overfit): {overfit}")
-    print(f"Total patients: {total}")
-    return count
+    '''
+    count = 0 # number of patients with cusum > threshold before cardiac arrest
+    total = 0 # total valid patients
+    avg_time = 0 # average detection time
+    for idx in heartbeat_split.indicies:
+        try:
+            cusum_vals = np.load(f"Working_Data/unwindowed_cusum_100d_Idx{idx}.npy") # load cusum scores for this patient
+            patient_times = get_windowed_time(idx, num_hbs=10, window_size=1)[:-1]
+            if len(cusum_vals) > 1000:
+                stop_index = next((i for i in range(len(cusum_vals)) if cusum_vals[i] > threshold), -1) # first index where cusum > threshold
+                stop_time = patient_times[stop_index]
+                if stop_index > len(cusum_vals)/2: # make sure change is in last three hours of data (no false positives)
+                    # print(stop_time)
+                    count += 1
+                    avg_time += stop_time
+                total += 1
+        except:
+            print("No File Found: Patient " + idx)
+            continue
+    avg_time /= count
+    print(f"Threshold crossed within final 3 hours: {count}/{total}")
+    print(f"Average Detection Earliness: {avg_time} hours")
+    return count, total, avg_time
 
 def cusum_box_plot(indices, model_name, dimension):
     cusum_values = []
@@ -103,6 +110,8 @@ def cusum_box_plot(indices, model_name, dimension):
         try:
             current_values = np.load(f"Working_Data/unwindowed_cusum_100d_Idx{idx}.npy") # load anomaly rates for this patient
             patient_times = get_windowed_time(idx, num_hbs=10, window_size=1)[:-1]
+
+
             test_values = []
 
             for i in range(len(window_times) - 1):
@@ -130,17 +139,25 @@ def cusum_box_plot(indices, model_name, dimension):
     plt.ylabel("CUSUM Score")
     plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
     plt.xlim(-4.2, 0.2)
-    plt.savefig('Working_Data/cusum_boxplot.png', dpi=500)
+    plt.savefig('images/cusum_boxplot.png', dpi=500)
     plt.show()
 
-# cusum_box_plot(heartbeat_split.indicies[:-5], "cdae", 100)
+# cusum_box_plot(heartbeat_split.indicies, "cdae", 100)
 
 # for idx in [16]:
 #     cusum(idx, "cdae", 100)
+# counts = []
+# avg_times = []
+# for threshold in range(100, 1000, 50):
+#     print(threshold)
+#     count, total, avg_time = cusum_threshold(threshold)
+#     counts.append(count)
+#     avg_times.append(avg_time)
+# count, total, avg_time = cusum_threshold(250)
 
-
-# c = cusum_threshold(10)
+# plt.plot(range(100, 1000, 50), avg_times)
+# plt.show()
 # for idx in heartbeat_split.indicies:
 #     cusum_vals = cusum(idx, "cdae", dimension=100)
 
-cusum(16, "cdae", dimension=100)
+# cusum(16, "cdae", dimension=100)

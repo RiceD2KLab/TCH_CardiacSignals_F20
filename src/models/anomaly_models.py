@@ -204,27 +204,28 @@ def isoforest_box_plot(indices, model_name, dimension):
     plt.ylabel("Anomaly Rate")
     plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
     plt.xlim(-4.2, 0.2)
-    plt.savefig('Working_Data/isoforest_boxplot.png', dpi=500)
+    plt.savefig('images/isoforest_boxplot.png', dpi=500)
 
     plt.show()
 
 
 if __name__ == '__main__':
     # isoforest_hyperparams(1, 2, 3)
-    isoforest_box_plot(heartbeat_split.indicies[:-5], "cdae", 100)
+    isoforest_box_plot(heartbeat_split.indicies, "cdae", 100)
     # avg = []
     # for i in range(60):
     #     try:
     #         isoforest = train_isoforest(100, i, "cdae")
-    #         anomaly_rate = anomaly_tracking(100, i, "cdae", isoforest, 1)
+    #         anomaly_rate = anomaly_tracking(100, i, "cdae", isoforest, 50)
     #         # filename = "Working_Data/windowed_if_100d_idx{}_NEW.npy".format(i)
-    #         filename = os.path.join("Working_Data", f"unwindowed_if_100d_Idx{i}.npy")
+    #         filename = os.path.join("Working_Data", f"windowed_if_100d_Idx{i}.npy")
     #         np.save(filename, anomaly_rate)
     #         print("Done")
     # #         # avg.append(isoforest_validate(5, 10, i, 'ae'))
     # #         # print(avg[-1])
     #     except:
     #         continue
+
 
 
 
