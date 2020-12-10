@@ -179,7 +179,8 @@ def boxplot_error(model_name, dimension_num, show_outliers=True):
     The boxplots show distributions across all patients
     """
 
-    num_boxes = 48
+    boxplots_per_hour = 6
+    num_boxes = boxplots_per_hour * 4
 
     combined_errors = [np.empty(0) for i in range(num_boxes)]
     for patient_num in heartbeat_split.indicies:
@@ -190,14 +191,14 @@ def boxplot_error(model_name, dimension_num, show_outliers=True):
 
 
     # 12 b/c 6 hours and 2 half-hour windows per hour
-    plt.boxplot(combined_errors, vert=True, positions=np.arange(-6, 0, 0.125), showfliers=show_outliers, widths=1/13,
+    plt.boxplot(combined_errors, vert=True, positions=np.arange(-4, 0, 1/boxplots_per_hour), showfliers=show_outliers, widths=1/9,
                 medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'), capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
     set_font_size()
-    plt.title(f"Boxplots of Mean Squared Errors on Half-Hour Windows\n over all patients with {model_name.upper()} model")
+    plt.title(f"Mean Squared Error Distribution of Ten-Minute Windows\n over all patients with {model_name.upper()} model")
     plt.xlabel("Window Start Time (Hour)")
-    plt.xticks(np.arange(-6, 1, 1), np.arange(-6, 1, 1))
+    plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
     plt.ylabel("Mean Squared Error")
-    plt.savefig(f"images/boxplot_mse.png", dpi=1000)
+    plt.savefig(f"images/boxplot_mse.png", dpi=700)
     plt.show()
     return
 
@@ -272,7 +273,7 @@ def raw_mse_over_time(patient_num, model_name, dimension_num, window_size, last_
     plt.title("MSE over time\n with {} model".format(window_size, model_name.upper()))
     plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("Relative MSE")
-    plt.savefig(f"images/raw_mse_Idx{patient_num}.png", dpi=1000)
+    plt.savefig(f"images/raw_mse_Idx{patient_num}.png", dpi=700)
     plt.show()
     np.save(f"Working_Data/raw_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
 
@@ -296,10 +297,10 @@ if __name__ == "__main__":
     #     windowed_mse_over_time(patient, "ae", 10)
 
     # windowed_mse_over_time(16, "cdae", 100, 50)
-    windowed_mse_over_time(16, "cdae", 100, 25, last_four_hours=True)
+    # windowed_mse_over_time(16, "cdae", 100, 25, last_four_hours=True)
     # raw_mse_over_time(16, "cdae", 100, 50, last_four_hours=True)
 
-    # boxplot_error("cdae", 100, False)
+    boxplot_error("cdae", 100, False)
 
 
     # compare_dimensions("pca", "1")
