@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from src.preprocess.heartbeat_split import heartbeat_split
 from src.preprocess.dsp_utils import get_windowed_time
+from src.utils.plotting_utils import set_font_size
 
 def calculate_streamed_variances(heartbeats, window_duration):
     """
@@ -23,10 +24,6 @@ def calculate_streamed_variances(heartbeats, window_duration):
         window = heartbeats[i-window_duration:i :]# n x k
         window_vars = np.apply_along_axis(lambda row: np.var(row), 0, window)
         variances.append(np.mean(window_vars))
-
-
-
-
 
     return variances
 
@@ -69,7 +66,7 @@ def calculate_streamed_cross_entropies(heartbeats, window_duration, bins):
 def plot_metrics(metric_name, k, patient_idx, model_name, window_size):
     if model_name == "rawhb":
         raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_idx))))
-        data = raw_hbs.reshape(-1, 400)  # reshape so each feature vector contains all 4 leads for each hearbeat
+        data = raw_hbs.reshape(-1, raw_hbs.shape[1] * raw_hbs.shape[2])  # reshape so each feature vector contains all 4 leads for each hearbeat
     else:
         data = np.load(os.path.join("Working_Data", "reduced_{}_{}d_Idx{}.npy".format(model_name, k, patient_idx)))
         data = data[2, :, :] if model_name == "vae" else data
@@ -90,15 +87,16 @@ def plot_metrics(metric_name, k, patient_idx, model_name, window_size):
     elif metric_name == "cross entropy":
         metrics = calculate_streamed_entropies(data, window_size, 20)
 
+    set_font_size()
     plt.figure()
     window_times = get_windowed_time(patient_idx, 10, window_size)
     plt.plot(window_times, metrics)
     # plt.title("{} of {}-sample windows for Patient {}\n with {} model".format(metric_name.capitalize(), window_size,patient_idx,
-    #                                                                                                   model_name.upper()))
-    plt.title("{} of {}-sample windows with {} model".format(metric_name.capitalize(), window_size, model_name.upper()))
-    plt.ylabel("Mean of {} across latent dimensions".format(metric_name))
-    plt.xlabel("Window End Sample Idx")
-    plt.savefig(f"images/{metric_name.capitalize()}_Idx{patient_idx}.png", dpi=1000)
+    #                                                                                                     model_name.upper()))
+    plt.title("{} of 10-heartbeat segments over time".format(metric_name.capitalize(), model_name.upper()))
+    plt.ylabel("Variance".format(metric_name))
+    plt.xlabel("Time before cardiac arrest (hours)")
+    plt.savefig(f"images/{metric_name.capitalize()}_Idx{patient_idx}.png", dpi=700)
     plt.show()
 
 
@@ -109,7 +107,7 @@ if __name__ == "__main__":
     # plot_metrics("cross entropy", 10, 1, "pca")
     # for patient_idx in heartbeat_split.indicies:
     #     plot_metrics("variance", 100, patient_idx, "cdae", 100)
-    plot_metrics("variance", 100, 16, "cdae", 100)
+    plot_metrics("variance", 100, 16, "rawhb", 50)
 
 
 
