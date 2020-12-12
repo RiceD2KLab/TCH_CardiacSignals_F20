@@ -1,9 +1,9 @@
 """
 Convolutional Denoising Autoencoder
 """
+import os
 from numpy.random import seed
 seed(1)
-import os
 import tensorflow
 tensorflow.random.set_seed(2)
 from tensorflow import keras
@@ -11,8 +11,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Conv1D, MaxPooling1D, Conv1DTranspose
 from tensorflow.keras.models import Sequential, Model
 from src.models.patient_split import *
-from src.preprocessing import heartbeat_split
 from sklearn.model_selection import train_test_split
+from src.utils.file_indexer import get_patient_ids
 from src.utils.plotting_utils import *
 set_font_size()
 
@@ -175,7 +175,7 @@ def run(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    for patient_ in heartbeat_split.indicies:
+    for patient_ in get_patient_ids():
         print("Starting on index: " + str(patient_))
         training_ae(num_epochs, encoded_dim, patient_)
         print("Completed " + str(patient_) + " reconstruction and encoding, saved test data to assess performance")
