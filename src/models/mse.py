@@ -9,19 +9,14 @@ Also contains a library of error visualization functions, such as
 - comparing the MSE from reductions/reprojections from different k=latent dimensions
 """
 
-import sys
 import os
 import numpy as np
-from src.preprocess.heartbeat_split import heartbeat_split
+from src.preprocessing import heartbeat_split
 import random
-import statistics
 import matplotlib.pyplot as plt
 from scipy import signal
 from src.utils.plotting_utils import set_font_size
-from sklearn.preprocessing import minmax_scale
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error as sklearn_mse
-from src.preprocess.dsp_utils import get_windowed_time
+from src.utils.dsp_utils import get_windowed_time
 
 
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
@@ -281,15 +276,15 @@ if __name__ == "__main__":
 
     # errors = mean_squared_error(1, "pca", "1")
 
-    # compare_dimensions("pca", heartbeat_split.indicies[:10])
-    # compare_dimensions("vae", heartbeat_split.indicies[:10])
-    # compare_dimensions("ae", heartbeat_split.indicies)
+    # compare_dimensions("pca", preprocessing.indicies[:10])
+    # compare_dimensions("vae", preprocessing.indicies[:10])
+    # compare_dimensions("ae", preprocessing.indicies)
 
     # plot_loaded_mses(special=True)
     # mse_over_time(35, "ae", 13)
     # windowed_mse_over_time(27, "ae", 10)
 
-    # for patient in heartbeat_split.indicies:
+    # for patient in preprocessing.indicies:
     #     # try:
     #     #     windowed_mse_over_time(patient, "ae", 10)
     #     # except:

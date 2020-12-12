@@ -1,12 +1,10 @@
 import ruptures as rpt
 import numpy as np
 import matplotlib.pyplot as plt
-from src.preprocess.heartbeat_split import heartbeat_split
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.collections import PolyCollection
-from src.preprocess.dsp_utils import get_windowed_time
+from src.preprocessing import heartbeat_split
+from src.utils.dsp_utils import get_windowed_time
 from src.utils.plotting_utils import set_font_size
-from src.preprocess.dim_reduce.reduction_error import mean_squared_error
+from src.models.mse import mean_squared_error
 import os
 
 def detect_change(patient, model_name, dimension):
@@ -142,7 +140,7 @@ def cusum_box_plot(indices, model_name, dimension):
     plt.savefig('images/cusum_boxplot.png', dpi=500)
     plt.show()
 
-# cusum_box_plot(heartbeat_split.indicies, "cdae", 100)
+# cusum_box_plot(preprocessing.indicies, "cdae", 100)
 
 # for idx in [16]:
 #     cusum(idx, "cdae", 100)
@@ -157,7 +155,7 @@ def cusum_box_plot(indices, model_name, dimension):
 
 # plt.plot(range(100, 1000, 50), avg_times)
 # plt.show()
-# for idx in heartbeat_split.indicies:
+# for idx in preprocessing.indicies:
 #     cusum_vals = cusum(idx, "cdae", dimension=100)
 
 # cusum(16, "cdae", dimension=100)

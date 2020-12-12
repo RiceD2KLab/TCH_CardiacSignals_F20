@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
-from src.preprocess import dsp_utils, h5_interface
 
 import numpy as np
 import os
 
-from src.utils import plotting_utils
+from src.utils import plotting_utils, dsp_utils, h5_interface
+
 '''
 Inputs : Index of the data to plot
 Outputs : Histogram plot of heartbeat lengths
@@ -76,7 +76,7 @@ def percent_missing_boxplot():
 
 if __name__ == "__main__":
     plotting_utils.set_font_size()
-    # for i in heartbeat_split.indicies:
+    # for i in preprocessing.indicies:
     #     try:
     #         print(i)
     #         plot_heartbeat_on_signal(i)

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from src.preprocess import dsp_utils, h5_interface
+from src.utils import dsp_utils
 from scipy import signal
 from scipy import interpolate
 

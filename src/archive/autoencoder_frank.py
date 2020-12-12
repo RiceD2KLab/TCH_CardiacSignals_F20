@@ -10,16 +10,11 @@ from tensorflow import keras
 
 tensorflow.random.set_seed(2)
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-import numpy as np
 import os
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.regularizers import l1, l2
-from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout, Conv1D, MaxPooling1D, \
-    BatchNormalization, UpSampling1D, Conv1DTranspose
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout, Conv1D, Conv1DTranspose
 from tensorflow.keras.models import Sequential, Model
-from src.preprocess.dim_reduce.patient_split import *
-from src.preprocess.heartbeat_split import heartbeat_split
+from src.models.patient_split import *
 
 
 def read_in(file_index, normalized, train, ratio):
@@ -327,7 +322,7 @@ def run(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    for patient_ in [1, 4, 11]:  # heartbeat_split.indicies:
+    for patient_ in [1, 4, 11]:  # preprocessing.indicies:
         print("Starting on index: " + str(patient_))
         # try:
         training_ae(num_epochs, encoded_dim, patient_)

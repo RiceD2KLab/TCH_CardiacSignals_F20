@@ -4,10 +4,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import matplotlib
-import sys
 from matplotlib import cm
 import sys
-from src.preprocess.heartbeat_split import heartbeat_split
+from src.preprocessing import heartbeat_split
 from src.utils.plotting_utils import set_font_size
 
 
@@ -151,7 +150,7 @@ if __name__ == "__main__":
     plot_2d(1, 1)
     # save_pca_reconstructions(dim=10)
     # save_pca_reduced(dim=15)
-    # for file_index in heartbeat_split.indicies[:10]:
+    # for file_index in preprocessing.indicies[:10]:
     #     plot_pca_eigenvalues(file_index, 1)
     # plt.show()
     # for i in range(2,3):

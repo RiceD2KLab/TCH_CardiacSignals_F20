@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.stats import entropy
-from src.preprocess import h5_interface
-from src.preprocess.heartbeat_split.noise_filtering import remove_noise
+from src.utils import h5_interface
+from src.preprocessing import remove_noise
 from src.utils.plotting_utils import set_font_size
 
 # Parameters ###########################################################################################################

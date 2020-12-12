@@ -1,21 +1,12 @@
-import numpy as np
-import os
-import matplotlib.pyplot as plt
-import pickle
-
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from collections import defaultdict
-from keras.utils.vis_utils import plot_model
 
-from src.preprocess.dim_reduce.reduction_error import *
-from src.preprocess.heartbeat_split import heartbeat_split
-from src.preprocess.dim_reduce.patient_split import *
+from src.models.mse import *
 from sklearn.model_selection import train_test_split
 
 from numpy.random import seed
-from src.preprocess.dim_reduce.patient_split import *
+from src.models.patient_split import *
 
 
 def read_in(file_index, normalized, train, ratio):
@@ -164,7 +155,7 @@ def train_vae(data, normal_valid, latent_dim, alpha, learning_rate, num_epoch):
 
 
 if __name__ == "__main__":
-    for patient_ in [1]: #heartbeat_split.indicies:
+    for patient_ in [1]: #preprocessing.indicies:
         ################################################################################################################
         print("Starting on index: " + str(patient_))
 

@@ -1,8 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.stats import ttest_rel, wilcoxon
-from src.preprocess.heartbeat_split import heartbeat_split
-from src.preprocess.dim_reduce.reduction_error import mse_over_time
+from src.preprocessing import heartbeat_split
 
 
 def paired_ttest(mse_list, alpha):

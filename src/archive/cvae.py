@@ -1,17 +1,9 @@
-import numpy as np
-import os
-import matplotlib.pyplot as plt
-import pickle
-
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from collections import defaultdict
-from keras.utils.vis_utils import plot_model
 
-from src.preprocess.dim_reduce.reduction_error import *
-from src.preprocess.heartbeat_split import heartbeat_split
-from src.preprocess.dim_reduce.patient_split import *
+from src.models.mse import *
+from src.models.patient_split import *
 
 """
 Created: 9/22/2020, by Frank Yang
@@ -267,7 +259,7 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
 # if __name__ == "__main__":
 #     ## This code sweeps the VAE performance without any data split. Useful for optimization.
 #     # patient_mses = {}
-#     # for file_index in heartbeat_split.indicies[:1]:
+#     # for file_index in preprocessing.indicies[:1]:
 #     #     patient_mses[file_index] = vae_alpha_dim_sweep(file_index, range(1, 2), [1], 0.001, 10, save_results=True)
 #     #
 #     # outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
@@ -277,7 +269,7 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
 #     # process_vae_sweep()
 #
 #     # if we want to perform data splitting across a smaller dimension range:
-#     for file_index in heartbeat_split.indicies[:1]:
+#     for file_index in preprocessing.indicies[:1]:
 #          plot_data_splitting(file_index, 1/2, range(1, 2), [0], 0.005, 300)
 
 

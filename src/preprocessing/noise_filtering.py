@@ -14,7 +14,8 @@ from scipy import signal
 from scipy.fft import fft
 from src.utils.plotting_utils import set_font_size
 
-from src.preprocess import h5_interface
+from src.utils import h5_interface
+
 
 def remove_noise(time, lead_data, plots=False):
     """

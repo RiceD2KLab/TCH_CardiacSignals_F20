@@ -1,12 +1,9 @@
 import pickle
 from collections import defaultdict
-from keras.utils.vis_utils import plot_model
 
-from src.preprocess.dim_reduce.reduction_error import *
-from src.preprocess.heartbeat_split import heartbeat_split
-from src.preprocess.dim_reduce.patient_split import *
-from src.preprocess.dim_reduce.vae import train_vae
-from src.preprocess.dim_reduce.patient_split import *
+from src.models.mse import *
+from src.archive.vae import train_vae
+from src.models.patient_split import *
 
 
 def vae_alpha_dim_sweep(file_index, dim_rng, alpha_rng, learning_rate, num_epoch, save_results=False):
@@ -215,7 +212,7 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
 # if __name__ == "__main__":
 #     ## This code sweeps the VAE performance without any data split. Useful for optimization.
 #     # patient_mses = {}
-#     # for file_index in heartbeat_split.indicies[:1]:
+#     # for file_index in preprocessing.indicies[:1]:
 #     #     patient_mses[file_index] = vae_alpha_dim_sweep(file_index, range(1, 2), [1], 0.001, 10, save_results=True)
 #     #
 #     # outfile = open("Working_Data/vae_sweep_mses.pkl", 'wb')
@@ -225,7 +222,7 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
 #     # process_vae_sweep()
 #
 #     # if we want to perform data splitting across a smaller dimension range:
-#     for file_index in heartbeat_split.indicies[:1]:
+#     for file_index in preprocessing.indicies[:1]:
 #          plot_data_splitting(file_index, 1/2, range(1, 2), [0], 0.005, 300)
 
 
@@ -235,7 +232,7 @@ def plot_data_splitting(file_index, data_split_ratio, dim_range, alpha_range, le
 # if __name__ == "__main__":
 #     ## This code sweeps the VAE performance without any data split. Useful for optimization.
 #     patient_mses = {}
-#     for file_index in heartbeat_split.indicies:
+#     for file_index in preprocessing.indicies:
 #         patient_mses[file_index] = vae_alpha_dim_sweep(file_index, [10], [0.05], 0.001, 10, save_results=True)
 
 plot_data_splitting(4, 0.5, [1], [1], 0.005, 3)
@@ -248,6 +245,6 @@ plot_data_splitting(4, 0.5, [1], [1], 0.005, 3)
     # process_vae_sweep()
 
     # if we want to perform data splitting across a smaller dimension range:
-    # for file_index in heartbeat_split.indicies[:1]:
+    # for file_index in preprocessing.indicies[:1]:
     #      plot_data_splitting(file_index, 5/6, range(1, 2), [1], 0.001, 2)
     #      compare_reconstructed_hb(file_index, 100, 'vae', 1)

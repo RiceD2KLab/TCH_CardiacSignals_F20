@@ -1,16 +1,12 @@
 import numpy as np
-import os
 from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
 import matplotlib
 import sys
 from matplotlib import cm
-import seaborn as sns
 import umap
 import time
 from src.utils.plotting_utils import *
-from src.preprocess.heartbeat_split import heartbeat_split
+
 
 def plot_umap(file_index, lead_num):
     """
@@ -53,7 +49,7 @@ def plot_umap(file_index, lead_num):
 
 if __name__ == '__main__':
     set_font_size()
-    # for i in heartbeat_split.indicies:
+    # for i in preprocessing.indicies:
     #     try:
     #         plot_umap(i,1)
     #     except:

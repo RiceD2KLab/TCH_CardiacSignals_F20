@@ -1,12 +1,9 @@
 import os
-import sklearn
 import numpy as np
 from scipy.stats import entropy
 # from skimage.filters.rank import entropy
 from matplotlib import pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from src.preprocess.heartbeat_split import heartbeat_split
-from src.preprocess.dsp_utils import get_windowed_time
+from src.utils.dsp_utils import get_windowed_time
 from src.utils.plotting_utils import set_font_size
 
 def calculate_streamed_variances(heartbeats, window_duration):
@@ -105,7 +102,7 @@ if __name__ == "__main__":
     # plot_metrics("variance", 10, 1, "pca")
     # plot_metrics("entropy", 10, 1, "pca")
     # plot_metrics("cross entropy", 10, 1, "pca")
-    # for patient_idx in heartbeat_split.indicies:
+    # for patient_idx in preprocessing.indicies:
     #     plot_metrics("variance", 100, patient_idx, "cdae", 100)
     plot_metrics("variance", 100, 16, "rawhb", 50)
 

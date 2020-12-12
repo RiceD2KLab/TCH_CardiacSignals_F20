@@ -3,8 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from src.preprocess import h5_interface
-
+from src.utils import h5_interface
 
 ##### READ IN THE DATA
 filename = 'Reference_idx_16_Time_block_1.h5'

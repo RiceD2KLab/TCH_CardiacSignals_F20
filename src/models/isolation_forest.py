@@ -1,16 +1,12 @@
 import os
-import sklearn
 import numpy as np
 from sklearn import svm
 import matplotlib.pyplot as plt
-from src.preprocess.heartbeat_split import heartbeat_split
+from src.preprocessing import heartbeat_split
 from src.utils.plotting_utils import set_font_size
 from sklearn.ensemble import IsolationForest
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.model_selection import KFold
-from sklearn.metrics import make_scorer, f1_score
-from sklearn import model_selection
-from src.preprocess.dsp_utils import get_windowed_time
+from src.utils.dsp_utils import get_windowed_time
 
 
 def train_svm(k, patient_idx, model_name):

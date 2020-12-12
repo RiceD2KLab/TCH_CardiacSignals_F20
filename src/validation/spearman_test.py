@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.stats import spearmanr
 import matplotlib.pyplot as plt
-from src.preprocess.dsp_utils import get_windowed_time
-from src.preprocess.dim_reduce.reduction_error import mean_squared_error
+from src.utils.dsp_utils import get_windowed_time
 
 # indices = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '16', '17', '18', '19', '20', '21', '22', '25', '27',
 #            '28', '31', '32',

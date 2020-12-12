@@ -24,10 +24,9 @@ import os
 import matplotlib.pyplot as plt
 
 from src.utils.file_indexer import get_filenames
-from src.preprocess import dsp_utils, h5_interface
-from src.preprocess.heartbeat_split.noise_filtering import remove_noise
+from src.preprocessing import remove_noise
 
-from src.utils import plotting_utils
+from src.utils import plotting_utils, dsp_utils, h5_interface
 
 indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
 				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
@@ -276,7 +275,7 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 	new_inds = []
 	for i in range(1, len(peaks)):
 		if peaks[i] - peaks[i - 1] > 200:
-			extra_peaks = dsp_utils.get_peaks_dynamic(pos_sum[peaks[i-1]:peaks[i]], heartrate)
+			extra_peaks = dsp_utils.get_peaks_dynamic(pos_sum[peaks[i - 1]:peaks[i]], heartrate)
 			if len(extra_peaks) == 1:
 				if extra_peaks[0] > 40:
 					new_peaks.append(peaks[i-1] + extra_peaks[0])

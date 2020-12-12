@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from src.preprocess.heartbeat_split import heartbeat_split
+from src.preprocessing import heartbeat_split
 from sklearn.preprocessing import StandardScaler
 
 def normalize_heartbeats():
