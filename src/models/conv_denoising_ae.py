@@ -181,6 +181,19 @@ def training_ae(num_epochs, reduced_dim, file_index, save_model):
     np.save(encoded_save, encoded)
 
 
+def load_model(file_index):
+    """
+    Loads pre-trained model and saves npy files for reconstructed heartbeats
+    :param file_index: [int] patient id for model
+    :return: None
+    """
+    normal, abnormal, all = read_in(file_index, 1, 2, 0.3)
+    autoencoder = keras.models.load_model('Working_Data/ae_patient_' + str(file_index) + '_dim' + str(100) + '_model.h5')
+    reconstructed = autoencoder.predict(all)
+    reconstruction_save = "Working_Data/test_reconstructed_10hb_cae_" + str(file_index) + ".npy"
+    np.save(reconstruction_save, reconstructed)
+
+
 def run(num_epochs, encoded_dim):
     """
     Run training autoencoder over all dims in list
@@ -196,7 +209,8 @@ def run(num_epochs, encoded_dim):
 
 # trains and saves a model for each patient from get_patient_ids
 if __name__ == "__main__":
-    run(110, 100)
+    load_model(16) # for use with pre trained models
+    # run(110, 100) # to train a whole new set of models
 
 
 
