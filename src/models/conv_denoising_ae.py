@@ -190,7 +190,7 @@ def load_model(file_index):
     normal, abnormal, all = read_in(file_index, 1, 2, 0.3)
     autoencoder = keras.models.load_model('Working_Data/ae_patient_' + str(file_index) + '_dim' + str(100) + '_model.h5')
     reconstructed = autoencoder.predict(all)
-    reconstruction_save = "Working_Data/test_reconstructed_10hb_cae_" + str(file_index) + ".npy"
+    reconstruction_save = "Working_Data/reconstructed_cdae_100d_Idx" + str(file_index) + ".npy"
     np.save(reconstruction_save, reconstructed)
 
 
