@@ -28,8 +28,6 @@ from src.preprocessing.noise_filtering import remove_noise
 
 from src.utils import plotting_utils, dsp_utils, h5_interface
 
-indicies = ['1','4','5','6','7','8','10','11','12','14','16','17','18','19','20','21','22','25','27','28','30','31','32',
-				'33','34','35','37','38','39','40','41','42','44','45','46','47','48','49','50','52','53','54','55','56']
 '''
 Function to detect "gaps" in the data signal, which are from the leads being
 disconnected. For each detected "heartbeat" (a slice between two R-peaks)

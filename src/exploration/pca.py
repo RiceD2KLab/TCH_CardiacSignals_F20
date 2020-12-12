@@ -115,7 +115,7 @@ def save_pca_reconstructions(dim):
     Inputs: dimension to reduce to with PCA
     Returns: nothing -> saves an array of (# of heartbeats) x (100) x (4) for each patient index, containing reconstructed heartbeats after PCA
     '''
-    for file_index in heartbeat_split.indicies:
+    for file_index in cies:
         print("Starting on index : " + str(file_index))
         raw_hbs = np.load(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))        
         flattened_data = raw_hbs.reshape(-1, 400) # reshape so each feature vector contains all 4 leads for each hearbeat

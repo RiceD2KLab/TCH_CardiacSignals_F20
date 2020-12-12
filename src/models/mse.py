@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from src.utils.plotting_utils import set_font_size
 from src.utils.dsp_utils import get_windowed_time
+from src.utils.file_indexer import get_patient_ids 
 
 
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
@@ -73,7 +74,7 @@ def generate_reduction_test_files():
     :return: nothing -> saves perturbed signals to a file
     """
 
-    for file_index in heartbeat_split.indicies:
+    for file_index in get_patient_ids():
         print("generating reduction test file for index {}".format(file_index))
         original_signals = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(str(file_index))))
         perturbation_delta = float(np.var(original_signals)) / 10
@@ -93,7 +94,7 @@ def compare_patients(model_name, reduced_dimensions, file_range=":", save_errors
     :return: mapping of patient_num -> mean squared error for each patient
     """
     errors = {}
-    for file_index in heartbeat_split.indicies[file_range]:
+    for file_index in get_patient_ids()[file_range]:
         errors[file_index] = float(mean_squared_error(reduced_dimensions, model_name, file_index, save_errors).mean())
     # print(errors)
     return errors
@@ -178,7 +179,7 @@ def boxplot_error(model_name, dimension_num, show_outliers=True):
     num_boxes = boxplots_per_hour * 4
 
     combined_errors = [np.empty(0) for i in range(num_boxes)]
-    for patient_num in heartbeat_split.indicies:
+    for patient_num in get_patient_ids():
         errors = mean_squared_error(dimension_num, model_name, patient_num, False)
         boxes = np.array_split(errors, num_boxes)
         for i, box in enumerate(boxes):
