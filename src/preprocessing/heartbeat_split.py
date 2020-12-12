@@ -24,7 +24,7 @@ import os
 import matplotlib.pyplot as plt
 
 from src.utils.file_indexer import get_filenames
-from src.preprocessing import remove_noise
+from src.preprocessing.noise_filtering import remove_noise
 
 from src.utils import plotting_utils, dsp_utils, h5_interface
 
