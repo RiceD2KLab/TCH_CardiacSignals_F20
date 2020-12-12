@@ -1,11 +1,14 @@
+"""
+Utility functions for plotting figures consistently across different parts of the project
+"""
+
 import matplotlib.pyplot as plt
 
-
-
 def set_font_size():
-    '''
-    Function which sets a nice font size for all figures
-    '''
+    """
+    Function which sets a standardized font size for all figures. Call this prior to plotting
+    to apply the standard
+    """
     SMALLER_SIZE = 10
     MED_SIZE = 12
     BIG_SIZE = 18

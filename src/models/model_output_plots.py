@@ -1,5 +1,5 @@
 """
-
+File to recreate plots for comparing original heartbeats with model reconstructed heartbeats
 """
 import numpy as np
 import matplotlib.pyplot as plt
