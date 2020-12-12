@@ -18,5 +18,5 @@ The autoencoder is used to learn the patterns of normal heartbeats and then pred
 
 ## Plots
 
-- `model_output_plots.py` - 
+- `reconstructed_plots.py` - contains code to recreate plot showing the difference between the original and reconstructed heartbeats for a single patient 
 
