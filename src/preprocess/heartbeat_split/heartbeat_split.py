@@ -71,21 +71,12 @@ peaks.
 
 Inputs:
 peaks:     type: Numpy Array (int) - indicies of the peaks
-total_len: type: int 			   - total length of the signal
 
 Outputs:
 hb_lengths: type: Numpy Array (int) - lengths of heartbeats
 '''
-def find_lengths(peaks, total_len, signal_data = None):
-	hb_lengths = np.zeros((len(peaks),)) 		#array of R-Peak identified heartbeat segment lengths
-	for i in range(1, len(peaks)):
-		hb_lengths[i] = peaks[i] - peaks[i-1]	#calculate the legnths
-		#if peaks[i] - peaks[i-1] < 35:
-		#	plt.plot(signal_data[peaks[i-2]:peaks[i+1]])
-		#	plt.show()
-	hb_lengths = hb_lengths[1:] 				#remove the leading 0
-	np.concatenate( (hb_lengths,np.array([total_len-peaks[-1]]) ) ) #append the last length
-	return hb_lengths
+def find_lengths(peaks):
+	return np.diff(np.concatenate( (np.array([0]), peaks) ) )
 '''
 Function to get slices of "long" heartbeats
 
@@ -160,8 +151,8 @@ def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
 
 def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plotting = False):
 	peaks = np.concatenate((np.array([0]), peaks, np.array([four_lead.shape[1]])))
+	num_beats = len(peaks) - 1
 	if not beats_per_vector == 1:
-		num_beats = len(peaks) - 1
 		peaks = peaks[num_beats % beats_per_vector:]
 	peaks = np.take(peaks, list(range(0, len(peaks),beats_per_vector)))
 	#Save an array of dimension Num heartbeats x 100 (heartbeat length) x Leads (4)
@@ -174,9 +165,12 @@ def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plo
 		#iterate through the rest of heartbeats
 		for hb_num, start_peak in enumerate(peaks[:-1]):
 			individual_hb = four_lead[lead_num,start_peak + 10:peaks[hb_num+1] - 10]
-
-			fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, beats_per_vector * dimension)
-			
+			try:
+				fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, beats_per_vector * dimension)
+			except:
+				plt.plot(four_lead[lead_num,start_peak - 15:peaks[hb_num + 1] + 15])
+				plt.show()
+				print(f"WARNING : failed to interpolate heartbeat num: {hb_num} of length: {peaks[hb_num + 1] - start_peak}")
 			#Periodic Visual inspection of dimension fixed heartbeat
 			if plotting and hb_num % 15000 == 0:
 				plt.plot(fixed_dimension_hbs[hb_num,:,lead_num])
@@ -232,52 +226,6 @@ def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate
 	np.save(HB_timestamps_savename, time[peaks[:-1]])
 	log.close()
 
-def preprocess_seperate(filename, curr_index):
-	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename)
-
-	peaks1 = (dsp_utils.get_peaks_dynamic(lead1, heartrate)).astype(int)
-	peaks2 = (dsp_utils.get_peaks_dynamic(lead2, heartrate)).astype(int)
-	peaks3 = (dsp_utils.get_peaks_dynamic(lead3, heartrate)).astype(int)
-	peaks4 = (dsp_utils.get_peaks_dynamic(lead4, heartrate)).astype(int)
-
-	mini_len = min(len(peaks1), len(peaks2), len(peaks3), len(peaks4))
-
-	peaks_stack = np.vstack((peaks1[:mini_len], peaks2[:mini_len], peaks3[:mini_len], peaks4[:mini_len]))
-	print(len(peaks1), len(peaks2), len(peaks3), len(peaks4))
-	stds = np.std(peaks_stack, axis = 0)
-	print(max(stds))
-	print(peaks_stack[:,mini_len-1])
-
-	
-	plt.plot(lead1)
-	plt.title(label = f'Patient {curr_index} Lead1')
-	plt.vlines(x = peaks1, ymin = -1, ymax = 10, colors = 'r')
-	plt.xlim(2e6,2e6 + 600)
-	plt.ylim(-4, 4)
-	plt.show()
-	plt.plot(lead2)
-	plt.title(label = f'Patient {curr_index} Lead2')
-	plt.vlines(x = peaks2, ymin = -1, ymax = 10, colors = 'r')
-	plt.xlim(2e6,2e6 + 600)
-	plt.ylim(-4, 4)
-	plt.show()
-	plt.plot(lead3)
-	plt.title(label = f'Patient {curr_index} Lead3')
-	plt.vlines(x = peaks3, ymin = -1, ymax = 10, colors = 'r')
-	plt.xlim(2e6,2e6 + 600)
-	plt.ylim(-4, 4)
-	plt.show()
-	plt.plot(lead4)
-	plt.title(label = f'Patient {curr_index} Lead4')
-	plt.vlines(x = peaks4, ymin = -1, ymax = 10, colors = 'r')
-	plt.xlim(2e6,2e6 + 600)
-	plt.ylim(-4, 4)
-	plt.show()
-	
-
-	plt.plot(stds)
-	plt.show()
-
 def denoise(time, lead1, lead2, lead3, lead4):
 	# Removing baseline wander and high frequency noise
 	lead1 = remove_noise(time, lead1)
@@ -317,6 +265,7 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 		peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
 		peaks = peaks.astype(int)
 		
+	
 	lead1, lead2, lead3, lead4, four_lead = denoise(time, lead1, lead2, lead3, lead4)
 
 	#hb_lengths = find_lengths(peaks, len(pos_sum), pos_sum = pos_sum)
@@ -348,21 +297,25 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 	percent_unavaliable = len(lead1) / orig_len
 	#print(four_lead.shape)
 
-	'''
+	"""
+	import matplotlib
+	matplotlib.rcParams['figure.dpi'] = 200
 	#Visual Test for R-Peak identification
-	plt.plot(pos_sum)
-	plt.title("Example Heartbeat")
+	plt.plot(lead1)
+	plt.title("Peak Detection Example")
 	#plt.vlines(x = peaks, ymin = 0, ymax = 8, colors = "red", linewidth = 2)
-	plt.plot(peaks, pos_sum[peaks], "x")
+	peaks = peaks - 1 #lol the pos sum must be off by one from lead1
+	plt.plot(peaks, lead1[peaks], 'ro')
+	plt.axis([10000,11125,-1.5,2])
 	plt.show()
-	'''
+	"""
 	if not beats_per_datapoint == 2:
 		fixed_dimension_hbs = build_hb_matrix(four_lead, peaks, 100, time, beats_per_vector = beats_per_datapoint, plotting = False)
 	else:
 		fixed_dimension_hbs = build_hb_matrix_centered(four_lead, peaks, 100, plotting = False)
 
 	#Find the lengths of the heartbeats
-	hb_lengths = find_lengths(peaks, four_lead.shape[1])
+	hb_lengths = find_lengths(peaks)
 
 	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
 	
@@ -371,5 +324,5 @@ if __name__ == "__main__":
 	for idx, filename in zip(indicies, get_filenames()):
 		# TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
-		preprocess_sum(filename, idx, beats_per_datapoint = 2)
+		preprocess_sum(filename, idx, beats_per_datapoint = 1)
 		# preprocess_seperate(filename, idx)
