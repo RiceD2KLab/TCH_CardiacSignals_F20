@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.fft import fft
 from src.utils.plotting_utils import set_font_size
-
 from src.utils import h5_interface
 
 
@@ -22,10 +21,10 @@ def remove_noise(time, lead_data, plots=False):
     Removes noise from input data. A 6-pole Butterworth bandpass filter with 0.7Hz and 50Hz cutoff frequencies is
     implemented. Filter is implemented twice for zero-phase output.
 
-    :param time: input time data in seconds, numpy array of size 1 x N, corresponding to ECG samples
-    :param lead_data: input lead data, numpy array of size 1 x N
-    :param plots: set to True if you want to see relevant plots
-    :return: lead_data_filtered with noise removed
+    :param time: [1xN numpy array] input time data in seconds
+    :param lead_data: [1xN numpy array] input lead ECG data
+    :param plots: [boolean] set to True if you want to see relevant plots
+    :return: [1xN numpy array] lead_data_filtered with noise removed
     """
     lowf = 0.7
     highf = 50
@@ -51,7 +50,7 @@ def remove_noise(time, lead_data, plots=False):
         plt.yticks(fontsize=10)
         plt.grid(which='both', axis='both')
 
-        plt.savefig('images//frank_butterworth_transfer_function.png', dpi=500)
+        plt.savefig('images//butterworth_transfer_function.png', dpi=500)
         plt.show()
 
         # Original signal spectrum #####################################################################################
@@ -68,41 +67,30 @@ def remove_noise(time, lead_data, plots=False):
         plt.yticks(fontsize=10)
         plt.grid(which='both', axis='both')
 
-        #plt.show()
-
         # Filtered signal spectrum #####################################################################################
         freq = np.linspace(0.0, fs / 2, len(time) // 2)
         lead_spectrum_filtered = fft(lead_data_filtered)
 
         plt.loglog(freq[1:len(time) // 2], 2 / len(time) * np.abs(lead_spectrum_filtered[1:len(time) // 2]), '-r', alpha=0.7)
         plt.legend(['Original', 'Filtered'], fontsize=12)
-        plt.savefig('images//frank_ECG_filtering.png', dpi=500)
+        plt.savefig('images//ECG_spectrum_filtering.png', dpi=500)
         plt.show()
 
         ###############################################################################################################
+
     return lead_data_filtered
 
 
+if __name__ == "__main__":
+    # # EXAMPLE: Test the noise removal on a patient
+    filename = 'Reference_idx_16_Time_block_1.h5'
+    h5f = h5_interface.readh5(filename)
 
-# Test the noise removal on patient 1
-filename = 'Reference_idx_16_Time_block_1.h5'
-h5f = h5_interface.readh5(filename)
+    four_lead, time, heartrate = h5_interface.ecg_np(h5f)
+    lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
+    lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
 
-four_lead, time, heartrate = h5_interface.ecg_np(h5f)
-lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
-lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
-
-lead1_filtered = remove_noise(time, lead1, plots=True)
-
-# plt.plot(time, lead1, 'k-', label='input')
-# plt.plot(time, lead1_filtered, 'c-', linewidth=1.5, label='filtered')
-# plt.title('Lead Data')
-# plt.xlabel('Time [sec]')
-# plt.ylabel('Amplitude')
-# plt.legend(loc='best')
-# plt.xlim(5, 8)
-# plt.ylim(-2, 2)
-# plt.show()
+    lead1_filtered = remove_noise(time, lead1, plots=True)
 
 
 
@@ -122,12 +110,6 @@ lead1_filtered = remove_noise(time, lead1, plots=True)
 
 
 
-
-# for idx, filename in enumerate(get_filenames()):
-#     print(idx)
-#     print(filename)
-#
-#curr_index
 
 
 
