@@ -20,6 +20,8 @@ matrix eigenvalues, plotting the first n principle components in a scatterplot (
 To plot the distribution of data along the first two principal axes (2D scatterplot) for a representative patient and
 lead, uncomment the block of code beginning with if __name__ == "__main__": (line 151). 
 
-- `umap.py` - plots 2-dimensional representation of the PCA matrix for a particular lead of the ith file
+- `umap.py` - Performs UMAP manifold learning (non-linear analog to PCE). Function is included for plotting a 2-D UMAP 
+representation for a particular lead/patient combination. To generate plots shown in report, , uncomment the block of 
+code beginning with if __name__ == "__main__": (line 52). 
 
 
