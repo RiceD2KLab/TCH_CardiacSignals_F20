@@ -7,10 +7,12 @@ import umap
 import time
 from src.utils.plotting_utils import *
 
+#    Creates and plots a 2-D UMAP representation for a particular lead, patient combination
+
 
 def plot_umap(file_index, lead_num):
     """
-    Plots 2-dimensional representation of the PCA matrix for a particular lead of the ith file
+    Plots a 2-D UMAP representation for a particular lead, patient combination
     :param file_index: [int] index of the file (1-indexed)
     :param lead_num: [int] lead number (1-indexed)
     :return None:
