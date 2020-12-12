@@ -17,12 +17,15 @@ def normalize_heartbeats():
     :return: nothing, saves the normalized heartbeats to a Normalized_Fixed_Dims_HBs_Idx{k}.npy file
     """
     for file_index in get_patient_ids():
-        original_signals = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(file_index)))
-        for i in range(np.shape(original_signals)[0]):
-            original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
+        try:
+            original_signals = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(file_index)))
+            for i in range(np.shape(original_signals)[0]):
+                original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
 
-        np.save(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(file_index)), original_signals)
-        print("Normalized patient {}".format(file_index))
+            np.save(os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(file_index)), original_signals)
+            print("Normalized patient {}".format(file_index))
+        except:
+            pass
 
     return
 

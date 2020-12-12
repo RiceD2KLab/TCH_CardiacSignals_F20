@@ -208,9 +208,9 @@ def run(num_epochs, encoded_dim):
 
 
 # trains and saves a model for each patient from get_patient_ids
-if __name__ == "__main__":
-    load_model(16) # for use with pre trained models
-    # run(110, 100) # to train a whole new set of models
+# if __name__ == "__main__":
+#     load_model(16) # for use with pre trained models
+#     # run(110, 100) # to train a whole new set of models
 
 
 
