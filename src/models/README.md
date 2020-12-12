@@ -6,7 +6,7 @@ These files work to create the model and instability metric on the preprocessed 
 - `patient_split.py` - patient split is used to convert the 6 hour preprocessed data into normal and abnormal data for model training
 
 ## Models
-The - `conv_denoising.py` - is used to learn the patterns of normal heartbeats and then predict abnormal heartbeats to provide an error metric that is later used for determining instability metrics.
+The autoencoder is used to learn the patterns of normal heartbeats and then predict abnormal heartbeats to provide an error metric that is later used for determining instability metrics.
 - `conv_denoising.py` - contains functions to create, train, and save convolutional autoencoder models with additional code to load pretrained models
 - `isolation_forest.py` - 
 
