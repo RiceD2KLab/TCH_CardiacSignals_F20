@@ -152,7 +152,7 @@ def training_ae(num_epochs, reduced_dim, file_index, save_model):
     signal_shape = normal.shape[1:]
     batch_size = round(len(normal) * 0.15)
 
-    encoder, decoder = build_model(signal_shape, reduced_dim)
+    encoder, decoder = build_model(reduced_dim)
 
     inp = Input(signal_shape)
     encode = encoder(inp)
@@ -195,8 +195,8 @@ def run(num_epochs, encoded_dim):
 
 
 # trains and saves a model for each patient from get_patient_ids
-# if __name__ == "__main__":
-#     run(110, 100)
+if __name__ == "__main__":
+    run(110, 100)
 
 
 
