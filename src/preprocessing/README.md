@@ -1,9 +1,8 @@
 # Preprocessing
 
-Preprocessing of the raw input ECG data is a three step process:
-1. `noise_filtering.py`
-2. `heartbeat_split.py`
-3. `normalize_heartbeats.py`
+Preprocessing of the raw input ECG data is done via running two files:
+1. `heartbeat_split.py`
+2. `normalize_heartbeats.py`
 
 ## Noise Filtering
 To remove noise present in the raw heartbeat data run `noise_filtering.py` \
@@ -14,17 +13,12 @@ This is done using forward-backward filtering to ensure that there is no phase d
 
 ## Heartbeat Split
 To split the ECG leads into individual heartbeats, run `heartbeat_split.py` \
-This will split the ECGs for each patient into individual heartbeats, interpolate them, and store them into numpy arrays\
+This will load the raw ECGs, remove flatlines, filter for noise, and detect peaks. \
+It then segments the ECG signal into 10 heartbeat chunks, interpolate them, and stores them into a numpy array (Data Matrix)\
 The interpolated hearbeats will be stored into a `Working_Data` directory at the root of the project (ignored by the .gitignore)
-python3 h5_interface.py [idx] --Duration [seconds] --Offset [seconds]
 
-idx - number of the h5 file you want to read\
-Duration - how many seconds to plot (<10 to fit on screen)\
-Offset - How many seconds from the beginning of the signal to splice from\
+To run on new data, modify the main to use different filenames.\
 
-ex. `python3 h5_interface.py 1 --Duration 4 --Offset 3`
-
-![Example Plot](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/blob/master/images/idx1d4o3.png)
 
 
 ## Normalize Heartbeats
