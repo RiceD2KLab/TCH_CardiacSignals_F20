@@ -245,15 +245,15 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size, 
 
     set_font_size()
     plt.plot(window_times, windowed_errors)
-    # plt.title("5-min Windowed (size={} samples) MSE over time\n with {} model".format(window_size, model_name.upper()))
-    plt.title("Mean Squared Error Over Time")
+    plt.title("Windowed MSE ({}-sample windows) over time\n with {} model".format(window_size, model_name.upper()))
+    # plt.title("Mean Squared Error Over Time")
     plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("Relative MSE")
-    plt.savefig(f"images/windowed_mse_Idx{patient_num}.png", dpi=1000)
+    plt.savefig(f"images/windowed_mse_Idx{patient_num}.png", dpi=700)
     plt.show()
     np.save(f"Working_Data/windowed_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
 
-def raw_mse_over_time(patient_num, model_name, dimension_num, window_size, last_four_hours=False):
+def raw_mse_over_time(patient_num, model_name, dimension_num, last_four_hours=False):
     errors = mean_squared_error(dimension_num, model_name, patient_num, False)
     window_times = get_windowed_time(patient_num, num_hbs=10, window_size=1)
 
@@ -270,7 +270,7 @@ def raw_mse_over_time(patient_num, model_name, dimension_num, window_size, last_
 
     set_font_size()
     plt.plot(window_times, windowed_errors)
-    plt.title("MSE over time\n with {} model".format(window_size, model_name.upper()))
+    plt.title("MSE over time with {} model".format(model_name.upper()))
     plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("Relative MSE")
     plt.savefig(f"images/raw_mse_Idx{patient_num}.png", dpi=700)
@@ -297,10 +297,10 @@ if __name__ == "__main__":
     #     windowed_mse_over_time(patient, "ae", 10)
 
     # windowed_mse_over_time(16, "cdae", 100, 50)
-    # windowed_mse_over_time(16, "cdae", 100, 25, last_four_hours=True)
-    # raw_mse_over_time(16, "cdae", 100, 50, last_four_hours=True)
+    windowed_mse_over_time(16, "cdae", 100, 100, last_four_hours=True)
+    # raw_mse_over_time(16, "cdae", 100, last_four_hours=True)
 
-    boxplot_error("cdae", 100, False)
+    # boxplot_error("cdae", 100, False)
 
 
     # compare_dimensions("pca", "1")
