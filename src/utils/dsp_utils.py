@@ -3,45 +3,24 @@ from scipy.signal import find_peaks
 
 import matplotlib.pyplot as plt
 
-'''
-Inputs: ECG Signal, desired dimensions
-Outputs: ECG Signal in desired dimension
-Map a signal to a specific dimension, linearly interpolating
-'''
 def change_dim(data, dim):
+	"""
+    Interpolates given signal to given dimension
+    :param data: [np array[float64]] raw ECG signal 
+    :param dim: [int] dimension to be interpolated to
+    :return: [np array[float]] interpolated signal
+    """
 	samp_times = np.linspace(start = 0, stop = len(data) - 1, num = dim, endpoint = True)
 
 	return np.interp(samp_times, np.arange(len(data)), data)
-'''
-Inputs: ECG Signal
-Outputs: Indicies of peaks
-Scans across the signal in intervals. Within each interval finds peaks close to the magnitude of local maximum
-'''
-def get_peaks(data):
-	interval = 240 #sample rate is ~240hz, so interval / 240 = time (seconds)
-	peaks = np.zeros((0,))
-	for i in range(len(data) // interval):
-		maxi = max(data[i*interval:(i+1)*interval])
-		local_peaks, properties = find_peaks(data[i*interval:(i+1)*interval], height = maxi * .5, distance = 70)
-		local_peaks = local_peaks + (i * interval)
-		peaks = np.concatenate((peaks, local_peaks))
-	return peaks
 
-'''
-Inputs: ECG Signal
-Outputs: Indices of peaks
-Gets peaks via prominence
-'''
-def get_peaks_prominence(data):
-	peaks, properties = find_peaks(data, distance = 70, prominence=1.0, wlen=50)
-	return peaks
-
-'''
-Inputs: ECG Signal, heart-rate signal (must be same length)
-Outputs: Indices of peaks
-Gets peaks via prominence, using known heart-rate information to choose parameters dynamically
-'''
-def get_peaks_dynamic(data, heartrate, plotting = False):
+def get_peaks_dynamic(data, heartrate):
+	"""
+    Checks a list of detected heartbeat slices from ECG signal, and detects flatlines
+    :param data: [np array[float64]] raw ECG signal 
+    :param heartrate: [np array[int]] heartrate vector from ECG machine
+    :return: [list[slice[int:int]]] slices of flatline signal
+    """
 	interval = 240 * 5 # Use a 2 second window of heartrate information
 	peaks = np.zeros((0,))
 	if heartrate is None:
@@ -64,20 +43,6 @@ def get_peaks_dynamic(data, heartrate, plotting = False):
 
 		window_std = np.std(dat_window)
 		window_mean = np.mean(dat_window)
-
-		#For debugging, comment out otherwise
-		#ratio = (np.amax(dat_window) - window_mean) / window_std
-
-		"""
-		#Check the clipping
-
-		if ratio > 12.0:
-			clip = window_mean + 5.0 * window_std
-			plt.plot(dat_window)
-			plt.hlines(clip, xmin = 0, xmax = 479)
-			plt.show()
-		"""
-
 		
 		#Next we want to normalize the window between 0-1, don't want the noise spikes
 		#(often 10+ times the mean) to hide true peaks. Thus clip to max 5 standard dev
@@ -93,20 +58,18 @@ def get_peaks_dynamic(data, heartrate, plotting = False):
 		normed_window = clipped_window / np.max(np.abs(clipped_window))
 		#find peaks
 		local_peaks, properties = find_peaks( normed_window, distance = 0.8*avg_dist, prominence= .3, wlen=0.25*avg_dist)
-		
-		if plotting:
-			print(avg_dist)
 	
 		#Add peaks
 		local_peaks = local_peaks + (i * interval)
 		peaks = np.concatenate((peaks, local_peaks))
 	return peaks
 
-'''
-Inputs : 4 x n numpy array, each row is an ECG signal lead
-Outputs : Sum of the 4 signals with clipped negative values (set to 0)
-'''
 def combine_four_lead(data):
+	"""
+    Take absolute value and sums four lead signal
+    :param data: [np array[np array[float64]]] raw four lead ECG signal 
+    :return: [np array[float64]] sum of absolute valued leads
+    """
 	pos_sum = np.zeros((data.shape[1],))
 	for i in range(4):
 		#pos_sum += np.clip(data[i,:], 0, None) #clip negative values
@@ -116,19 +79,16 @@ def combine_four_lead(data):
 
 
 def get_windowed_time(patient_idx, num_hbs=10, window_size=50):
-	'''
+	"""
 	Get time indices which correspond to the first index of each window
 	(in units of hours before cardiac arrest)
+	:param patient_idx: [int] patient index
+	:param num_hbs: [int] number of heartbeats used per data point (usually 10)
+	:param window_size: [int] window size used for computing windowed metrics (usually 50)
 	
-	Inputs:
-	patient_idx - int, patient's index
-	num_hbs - int, number of heartbeats used per data point (usually 10)
-	window_size - int, window size used for computing windowed metrics (usually 50)
-	
-	Outputs:
-	list of time indices spaced by "window_size" indices, in units of hrs before
+	:return: [list[int]] time indicies spaced by "window_size" indices, in units of hrs before
 	cardiac arrest
-	'''
+	"""
 	time_stamps = np.load(f"Working_Data/HB_Timestamps_Idx{patient_idx}.npy") # load raw time vector (seconds)
 	time_stamps = time_stamps - time_stamps[-1] # convert units to seconds before end of data (negative time)
 	time_stamps = time_stamps/3600 # convert to hours

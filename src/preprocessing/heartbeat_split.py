@@ -23,23 +23,18 @@ import os
 
 import matplotlib.pyplot as plt
 
-from src.utils.file_indexer import get_filenames
+from src.utils.file_indexer import get_filenames, get_patient_ids
 from src.preprocessing.noise_filtering import remove_noise
 
 from src.utils import plotting_utils, dsp_utils, h5_interface
 
-'''
-Function to detect "gaps" in the data signal, which are from the leads being
-disconnected. For each detected "heartbeat" (a slice between two R-peaks)
-
-Inputs: 
-signal_data: type: Numpy Array - Signal sum of negative clipped lead signals
-peaks  : type: Numpy Array - Indicies of the detected R-peaks in signal_data
-
-Outputs: 
-bad_hbs: type: list of Slices - heartbeats which have less than 5% unique values
-'''
 def detect_gaps(signal_data, peaks):
+	"""
+    Checks a list of detected heartbeat slices from ECG signal, and detects flatlines
+    :param signal_data: [np array[float64]] raw ECG signal 
+    :param peaks: [np array[int]] indicies of the detected peaks
+    :return: [list[slice[int:int]]] slices of flatline signal
+    """
 	#Look for gaps (based of unique values)
 	bad_hbs = []
 	vals = np.unique(signal_data[0:peaks[0]])
@@ -62,31 +57,22 @@ def detect_gaps(signal_data, peaks):
 		bad_hbs.append( slice(peaks[-1], len(signal_data)) )
 
 	return bad_hbs
-'''
-Function to get the heartbeat lengths, which is the distance between adjacent
-peaks.
-
-Inputs:
-peaks:     type: Numpy Array (int) - indicies of the peaks
-
-Outputs:
-hb_lengths: type: Numpy Array (int) - lengths of heartbeats
-'''
 def find_lengths(peaks):
+	"""
+    Returns the heartbeat lengths
+    :param peaks: [np array[int]] indicies of the detected peaks
+    :return: [np array[int]] heartbeat lengths
+    """
 	return np.diff(np.concatenate( (np.array([0]), peaks) ) )
-'''
-Function to get slices of "long" heartbeats
 
-Inputs:
-peaks:     type: Numpy Array (int) - indicies of the peaks
-total_len: type: int 			   - total length of the signal
-threshold: type: int 			   - threshold heartbeat length, above this to be removed
-
-Outputs:
-long_slices:   type: Slice (int) - Slices of long heartbeats
-revised_peaks: type: Numpy Array - Revised peaks vector corrected for the removals
-'''
 def find_long_heartbeats(peaks, total_len, threshold):
+	"""
+    Find slices that are longer than a threshold
+    :param peaks: [np array[int]] indicies of the detected peaks
+    :param total_len: [int] length of signal
+    :param threshold: [float] threshold length
+    :return: [list[slice[int:int]]] slices that are above threshold
+    """
 	long_slices = []
 	rm_idx = []
 
@@ -105,6 +91,13 @@ def find_long_heartbeats(peaks, total_len, threshold):
 	return long_slices, np.delete(peaks, rm_idx)
 
 def delete_slices(slices, length, removals):
+	"""
+    Deletes slices from ECG
+    :param slices: [list[slice[int:int]]] slices to be removed
+    :param length: [int] Length of signal
+    :param removals: [list[np array[float64]]] list of signals to be modified
+    :return: [list[np array[float64]]] modified signals
+    """
 	ind = np.indices((length,))[0]
 	rm = np.hstack(list(ind[i] for i in slices))
 	good_indices = sorted(set(ind)-set(rm))
@@ -115,6 +108,14 @@ def delete_slices(slices, length, removals):
 	return removals
 
 def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
+	"""
+    Build the data matrix
+    :param four lead: [np array[np array[float64]]] four lead ECG signal
+    :param peaks: [np array[int]] indicies of the detected peaks
+    :param dimension: [int] Dimension for each heartbeat to be interpolated to
+    :param plotting: [bool] periodically show the heartbeat
+    :return: [np array[np array[np array[float64]]]] 3-D Data Matrix
+    """
 	if len(peaks) % 2 == 0:
 		four_lead = four_lead[:,:peaks[-1]]
 		peaks = peaks[:-1]
@@ -147,6 +148,16 @@ def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
 	return fixed_dimension_hbs
 
 def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plotting = False):
+	"""
+    Build the data matrix
+    :param four lead: [np array[np array[float64]]] four lead ECG signal
+    :param peaks: [np array[int]] indicies of the detected peaks
+    :param dimension: [int] Dimension for each heartbeat to be interpolated to
+    :param time: [np array[int]] time vector
+    :param beats_per_vector: [int] number of heartbeats in each feature vector
+    :param plotting: [bool] periodically show the heartbeat
+    :return: [np array[np array[np array[float64]]]] 3-D Data Matrix
+    """
 	peaks = np.concatenate((np.array([0]), peaks, np.array([four_lead.shape[1]])))
 	num_beats = len(peaks) - 1
 	if not beats_per_vector == 1:
@@ -165,8 +176,6 @@ def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plo
 			try:
 				fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, beats_per_vector * dimension)
 			except:
-				plt.plot(four_lead[lead_num,start_peak - 15:peaks[hb_num + 1] + 15])
-				plt.show()
 				print(f"WARNING : failed to interpolate heartbeat num: {hb_num} of length: {peaks[hb_num + 1] - start_peak}")
 			#Periodic Visual inspection of dimension fixed heartbeat
 			if plotting and hb_num % 15000 == 0:
@@ -177,6 +186,12 @@ def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plo
 	return fixed_dimension_hbs
 
 def load_np(filename):
+	"""
+    Load the raw data from h5 files
+    :param filename: [string] filename to be read in
+    :return: 4 x [np array[float64]] leads, [np array[int]] time vector, 
+             [np array[int]] heartrate vector from machine, [np array[float64]] abs pos sum ECG signal
+    """
 	print("Opening file : " + filename)
 
 	h5f = h5_interface.readh5(filename)
@@ -193,6 +208,19 @@ def load_np(filename):
 	'''
 	return lead1, lead2, lead3, lead4, time, heartrate, pos_sum
 def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent, prefix = ""):
+	"""
+    Save the intermidiate data after preprocessing. Also write stats to log file
+    :param curr_index: [int] index of the current patient
+    :param orig_num_hbs: [int] original number of heartbeats before filtering
+    :param four lead: [np array[np array[float64]]] four lead ECG signal
+    :param fixed_dimension_hbs: [np array[np array[np array[float64]]]] 3D data matrix
+    :param heartrate: [np array[float]] Heartrate vector from ECG machine
+    :param peaks: [np array[int]] indicies of the detected peaks
+    :param hb_lengths: [np array[int]] heartbeat lengths
+    :param time: [np array[int]] Time vector
+    :param percent: [float] percent of original signal kept after filtering
+    :return: None
+    """
 	#logging setup
 	log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
 	os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
@@ -224,6 +252,12 @@ def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate
 	log.close()
 
 def denoise(time, lead1, lead2, lead3, lead4):
+	"""
+    Build the data matrix
+    :param time: [np array[int]] time vector
+    :param lead: [np array[float64]] ECG lead signal
+    :return: [np array[float64]] denoised leads
+    """
 	# Removing baseline wander and high frequency noise
 	lead1 = remove_noise(time, lead1)
 	lead2 = remove_noise(time, lead2)
@@ -235,7 +269,19 @@ Inputs: Indicies of the patient files to process
 Outputs: Saves multiple files of processed data, in addition to a text file log for each
 '''
 def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = ""):
+	"""
+    Main function to run the preprocessing using the absolute value sum method
+    :param filename: [string] filename to be read in
+    :param curr_index: [int] index of the current patient
+    :param four lead: [np array[np array[float64]]] four lead ECG signal
+    :param beats_per_datapoint: [int] number of heartbeats in each feature vector
+    :param file_prefix: [string] optional filename prefix for savefiles
+    :return: None
+    """
 	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename)
+
+	if heartrate is None:
+		heartrate = np.full((len(lead1),), 120)
 	
 	peaks = dsp_utils.get_peaks_dynamic(pos_sum, heartrate) # indices on the signal where we found a peak
 	peaks = peaks.astype(int)
@@ -318,6 +364,7 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 	
 if __name__ == "__main__":
 	plotting_utils.set_font_size()
+	indicies = get_patient_ids()
 	for idx, filename in zip(indicies, get_filenames()):
 		# TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
