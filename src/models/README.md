@@ -2,14 +2,12 @@
 
 These files work to create the model and instability metric on the preprocessed data.
 
-## Helper functions
- (somethign here about generally what the helper functions are for)
-- `patient_split.py` - 
-- `model_output_plots.py` - 
+## Helper function
+- `patient_split.py` - patient split is used to convert the 6 hour preprocessed data into normal and abnormal data for model training
 
 ## Models
- (somethign here about generally what the models do)
-- `conv_denoising.py` - 
+The autoencoder is used to learn the patterns of normal heartbeats and then predict abnormal heartbeats to provide an error metric that is later used for determining instability metrics.
+- `conv_denoising.py` - contains functions to create, train, and save convolutional autoencoder models with additional code to load pretrained models
 - `isolation_forest.py` - 
 
 ## Instability metrics
@@ -17,4 +15,8 @@ These files work to create the model and instability metric on the preprocessed 
 - `mse.py` - 
 - `changepoint.py` -  
 - `sample_variability.py` - 
+
+## Plots
+
+- `reconstructed_plots.py` - contains code to recreate plot showing the difference between the original and reconstructed heartbeats for a single patient 
 

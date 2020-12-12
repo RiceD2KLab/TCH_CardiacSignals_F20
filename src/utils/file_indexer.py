@@ -1,11 +1,8 @@
 import os
 
-'''
-Function that returns a list of filenames
-
-## ATTENTION FUTURE ECE STUDENT ##
-Set optional parameter "original" to False if you are using your own data
-'''
+"""
+Utility functions to help with filenames
+"""
 
 original_patient_ids = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '16', '17', '18', '19', '20', '21', '22', '25', '27',
 			'28', '30', '31', '32',
@@ -14,6 +11,13 @@ original_patient_ids = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '1
 
 
 def get_filenames(start = 0, stop = None, original=True):
+	"""
+	Function to get the filenames
+	:param start: [int] index to start on
+	:param stop: [int] index to stop on
+	:param original: [bool] use original set of data
+	:returns: [list[string]] filenames
+	"""
 	if original:
 
 		filenames = []
@@ -32,6 +36,11 @@ def get_filenames(start = 0, stop = None, original=True):
 		return dataFilenames
 
 def get_patient_ids(original=True):
+	"""
+	Get the patient ids
+	:param original: [bool] use original data set
+	"""
+
 	return original_patient_ids
 
 
