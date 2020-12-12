@@ -81,15 +81,16 @@ def remove_noise(time, lead_data, plots=False):
     return lead_data_filtered
 
 
-# # EXAMPLE: Test the noise removal on a patient
-# filename = 'Reference_idx_16_Time_block_1.h5'
-# h5f = h5_interface.readh5(filename)
-#
-# four_lead, time, heartrate = h5_interface.ecg_np(h5f)
-# lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
-# lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
-#
-# lead1_filtered = remove_noise(time, lead1, plots=True)
+if __name__ == "__main__":
+    # # EXAMPLE: Test the noise removal on a patient
+    filename = 'Reference_idx_16_Time_block_1.h5'
+    h5f = h5_interface.readh5(filename)
+
+    four_lead, time, heartrate = h5_interface.ecg_np(h5f)
+    lead1, lead2, lead3, lead4 = np.vsplit(four_lead, 4)
+    lead1, lead2, lead3, lead4 = [lead1[0], lead2[0], lead3[0], lead4[0]]
+
+    lead1_filtered = remove_noise(time, lead1, plots=True)
 
 
 
