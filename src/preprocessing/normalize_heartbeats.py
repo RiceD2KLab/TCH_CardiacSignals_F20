@@ -1,14 +1,22 @@
+"""
+This function normalizes the all heartbeats to a mean of 0 and a standard deviation of 1 since many of the models
+later down the pipeline require normalized data points
+
+The function reads in every Fixed_Dim_HBs_Idx{num}.npy file it finds in the Working_Data directory, normalizes the
+heartbeats inside it, then outputs a corresponding Normalized_Fixed_Dim_HBs_Idx{num}.npy file
+"""
 import numpy as np
 import os
 from src.preprocessing import heartbeat_split
 from sklearn.preprocessing import StandardScaler
+from src.utils.file_indexer import get_patient_ids
 
 def normalize_heartbeats():
     """
     Normalizes the Fixed_Dims_HBs 3D matrices (shape n x 100 x 4) by normalizing each 100x4 matrix to mean 0, variance 1
     :return: nothing, saves the normalized heartbeats to a Normalized_Fixed_Dims_HBs_Idx{k}.npy file
     """
-    for file_index in heartbeat_split.indicies:
+    for file_index in get_patient_ids():
         original_signals = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx{}.npy".format(file_index)))
         for i in range(np.shape(original_signals)[0]):
             original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
@@ -18,11 +26,5 @@ def normalize_heartbeats():
 
     return
 
-def normalize_heartbeat(input_filename, output_filename):
-    original_signals = np.load(os.path.join("Working_Data" , input_filename))
-    for i in range(np.shape(original_signals)[0]):
-        original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
-
-    np.save(os.path.join("Working_Data", output_filename), original_signals)
 if __name__ == "__main__":
     normalize_heartbeats()
