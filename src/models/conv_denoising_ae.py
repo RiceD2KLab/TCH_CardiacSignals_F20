@@ -1,7 +1,6 @@
 """
 Convolutional Denoising Autoencoder
 """
-
 from numpy.random import seed
 seed(1)
 import os
@@ -14,6 +13,8 @@ from tensorflow.keras.models import Sequential, Model
 from src.models.patient_split import *
 from src.preprocessing import heartbeat_split
 from sklearn.model_selection import train_test_split
+from src.utils.plotting_utils import *
+set_font_size()
 
 
 def read_in(file_index, normalized, train, ratio):
@@ -122,43 +123,45 @@ def training_ae(num_epochs, reduced_dim, file_index):
     autoencoder = Model(inp, reconstruction)
     opt = keras.optimizers.Adam(learning_rate=0.001) #0.0008, 0,0001
     autoencoder.compile(optimizer=opt, loss='mse')
-    tensorflow.keras.utils.plot_model(
-        autoencoder,
-        to_file="Working_Data/Visualizations/model.png",
-        dpi=96,
-    )
+    # tensorflow.keras.utils.plot_model(
+    #     autoencoder,
+    #     to_file="Working_Data/Visualizations/model.png",
+    #     dpi=96,
+    # )
 
     early_stopping = EarlyStopping(patience=10, min_delta=0.001, mode='min')
-    autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, batch_size=batch_size, validation_data=(normal_valid,normal_valid), callbacks=early_stopping)
+    model = autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, batch_size=batch_size, validation_data=(normal_valid,normal_valid), callbacks=early_stopping)
     # , callbacks=early_stopping
     #, validation_data=(normal_valid, normal_valid)
+    plt.figure()
+    plt.plot(model.history['loss'])
+    plt.plot(model.history['val_loss'])
+    plt.title('Model Training Loss Patient: ' + str(file_index))
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper right')
+    plt.savefig("Working_Data/Visualizations/CDAE_tv_loss.png")
+    plt.show()
 
-    # plt.plot(autoencoder.history['loss'])
-    # plt.plot(autoencoder.history['val_loss'])
-    # plt.title('model loss patient' + str(file_index))
-    # plt.ylabel('loss')
-    # plt.xlabel('epoch')
-    # plt.legend(['train', 'validation'], loc='upper left')
-    # plt.show()
 
     # save out the model
-    filename = 'Working_Data/ae_patient_' + str(file_index) + '_dim' + str(reduced_dim) + '_model.h5'
-    autoencoder.save(filename)
-    print('Model saved for patient: ' + str(file_index))
+    # filename = 'Working_Data/Healthy/ae_patient_' + str(file_index) + '_dim' + str(reduced_dim) + '_model.h5'
+    # autoencoder.save(filename)
+    # print('Model saved for patient: ' + str(file_index))
 
     # using AE to encode all of the patient data
-    encoded = encoder.predict(all)
-    reconstruction = decoder.predict(encoded)
+    # encoded = encoder.predict(all)
+    # reconstruction = decoder.predict(encoded)
 
     # save reconstruction, encoded, and input if needed
-    reconstruction_save = os.path.join("Working_Data", "reconstructed_cdae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
-    encoded_save = os.path.join("Working_Data", "reduced_cdae_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
+    # reconstruction_save = os.path.join("Working_Data/Healthy", "reconstructed_cdae_p_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
+    # encoded_save = os.path.join("Working_Data/Healthy", "reduced_cdae_p_" + str(reduced_dim) + "d_Idx" + str(file_index) + ".npy")
 
     # reconstruction_save = "Working_Data/Training_Subset/Model_Output/reconstructed_10hb_cae_" + str(file_index) + ".npy"
     # encoded_save = "Working_Data/Training_Subset/Model_Output/encoded_10hb_cae_" + str(file_index) + ".npy"
-
-    np.save(reconstruction_save, reconstruction)
-    np.save(encoded_save,encoded)
+    #
+    # np.save(reconstruction_save, reconstruction)
+    # np.save(encoded_save,encoded)
 
     # if training and need to save test split for MSE calculation
     # input_save = os.path.join("Working_Data","1000d", "original_data_test_ae" + str(100) + "d_Idx" + str(35) + ".npy")
@@ -179,7 +182,7 @@ def run(num_epochs, encoded_dim):
 
 
 # #################### Training to be done for 100 epochs for all dimensions ############################################
-run(200, 100)
+run(110, 100)
 
 
 
