@@ -15,7 +15,7 @@ This main goal of this project is to develop an algorithm for early detection of
 **Ensure that the working directory of any python files are set to the project root**\
 This will ensure that package imports work inside the project\
 *Pycharm*: Edit the run configuration and set the working directory to the project root\
-*Terminal*: From the project root, run `export PYTHONPATH=$PYTHONPATH:'pwd'` to set the working directory, then run the script from the project root (i.e. `python3 src/<package_name>/.../<scriptname>.py`
+*Terminal*: From the project root, run `export PYTHONPATH=$PYTHONPATH:'pwd'` to set the working directory, then run the desired script from the project root (i.e. `python3 src/<package_name>/.../<scriptname>.py`
 
 
 ## Installation
@@ -28,11 +28,13 @@ Download the H5 files folder from the TCH box into the project root. **Rename  t
 
 To start running the code in this directory, head to the [``src``directory](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/tree/master/src), for information on preprocessing, modeling and validation.
 The following diagram is an overview of the files associated with our data science pipline
-![Data Science Pipeline Overview](ds_pipeline_diagram.jpeg) 
+![Data Science Pipeline Overview](images/pipelinediagram.svg) 
 
 # In this directory
-
-* ``ReportPDF.pdf``- Information on this project
+* `Data_H5_Files/` - contains the raw ECG signals in the form of H5 files -> contains sample for patient 16
+* `images/` - contains plots used for the final report and presentation
+*  `src/` - source code for the project
+* `Working_Data/` - directory for intermediate data such as normalized heartbeats, reconstructions, etc.
+* ``ReportPDF.pdf``- Formal final report for this project
 * ``requirements.txt`` - Packages required to run this repository
-* ``src`` - Directory containing the main files for this project
-* ``images`` - Various images created by files in the ``src`` directory
+* `run.ipynb` - notebook for running a single patient through the pipeline, including preprocessing and modeling
