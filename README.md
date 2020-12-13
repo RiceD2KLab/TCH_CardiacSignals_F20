@@ -25,9 +25,14 @@ This will ensure that package imports work inside the project\
 Download the H5 files folder from the TCH box into the project root. **Rename  to `Data_H5_Files`**
 
 ## Running code 
+We provide the notebook `run.ipynb` that runs a sample patient (id = 16) through our pipeline. Specifically, it runs the
+patient through our preprocessing, modeling, and validation sections of the pipeline.\
+The notebook defaults to loading a pretrained model to avoid the expensive autoencoder training step. **To get this pretrained model, 
+download the pretrained model weights from the TCH Box into the Working_Data directory (detailed instructions inside the notebook)**
 
-To start running the code in this directory, head to the [``src``directory](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/tree/master/src), for information on preprocessing, modeling and validation.
-The following diagram is an overview of the files associated with our data science pipline
+
+For reproducibility, we add notes in the `README` for each module on how to reproduce our figures. Head to the [``src``directory](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/tree/master/src), for information on preprocessing, modeling and validation.
+The following diagram is an overview of the files associated with our data science pipeline
 ![Data Science Pipeline Overview](images/pipelinediagram.svg) 
 
 # In this directory
