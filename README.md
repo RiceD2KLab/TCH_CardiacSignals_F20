@@ -43,3 +43,19 @@ The following diagram is an overview of the files associated with our data scien
 * ``ReportPDF.pdf``- Formal final report for this project
 * ``requirements.txt`` - Packages required to run this repository
 * `run.ipynb` - notebook for running a single patient through the pipeline, including preprocessing and modeling
+
+# Downloading Data Files
+## Original Data
+The data we used to develop the pipeline is in the TCH Box, located in the folder called `Data H5 Files`. 
+If you want to run the original data through the pipeline, then download the H5 files from the above folder into the `Data_H5_Files` folder in the repo. (Note the underscores)
+
+
+## Adding New Data
+If you want to run new data through the pipeline, then for each patient: 
+1) Put 6 hours of 4-lead ECG data into an H5 file
+2) Name the H5 file `Reference_idx_{unique_id}_Time_block_1.h5`, where `{unique_id}` is some unique number that is not already used within the `src/utils/file_indexer.py` indices.
+3) Put this file in the `Data_H5_Files` array 
+4) Add the unique index of the file into the `new_patient_id` array
+
+*Note: If there are any IDs in the `new_patient_id` array, then the pipeline defaults to reading from this array. 
+If the `new_patient_id` array is empty, then the pipeline defaults to using the original data referenced in the previous subsection. 

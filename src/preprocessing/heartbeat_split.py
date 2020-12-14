@@ -366,7 +366,6 @@ if __name__ == "__main__":
 	plotting_utils.set_font_size()
 	indicies = get_patient_ids()
 	for idx, filename in zip(indicies, get_filenames()):
-		# TODO : Fix this index problem. Need to call resulting files the correct index
 		idx = str(idx)
-		preprocess_sum(filename, idx, beats_per_datapoint = 1)
+		preprocess_sum(filename, idx, beats_per_datapoint = 10)
 		# preprocess_seperate(filename, idx)

@@ -9,6 +9,7 @@ original_patient_ids = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '1
 			'33', '34', '35', '37', '38', '39', '40', '41', '42', '44', '45', '46', '47', '48', '49', '50', '52', '53',
 			'54', '55', '56']
 
+new_patient_ids = []
 
 def get_filenames(start = 0, stop = None, original=True):
 	"""
@@ -35,13 +36,16 @@ def get_filenames(start = 0, stop = None, original=True):
 	else:
 		return dataFilenames
 
-def get_patient_ids(original=True):
+def get_patient_ids():
 	"""
-	Get the patient ids
-	:param original: [bool] use original data set
+	Get the patient ids. If there are unique patient indices in the new_patient_id array, then return that id array
+	Otherwise, return the original array of patient ids
 	"""
 
-	return original_patient_ids
+	if len(new_patient_ids) == 0:
+		return original_patient_ids
+	else:
+		return new_patient_ids
 
 
 
