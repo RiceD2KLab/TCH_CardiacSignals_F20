@@ -16,8 +16,10 @@ if __name__ == "__main__":
     plt.rcParams['figure.dpi'] = 500
     plt.title("Original vs. Reconstructed Heartbeats")
     set_font_size()
-    plt.plot(reconstructed[1, 650:950, 0], label='Reconstructed', c='Blue')
-    plt.plot(original[1, 650:950, 0], label='original', c='Red', alpha=0.6, linewidth=2)
+    plt.plot(np.asarray(range(len(reconstructed[1, 650:950, 0])))/240, reconstructed[1, 650:950, 0], label='Reconstructed', c='Blue')
+    plt.plot(np.asarray(range(len(original[1, 650:950, 0])))/240, original[1, 650:950, 0], label='Original', c='Red', alpha=0.6, linewidth=2)
+    plt.xlabel("Time (sec)")
+    plt.ylabel("Amplitude")
     plt.legend(loc='lower right')
     plt.savefig("images/compare_original_reconstructed.png")
     plt.show()

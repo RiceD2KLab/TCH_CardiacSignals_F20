@@ -149,15 +149,20 @@ def build_hb_matrix_centered(four_lead, peaks, dimension, plotting = False):
 
 def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plotting = False):
 	"""
-    Build the data matrix
-    :param four lead: [np array[np array[float64]]] four lead ECG signal
-    :param peaks: [np array[int]] indicies of the detected peaks
-    :param dimension: [int] Dimension for each heartbeat to be interpolated to
-    :param time: [np array[int]] time vector
-    :param beats_per_vector: [int] number of heartbeats in each feature vector
-    :param plotting: [bool] periodically show the heartbeat
-    :return: [np array[np array[np array[float64]]]] 3-D Data Matrix
-    """
+	Build the data matrix
+	:param four lead: [np array[np array[float64]]] four lead ECG signal
+	:param peaks: [np array[int]] indicies of the detected peaks
+	:param dimension: [int] Dimension for each heartbeat to be interpolated to
+	:param time: [np array[int]] time vector
+	:param beats_per_vector: [int] number of heartbeats in each feature vector
+	:param plotting: [bool] periodically show the heartbeat
+	:return: [np array[np array[np array[float64]]]] 3-D Data Matrix
+	"""
+	crimp = 0
+	#number of samples to cut off each end of a set of beats
+	if beats_per_vector > 1:
+		crimp = 10
+
 	peaks = np.concatenate((np.array([0]), peaks, np.array([four_lead.shape[1]])))
 	num_beats = len(peaks) - 1
 	if not beats_per_vector == 1:
@@ -172,7 +177,7 @@ def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plo
 		#fixed_dimension_hbs[len(peaks),:,lead_num] = dsp_utils.change_dim(four_lead[lead_num, peaks[-1]:], dimension)
 		#iterate through the rest of heartbeats
 		for hb_num, start_peak in enumerate(peaks[:-1]):
-			individual_hb = four_lead[lead_num,start_peak + 10:peaks[hb_num+1] - 10]
+			individual_hb = four_lead[lead_num,start_peak + crimp:peaks[hb_num+1] - crimp]
 			try:
 				fixed_dimension_hbs[hb_num,:,lead_num] = dsp_utils.change_dim(individual_hb, beats_per_vector * dimension)
 			except:
@@ -367,5 +372,5 @@ if __name__ == "__main__":
 	indicies = get_patient_ids()
 	for idx, filename in zip(indicies, get_filenames()):
 		idx = str(idx)
-		preprocess_sum(filename, idx, beats_per_datapoint = 10)
+		preprocess_sum(filename, idx, beats_per_datapoint = 1)
 		# preprocess_seperate(filename, idx)
