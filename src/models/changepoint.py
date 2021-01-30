@@ -146,6 +146,35 @@ def cusum_box_plot(patient_indices, model_name, dimension):
     # plt.savefig('images/cusum_boxplot.png', dpi=500)
     plt.show()
 
+def recall_v_threshold():
+    """
+    Creates a graph of recall (num detected cardiac arrests / num actual cardiac arrests) vs threshold
+    :return: nothing
+    """
+
+    thresholds = list(range(200, 1000, 10))
+    recalls = []
+    detection_times = []
+
+    for i in thresholds:
+        count, total, avg_time, sem_time = cusum_validation(i)
+        recalls.append(count/total)
+        detection_times.append(avg_time)
+
+    set_font_size()
+    plt.plot(thresholds, recalls)
+    plt.title("Recall vs CUSUM Threshold")
+    plt.xlabel("CUSUM Threshold")
+    plt.ylabel("Recall")
+    plt.show()
+
+    plt.plot(detection_times, recalls)
+    plt.title("Average Detection Time vs CUSUM Threshold")
+
+
+
+    return
+
 if __name__ == "__main__":
     # Uncomment the below two lines to reproduce the figures from the report
 
@@ -153,6 +182,8 @@ if __name__ == "__main__":
     # for idx in get_patient_ids():
     #     cusum(idx, "cdae", dimension=100)
     # cusum(16, "cdae", dimension=100)
-    cusum_validation(500)
+    # cusum_validation(500)
+
+    recall_v_threshold()
 
     pass
