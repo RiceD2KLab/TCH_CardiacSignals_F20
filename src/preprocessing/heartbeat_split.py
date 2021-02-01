@@ -372,5 +372,5 @@ if __name__ == "__main__":
 	indicies = get_patient_ids()
 	for idx, filename in zip(indicies, get_filenames()):
 		idx = str(idx)
-		preprocess_sum(filename, idx, beats_per_datapoint = 1)
+		preprocess_sum(filename, idx, beats_per_datapoint = 10)
 		# preprocess_seperate(filename, idx)
