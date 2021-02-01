@@ -20,11 +20,12 @@ This will ensure that package imports work inside the project\
 
 ## Installation
 
-`git clone https://github.com/RiceD2KLab/TCH_CardiacSignals_F20.git` \
-`pip3 install -r requirements.txt` \
+1) `git clone https://github.com/RiceD2KLab/TCH_CardiacSignals_F20.git` 
+2) [Create a virtual environment](https://docs.python.org/3/library/venv.html) 
+3) `pip3 install -r requirements.txt` into the virtual environment \
 NOTE: tensorflow is not yet available for Python 3.9; please use Python 3.8.5
 
-Download the H5 files folder from the TCH box into the project root. **Rename  to `Data_H5_Files`**
+4) Optional (if you want to run the entire pipeline over the original data): Download the H5 files folder from the TCH box into the project root. **Rename  to `Data_H5_Files`**
 
 ## Running code 
 We provide the notebook `run.ipynb` that runs a sample patient (id = 16) through our pipeline. Specifically, it runs the
