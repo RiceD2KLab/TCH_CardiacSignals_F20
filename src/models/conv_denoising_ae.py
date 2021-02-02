@@ -86,6 +86,34 @@ def build_model(encode_size):
 
     return encoder, decoder
 
+    # encoder = Sequential()
+    # encoder.add(InputLayer((100, 4)))
+    # encoder.add(Conv1D(5, 11, activation="tanh", padding="same"))
+    # encoder.add(Conv1D(7, 7, activation="relu", padding="same"))
+    # encoder.add(MaxPooling1D(2))
+    # encoder.add(Conv1D(11, 5, activation="tanh", padding="same"))
+    # encoder.add(Conv1D(11, 3, activation="tanh", padding="same"))
+    # encoder.add(MaxPooling1D(2))
+    # encoder.add(Flatten())
+    # encoder.add(Dense(75, activation='tanh', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(40, activation='tanh', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(20, activation='tanh', kernel_initializer='glorot_normal'))
+    # encoder.add(Dense(encode_size))
+    #
+    # # Build the decoder
+    # decoder = Sequential()
+    # decoder.add(InputLayer((encode_size,)))
+    # decoder.add(Dense(20, activation='tanh', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(40, activation='tanh', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(75, activation='tanh', kernel_initializer='glorot_normal'))
+    # decoder.add(Dense(1000, activation='tanh', kernel_initializer='glorot_normal'))
+    # decoder.add(Reshape((100, 10)))
+    # decoder.add(Conv1DTranspose(8, 11, activation="relu", padding="same"))
+    # decoder.add(Conv1DTranspose(4, 5, activation="linear", padding="same"))
+    # # print(encoder.summary())
+    # # print(decoder.summary())
+    # return encoder, decoder
+
 
 def tuning_ae(num_epochs, encode_size, file_index, plot_loss, save_files):
     """
@@ -117,14 +145,25 @@ def tuning_ae(num_epochs, encode_size, file_index, plot_loss, save_files):
     model = autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, batch_size=batch_size,
                             validation_data=(normal_valid, normal_valid), callbacks=early_stopping)
     if plot_loss:
+        SMALLER_SIZE = 10
+        MED_SIZE = 12
+        BIG_SIZE = 18
         plt.figure()
+        # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+        plt.rc('axes', titlesize=MED_SIZE)  # fontsize of the axes title
+        plt.rc('axes', labelsize=MED_SIZE)  # fontsize of the x and y labels
+        plt.rc('xtick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
+        plt.rc('ytick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
+        plt.rc('legend', fontsize=MED_SIZE)  # legend fontsize
+        plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
+
         plt.plot(model.history['loss'])
         plt.plot(model.history['val_loss'])
-        plt.title('Model Training Loss Patient: ' + str(file_index))
-        plt.ylabel('loss')
-        plt.xlabel('epoch')
-        plt.legend(['train', 'validation'], loc='upper right')
-        plt.savefig("images/CDAE_" + file_index + "_loss.png")
+        # plt.title('Example of Training and Validation Loss')
+        plt.ylabel('Mean Squared Error')
+        plt.xlabel('Epochs')
+        plt.legend(['Train', 'Validation'], loc='upper right')
+        plt.savefig("images/CDAE_" + file_index + "_loss.png", dpi=500)
         plt.show()
 
     if save_files:
@@ -175,8 +214,8 @@ def training_ae(num_epochs, reduced_dim, file_index, save_model):
     reconstruction = decoder.predict(encoded)
 
     # save reconstruction and encoded files
-    reconstruction_save = "Working_Data/reconstructed_10hb_cae_" + str(file_index) + ".npy"
-    encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
+    reconstruction_save = "Working_Data/reconstructed_1hb_cae_" + str(file_index) + ".npy"
+    encoded_save = "Working_Data/encoded_1hb_cae_" + str(file_index) + ".npy"
     np.save(reconstruction_save, reconstruction)
     np.save(encoded_save, encoded)
 
@@ -190,7 +229,7 @@ def load_model(file_index):
     normal, abnormal, all = read_in(file_index, 1, 2, 0.3)
     autoencoder = keras.models.load_model('Working_Data/ae_patient_' + str(file_index) + '_dim' + str(100) + '_model.h5')
     reconstructed = autoencoder.predict(all)
-    reconstruction_save = "Working_Data/reconstructed_cdae_100d_Idx" + str(file_index) + ".npy"
+    reconstruction_save = "Working_Data/reconstructed_cdae_10d_Idx" + str(file_index) + ".npy"
     np.save(reconstruction_save, reconstructed)
 
 
@@ -201,16 +240,17 @@ def run(num_epochs, encoded_dim):
     :param encoded_dim: dimension to run on
     :return None, saves arrays for reconstructed and dim reduced arrays
     """
-    for patient_ in get_patient_ids():
+    # for patient_ in get_patient_ids():
+    for patient_ in ['16']:
         print("Starting on index: " + str(patient_))
-        training_ae(num_epochs, encoded_dim, patient_, True)
+        tuning_ae(num_epochs, encoded_dim, patient_, True, True)
         print("Completed " + str(patient_) + " reconstruction and encoding, saved test data to assess performance")
 
 
 # trains and saves a model for each patient from get_patient_ids
-# if __name__ == "__main__":
-#     load_model(16) # for use with pre trained models
-#     # run(110, 100) # to train a whole new set of models
+if __name__ == "__main__":
+    # load_model(16) # for use with pre trained models
+    run(110, 10) # to train a whole new set of models
 
 
 
