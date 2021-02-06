@@ -69,22 +69,26 @@ def cusum_validation(threshold):
         try:
             cusum_vals = np.load(f"Working_Data/unwindowed_cusum_100d_Idx{idx}.npy") # load cusum scores for this patient
             patient_times = get_windowed_time(idx, num_hbs=10, window_size=1)[:-1]
-            if len(cusum_vals) > 1000: # check if enough valid data
+            cusum_vals = cusum_vals[len(cusum_vals)//2:] # grab the last half
+            patient_times = patient_times[len(patient_times)//2:] # grab the last half
+            if len(cusum_vals) > 500: # check if enough valid data
                 stop_index = next((i for i in range(len(cusum_vals)) if cusum_vals[i] > threshold), -1) # first index where cusum > threshold
                 stop_time = patient_times[stop_index]
-                if stop_index > len(cusum_vals)/2: # make sure change is in last three hours of data (no false positives)
+                if stop_index != -1:
+                # if stop_index > len(cusum_vals)/2: # make sure change is in last three hours of data (no false positives)
                     count += 1
                     detection_times.append(stop_time)
                     # avg_time += stop_time
                 total += 1
-        except:
+        except Exception as e:
+            print(f"error is {e}")
             print("No File Found: Patient " + idx)
             continue
     # avg_time /= count
     avg_time = np.mean(detection_times)
     sem_time = sem(detection_times)
     print(f"Threshold crossed within final 3 hours: {count}/{total}")
-    print(f"Average Detection Earliness: {avg_time} +- {sem_time} hours")
+    print(f"Average Detection Earliness: {avg_time} +- {1.96 * sem_time} hours")
     return count, total, avg_time, sem_time
 
 def cusum_box_plot(patient_indices, model_name, dimension):
@@ -152,7 +156,7 @@ def recall_v_threshold():
     :return: nothing
     """
 
-    thresholds = list(range(200, 1000, 10))
+    thresholds = list(range(0, 10000, 50))
     recalls = []
     detection_times = []
 
@@ -163,13 +167,18 @@ def recall_v_threshold():
 
     set_font_size()
     plt.plot(thresholds, recalls)
-    plt.title("Recall vs CUSUM Threshold")
-    plt.xlabel("CUSUM Threshold")
+    plt.xlabel(r"CuRE Threshold ($\gamma$)")
     plt.ylabel("Recall")
     plt.show()
 
-    plt.plot(detection_times, recalls)
-    plt.title("Average Detection Time vs CUSUM Threshold")
+    plt.plot(thresholds, detection_times)
+    plt.show()
+
+    check_idx = thresholds.index(500)
+    print(f"500 threshold detection time is {detection_times[check_idx]}")
+    # print(f"500 threshold detection sem is {detection_times[check_idx]}")
+    print(f"500 threshold recall is {recalls[check_idx]}")
+
 
 
 
@@ -179,11 +188,17 @@ if __name__ == "__main__":
     # Uncomment the below two lines to reproduce the figures from the report
 
     # cusum_box_plot(get_patient_ids(), "cdae", 100)
-    # for idx in get_patient_ids():
-    #     cusum(idx, "cdae", dimension=100)
+    # generates the unwindowed_cusum files for each patient
+    for idx in get_patient_ids():
+        try:
+            cusum(idx, "cdae", dimension=100)
+        except:
+            pass
     # cusum(16, "cdae", dimension=100)
     # cusum_validation(500)
 
     recall_v_threshold()
+
+    # cusum_validation(500)
 
     pass
