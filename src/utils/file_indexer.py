@@ -11,7 +11,7 @@ original_patient_ids = ['1', '4', '5', '6', '7', '8', '10', '11', '12', '14', '1
 
 new_patient_ids = []
 
-def get_filenames(start = 0, stop = None, original=True):
+def get_filenames(start = 0, stop = None, original=True, control=False):
 	"""
 	Function to get the filenames
 	:param start: [int] index to start on
@@ -31,9 +31,13 @@ def get_filenames(start = 0, stop = None, original=True):
 		return filenames
 
 	dataFilenames = sorted(os.listdir("Data_H5_Files"))
+
 	if stop:
 		return dataFilenames[start:stop]
+
 	else:
+		if control:
+			dataFilenames = sorted(os.listdir("Data_H5_Files_Control"))
 		return dataFilenames
 
 def scrape_indices(filenames):
@@ -49,7 +53,7 @@ def scrape_indices(filenames):
 		ids.append(fname[start:end])
 	return ids
 
-def get_patient_ids():
+def get_patient_ids(control=False):
 	"""
 	Get the patient ids. If there are unique patient indices in the new_patient_id array, then return that id array
 	Otherwise, return the original array of patient ids
@@ -57,13 +61,13 @@ def get_patient_ids():
 
 	if len(new_patient_ids) == 0:	
 		return original_patient_ids
+	elif control:
+		return(scrape_indices(get_filenames(original=False, control=True)))
 	else:
 		return new_patient_ids
 
-
-
 if __name__ == "__main__":
-	filenames = get_filenames()
-	ids = scrape_indices(filenames)
-	print(len(ids))
-	print(len(original_patient_ids))
+	print(get_filenames(original=False))
+	# ids = scrape_indices(filenames)
+	# print(len(ids))
+	# print(len(original_patient_ids))
