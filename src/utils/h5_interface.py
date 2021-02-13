@@ -16,8 +16,11 @@ import ecg_plot
 Inputs : filename of h5 file to be read
 Ouputs : h5py "dataset", similar to a dictionary of {labels : numpy array of data}
 '''
-def readh5(filename):
-	filepath = os.path.join("Data_H5_Files", filename)
+def readh5(filename, control):
+	if control:
+		filepath = os.path.join("Data_H5_Files_Control", filename)
+	else:
+		filepath = os.path.join("Data_H5_Files", filename)
 	return h5py.File(filepath, 'r')
 '''
 Inputs : h5py dataset of TCH ECG file

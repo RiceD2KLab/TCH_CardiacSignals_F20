@@ -37,6 +37,8 @@ def detect_gaps(signal_data, peaks):
     """
 	#Look for gaps (based of unique values)
 	bad_hbs = []
+	# plt.plot(signal_data)
+	# plt.show()
 	vals = np.unique(signal_data[0:peaks[0]])
 	#leading heartbeat
 	if len(vals) < .05 * (peaks[0]):
@@ -190,7 +192,7 @@ def build_hb_matrix(four_lead, peaks, dimension, time, beats_per_vector = 1, plo
 	#plt.show()
 	return fixed_dimension_hbs
 
-def load_np(filename):
+def load_np(filename, control=False):
 	"""
     Load the raw data from h5 files
     :param filename: [string] filename to be read in
@@ -199,7 +201,7 @@ def load_np(filename):
     """
 	print("Opening file : " + filename)
 
-	h5f = h5_interface.readh5(filename)
+	h5f = h5_interface.readh5(filename, control)
 
 	lead1, lead2, lead3, lead4, time, heartrate = h5_interface.ecg_np(h5f, split = True)
 
@@ -212,6 +214,7 @@ def load_np(filename):
 	plt.show()
 	'''
 	return lead1, lead2, lead3, lead4, time, heartrate, pos_sum
+
 def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent, prefix = ""):
 	"""
     Save the intermidiate data after preprocessing. Also write stats to log file
@@ -273,7 +276,7 @@ def denoise(time, lead1, lead2, lead3, lead4):
 Inputs: Indicies of the patient files to process
 Outputs: Saves multiple files of processed data, in addition to a text file log for each
 '''
-def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = ""):
+def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = "", control=False):
 	"""
     Main function to run the preprocessing using the absolute value sum method
     :param filename: [string] filename to be read in
@@ -283,7 +286,7 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
     :param file_prefix: [string] optional filename prefix for savefiles
     :return: None
     """
-	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename)
+	lead1, lead2, lead3, lead4, time, heartrate, pos_sum = load_np(filename, control)
 
 	if heartrate is None:
 		heartrate = np.full((len(lead1),), 120)
@@ -369,8 +372,11 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 	
 if __name__ == "__main__":
 	plotting_utils.set_font_size()
-	indicies = get_patient_ids()
-	for idx, filename in zip(indicies, get_filenames()):
+	indicies = get_patient_ids(control=True)
+	for idx, filename in zip(indicies, get_filenames(original=False, control=True)):
 		idx = str(idx)
-		preprocess_sum(filename, idx, beats_per_datapoint = 10)
+		try:
+			preprocess_sum(filename, idx, beats_per_datapoint=10, control=True)
+		except:
+			print(idx+'bad')
 		# preprocess_seperate(filename, idx)
