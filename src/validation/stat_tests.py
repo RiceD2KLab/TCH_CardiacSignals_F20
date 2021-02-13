@@ -52,7 +52,7 @@ def wilcoxon_test(metric_list, indices, alpha):
     total_valid = 0
     for mse, idx in zip(metric_list, indices):
         test_data = mse[len(mse)//3:]
-        if len(test_data) < 10: # check if enough data is available
+        if len(test_data) < 50: # check if enough data is available
             print(f"Invalid patient - not enough data: {idx}")
 
         else:
@@ -77,16 +77,16 @@ def wilcoxon_test(metric_list, indices, alpha):
 if __name__ == "__main__":
     # Code below is an exmaple of how to use the functions in this file 
 
-    # indices = get_patient_ids()
-    # metric_list = []
-    # valid_indices = []
-    # for idx in indices:
-    #     try:
-    #         data = np.load(f"Working_Data/windowed_mse_100d_Idx{idx}.npy")
-    #         metric_list.append(data)
-    #         valid_indices.append(idx)
-    #     except:
-    #         print("No File Found: Patient " + idx)
-    #         continue
-    # sig, total = wilcoxon_test(metric_list, valid_indices, 0.05)
+    indices = get_patient_ids()
+    metric_list = []
+    valid_indices = []
+    for idx in indices:
+        try:
+            data = np.load(f"Working_Data/raw_mse_100d_Idx{idx}.npy")
+            metric_list.append(data)
+            valid_indices.append(idx)
+        except:
+            print("No File Found: Patient " + idx)
+            continue
+    sig, total = wilcoxon_test(metric_list, valid_indices, 0.05)
     pass

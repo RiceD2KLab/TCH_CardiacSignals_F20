@@ -36,13 +36,26 @@ def get_filenames(start = 0, stop = None, original=True):
 	else:
 		return dataFilenames
 
+def scrape_indices(filenames):
+	"""
+	Function to get patient IDs from .h5 files listed as 'Reference_idx_ID_Time_block_1.h5'
+	:param filenames: [list[string]] filenames of .h5 files
+	:returns: [list[string]] corresponding patient IDs
+	"""
+	ids = []
+	for fname in filenames:
+		start = fname.find('Reference_idx_') + len('Reference_idx_')
+		end = start + fname[start:].find('_')
+		ids.append(fname[start:end])
+	return ids
+
 def get_patient_ids():
 	"""
 	Get the patient ids. If there are unique patient indices in the new_patient_id array, then return that id array
 	Otherwise, return the original array of patient ids
 	"""
 
-	if len(new_patient_ids) == 0:
+	if len(new_patient_ids) == 0:	
 		return original_patient_ids
 	else:
 		return new_patient_ids
@@ -50,4 +63,7 @@ def get_patient_ids():
 
 
 if __name__ == "__main__":
-	print(get_filenames())
+	filenames = get_filenames()
+	ids = scrape_indices(filenames)
+	print(len(ids))
+	print(len(original_patient_ids))

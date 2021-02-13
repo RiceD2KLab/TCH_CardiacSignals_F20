@@ -32,7 +32,12 @@ def cusum(patient, model_name, dimension):
     sigma = np.std(val_data) # standard deviation of third hour
     c = np.mean(val_data) + 0.05 # cusum correction parameter
 
-    time_stamps = time_stamps[-len(error_signal):] # size mismatch correction
+
+    if len(time_stamps) > len(error_signal):
+        time_stamps = time_stamps[-len(error_signal):] # size mismatch correction
+    else:
+        error_signal = error_signal[-len(time_stamps):]
+
 
     cusum = [0]
     for x in error_signal:
@@ -40,18 +45,18 @@ def cusum(patient, model_name, dimension):
         cusum.append(max(cusum[-1] + L, 0))
     cusum = cusum[1:]
 
-    # set_font_size()
-    # rcParams.update({'figure.autolayout': True})
+    set_font_size()
+    rcParams.update({'figure.autolayout': True})
 
-    # plt.plot(time_stamps[len(time_stamps)//3:], cusum[len(time_stamps)//3:])
-    # plt.title(f"Individual Patient: CUSUM statistic over time")
-    # plt.xlabel("Time before cardiac arrest (hours)")
-    # plt.ylabel("CUSUM Score")
+    plt.plot(time_stamps[len(time_stamps)//3:], cusum[len(time_stamps)//3:])
+    plt.title(f"Individual Patient: CUSUM statistic over time")
+    plt.xlabel("Time before cardiac arrest (hours)")
+    plt.ylabel("CUSUM Score")
     # plt.savefig('images/cusum_single_patient.png', dpi=500)
 
     # plt.show()
-    filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
-    np.save(filename, cusum)
+    # filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
+    # np.save(filename, cusum)
     return cusum
 
 def cusum_validation(threshold):
@@ -79,6 +84,8 @@ def cusum_validation(threshold):
                     count += 1
                     detection_times.append(stop_time)
                     # avg_time += stop_time
+                else:
+                    print(idx)
                 total += 1
         except Exception as e:
             print(f"error is {e}")
@@ -189,16 +196,17 @@ if __name__ == "__main__":
 
     # cusum_box_plot(get_patient_ids(), "cdae", 100)
     # generates the unwindowed_cusum files for each patient
-    for idx in get_patient_ids():
-        try:
-            cusum(idx, "cdae", dimension=100)
-        except:
-            pass
+    # for idx in get_patient_ids():
+    #     try:
+    #         cusum(idx, "cdae", dimension=100)
+    #     except:
+    #         pass
     # cusum(16, "cdae", dimension=100)
-    # cusum_validation(500)
+    cusum_validation(500)
 
-    recall_v_threshold()
+    # recall_v_threshold()
 
-    # cusum_validation(500)
-
+    # for idx in [1, 5, 7, 8, 11, 12, 18, 27, 40, 41, 47, 49]:
+    #     cusum(idx, "cdae", dimension=100)
+    # plt.show()
     pass
