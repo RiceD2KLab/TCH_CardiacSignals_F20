@@ -49,6 +49,20 @@ def scrape_indices(filenames):
 		ids.append(fname[start:end])
 	return ids
 
+def scrape_indices_WD(directory_path):
+	"""
+	Function to get valid patient IDs from a directory containing preprocessed files
+	:param directory_path: String, path to directory
+	:returns: [list[string]] corresponding patient IDs
+	"""
+	files = os.listdir(directory_path)
+	file_ids = set([])
+	for file in files:
+		items = file.split("_")
+		if items[2][:3] == "Idx":
+			file_ids.add(items[2][3:-4])
+	return list(file_ids)
+
 def get_patient_ids(control=False):
 	"""
 	Get the patient ids. If there are unique patient indices in the new_patient_id array, then return that id array

@@ -215,7 +215,7 @@ def load_np(filename, control=False):
 	'''
 	return lead1, lead2, lead3, lead4, time, heartrate, pos_sum
 
-def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent, prefix = ""):
+def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent, prefix = "",directory = "Working_Data"):
 	"""
     Save the intermidiate data after preprocessing. Also write stats to log file
     :param curr_index: [int] index of the current patient
@@ -230,7 +230,7 @@ def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate
     :return: None
     """
 	#logging setup
-	log_filepath = os.path.join("Working_Data", "Heartbeat_Stats_Idx" + curr_index + ".txt")
+	log_filepath = os.path.join(directory, "Heartbeat_Stats_Idx" + curr_index + ".txt")
 	os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 	log = open(log_filepath, 'w')
 	
@@ -239,17 +239,17 @@ def writeout(curr_index, orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate
 	log.write("Total invalid/removed heartbeats : " + str(orig_num_hbs - len(peaks))+ "\n")
 	log.write("Percent unavaliable : " + str(percent))
 	#Save the four lead signals with gaps cut out
-	mod_four_lead_savename = os.path.join("Working_Data", prefix + "Mod_Four_Lead_Idx" + curr_index + ".npy")
+	mod_four_lead_savename = os.path.join(directory, prefix + "Mod_Four_Lead_Idx" + curr_index + ".npy")
 	#Save the processed heartbeat arrays
-	data_savename = os.path.join("Working_Data", prefix + "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
+	data_savename = os.path.join(directory, prefix + "Fixed_Dim_HBs_Idx" + curr_index + ".npy")
 	#Save the clipped heartrate vector from the ECG machine
-	hr_savename = os.path.join("Working_Data", prefix + "Cleaned_HR_Idx" + curr_index + ".npy")
+	hr_savename = os.path.join(directory, prefix + "Cleaned_HR_Idx" + curr_index + ".npy")
 	#Save the peak indicies
-	peaks_savename = os.path.join("Working_Data", prefix + "HB_Peaks_Idx" + curr_index + ".npy")
+	peaks_savename = os.path.join(directory, prefix + "HB_Peaks_Idx" + curr_index + ".npy")
 	#Save the heartbeat lengths
-	HB_lens_savename = os.path.join("Working_Data", prefix + "HB_Lens_Idx" + curr_index + ".npy")
+	HB_lens_savename = os.path.join(directory, prefix + "HB_Lens_Idx" + curr_index + ".npy")
 	#Save the heartbeat timestamps
-	HB_timestamps_savename = os.path.join("Working_Data", prefix + "HB_Timestamps_Idx" + curr_index + ".npy")
+	HB_timestamps_savename = os.path.join(directory, prefix + "HB_Timestamps_Idx" + curr_index + ".npy")
 	
 	np.save(mod_four_lead_savename, four_lead)
 	np.save(data_savename, fixed_dimension_hbs)
@@ -368,8 +368,10 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks)
 
-	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
-	
+	if not control:
+		writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
+	else:
+		writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix, directory = "Control_Working_Data")
 if __name__ == "__main__":
 	plotting_utils.set_font_size()
 	indicies = get_patient_ids(control=True)
