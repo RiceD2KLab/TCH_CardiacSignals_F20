@@ -32,4 +32,4 @@ def normalize_heartbeats(control=False):
     return
 
 if __name__ == "__main__":
-    normalize_heartbeats()
+    normalize_heartbeats(True)
