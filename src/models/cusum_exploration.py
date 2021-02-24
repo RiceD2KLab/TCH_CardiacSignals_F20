@@ -1,0 +1,135 @@
+from changepoint import *
+import matplotlib.pyplot as plt
+
+def cusum_box_plot(patient_indices, model_name, dimension):
+    """
+    Generates figure of boxplots over time of CUSUM scores across the entire patient cohort
+
+    :param patient_indices: [list(int)] list of patient identifiers to use
+    :param model_name: [string] model type used for the desired data (typically "cdae")
+    :param dimension: [int] dimension used for reduction in the above model (typically 100)
+    :return: None (saves plot of CUSUM distributions over time)
+    """
+
+    cusum_values = []
+    window_times = np.linspace(-4, 0, 49)  # use 50 windows
+
+    for idx in patient_indices:
+        try:
+            current_values = np.load(
+                f"Working_Data/unwindowed_cusum_100d_Idx{idx}.npy")  # load anomaly rates for this patient
+
+            if len(current_values) < 1000:
+                raise e
+
+            patient_times = get_windowed_time(idx, num_hbs=10, window_size=1)[:-1]
+            # print(len(current_values))
+            # print(len(patient_times))
+            test_values = []
+            for i in range(len(window_times) - 1):
+                indices = np.squeeze(np.argwhere(np.logical_and(patient_times >= window_times[i],
+                                                                patient_times < window_times[
+                                                                    i + 1])))  # indices in this window
+                indices = indices[indices < len(current_values)]
+
+                if len(indices) == 0:
+                    test_values.append(None)  # marker for no data available in this window
+                else:
+                    window_scores = current_values[indices]  # cusum scores for all data points found in current window
+                    test_values.append(np.mean(window_scores))
+                    # print(test_values[-1])
+                # print(len(test_values))
+            cusum_values.append(test_values)
+        except:
+            print("Insufficient Data: Patient " + idx)
+            continue
+
+    cusum_values = np.array(cusum_values).T.tolist()
+    for row in cusum_values:  # remove "None" from windows where no data found
+        while None in row: row.remove(None)
+
+    set_font_size()
+    rcParams.update({'figure.autolayout': True})
+
+    plt.boxplot(cusum_values, showfliers=False, positions=window_times[:-1], widths=1 / 15,
+                medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'),
+                capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
+
+    plt.title("CUSUM Score Distribution Over Time")
+    plt.xlabel("Time before cardiac arrest (hours)")
+    plt.ylabel("CUSUM Score")
+    plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
+    plt.xlim(-4.2, 0.2)
+    # plt.savefig('images/cusum_boxplot.png', dpi=500)
+    plt.show()
+
+
+def recall_v_threshold():
+    """
+    Creates a graph of recall (num detected cardiac arrests / num actual cardiac arrests) vs threshold
+    :return: nothing
+    """
+
+    thresholds = list(range(0, 10000, 50))
+    recalls = []
+    detection_times = []
+
+    for i in thresholds:
+        count, total, avg_time, sem_time = cusum_validation(i)
+        recalls.append(count / total)
+        detection_times.append(avg_time)
+
+    set_font_size()
+    plt.plot(thresholds, recalls)
+    plt.xlabel(r"CuRE Threshold ($\gamma$)")
+    plt.ylabel("Recall")
+    plt.show()
+
+    plt.plot(thresholds, detection_times)
+    plt.show()
+
+    check_idx = thresholds.index(500)
+    print(f"500 threshold detection time is {detection_times[check_idx]}")
+    # print(f"500 threshold detection sem is {detection_times[check_idx]}")
+    print(f"500 threshold recall is {recalls[check_idx]}")
+
+    return
+
+def roc_curve():
+    """
+    Plot Receiver Operating Characteristic curve (i.e. true positive vs false positive rate)
+
+    True Positive Rate = True Positives / (True Positives + False Negatives)
+    False Positive Rate = False Positives / (False Positives + True Negatives)
+    :return: nothing
+    """
+
+    thresholds = list(range(0, 10000, 50))
+    true_positive_rates = []
+    false_positive_rates = []
+
+    for i in thresholds:
+        count, total, avg_time, sem_time = cusum_validation(i, control=False)
+
+        true_positive = count
+        false_negative = total - count
+
+        count, total, avg_time, sem_time = cusum_validation(i, control=True)
+        false_positive = count
+        true_negative = total - count
+
+        true_positive_rates.append(true_positive / (true_positive + false_negative))
+        false_positive_rates.append(false_positive / (false_positive + true_negative))
+
+
+    plt.plot(false_positive_rates, true_positive_rates)
+    plt.title("ROC Curve for Cusum Thresholds from 0 to 10000")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.show()
+
+
+
+if __name__ == "__main__":
+    # recall_v_threshold()
+    roc_curve()
