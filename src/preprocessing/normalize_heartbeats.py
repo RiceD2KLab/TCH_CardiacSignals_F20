@@ -18,7 +18,7 @@ def normalize_heartbeats(control=False):
     """
     for file_index in get_patient_ids(control):
         try:
-            working_dir = "Control_Working_Data" if control else "Working_Data"
+            working_dir = "Working_Data"
 
             original_signals = np.load(os.path.join(working_dir, "Fixed_Dim_HBs_Idx{}.npy".format(file_index)))
             for i in range(np.shape(original_signals)[0]):

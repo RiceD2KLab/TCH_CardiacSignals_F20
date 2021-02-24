@@ -59,7 +59,7 @@ def cusum(patient, model_name, dimension):
     # np.save(filename, cusum)
     return cusum
 
-def cusum_validation(threshold):
+def cusum_validation(threshold, control=False):
     """
     Validation of CUSUM detection across the entire patient cohort.
 
@@ -70,7 +70,7 @@ def cusum_validation(threshold):
     total = 0 # total valid patients
     detection_times = [] # detection time for each valid patient
     # avg_time = 0 # average detection time
-    for idx in get_patient_ids():
+    for idx in get_patient_ids(control):
         try:
             cusum_vals = np.load(f"Working_Data/unwindowed_cusum_100d_Idx{idx}.npy") # load cusum scores for this patient
             patient_times = get_windowed_time(idx, num_hbs=10, window_size=1)[:-1]

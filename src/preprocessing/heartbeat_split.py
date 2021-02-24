@@ -367,11 +367,8 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 
 	#Find the lengths of the heartbeats
 	hb_lengths = find_lengths(peaks)
+	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
 
-	if not control:
-		writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
-	else:
-		writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix, directory = "Control_Working_Data")
 if __name__ == "__main__":
 	plotting_utils.set_font_size()
 	indicies = get_patient_ids(control=True)
