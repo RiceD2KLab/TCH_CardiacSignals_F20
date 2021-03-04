@@ -1,5 +1,6 @@
 from changepoint import *
 import matplotlib.pyplot as plt
+from sklearn import metrics
 
 def cusum_box_plot(patient_indices, model_name, dimension):
     """
@@ -104,29 +105,53 @@ def roc_curve():
     :return: nothing
     """
 
-    thresholds = list(range(0, 10000, 50))
+    thresholds = list(range(0, 5050, 50))
     true_positive_rates = []
     false_positive_rates = []
 
+    annotations = list(range(0, 5500, 500))
+    annotation_coords = [] # so we can annotate these points on the scatterplot
+
     for i in thresholds:
-        count, total, avg_time, sem_time = cusum_validation(i, control=False)
 
-        true_positive = count
-        false_negative = total - count
+        test_count, test_total, avg_time, sem_time = cusum_validation(i, control=False)
 
-        count, total, avg_time, sem_time = cusum_validation(i, control=True)
-        false_positive = count
-        true_negative = total - count
+        true_positive = test_count
+        false_negative = test_total - test_count
 
-        true_positive_rates.append(true_positive / (true_positive + false_negative))
-        false_positive_rates.append(false_positive / (false_positive + true_negative))
+        control_count, control_total, avg_time, sem_time = cusum_validation(i, control=True)
+        false_positive = control_count
+        true_negative = control_total - control_count
+
+        # transform this into a form usable by sklearn
+        # we know that all the test group should be 1s and all the control group should be 0s
+        # y_true = np.concatenate(np.ones(test_total), np.zeros(control_total))
+        # then we concatenate the actual output
+        # y_pred = np.concatenate(np.ones(true_positive), np.zeros(false_negative), np.ones(false_positive), np.zeros(true_negative))
+
+        tpr = true_positive / (true_positive + false_negative)
+        fpr = false_positive / (false_positive + true_negative)
+        true_positive_rates.append(tpr)
+        false_positive_rates.append(fpr)
+
+        if i in annotations:
+            annotation_coords.append((fpr, tpr))
+
+
 
 
     plt.plot(false_positive_rates, true_positive_rates)
-    plt.title("ROC Curve for Cusum Thresholds from 0 to 10000")
+    plt.scatter(false_positive_rates, true_positive_rates, c=['r'])
+    for threshold, coord in zip(annotations, annotation_coords):
+        plt.annotate(str(threshold), coord)
+    plt.title(f"ROC Curve for Cusum Thresholds from {thresholds[0]} to {thresholds[-1]}")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.show()
+
+    # calculate AUC (area under curve)
+    auc = metrics.auc(false_positive_rates, true_positive_rates)
+    print(f"AUC-ROC score is {auc}")
 
 
 
