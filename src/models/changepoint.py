@@ -13,7 +13,7 @@ from src.models.mse import mean_squared_error
 from scipy.stats import sem
 import os
 
-def cusum(patient, model_name, dimension, save=False):
+def cusum(patient, model_name, dimension, save=False, correction=0.05):
     """
     Main CUSUM change point detection function. Plots results and saves CUSUM scores for a single patient
 
@@ -30,7 +30,7 @@ def cusum(patient, model_name, dimension, save=False):
 
     val_data = error_signal[duration//3:duration//2] # third hour (assumed healthy)
     sigma = np.std(val_data) # standard deviation of third hour
-    c = np.mean(val_data) + 0.05 # cusum correction parameter
+    c = np.mean(val_data) + correction # cusum correction parameter
 
 
     if len(time_stamps) > len(error_signal):

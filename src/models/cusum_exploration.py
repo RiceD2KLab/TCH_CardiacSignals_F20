@@ -1,6 +1,8 @@
 from changepoint import *
 import matplotlib.pyplot as plt
 from sklearn import metrics
+import numpy as np
+import pickle
 
 def cusum_box_plot(patient_indices, model_name, dimension):
     """
@@ -96,7 +98,7 @@ def recall_v_threshold():
 
     return
 
-def roc_curve():
+def roc_curve(plot=True):
     """
     Plot Receiver Operating Characteristic curve (i.e. true positive vs false positive rate)
 
@@ -105,11 +107,11 @@ def roc_curve():
     :return: nothing
     """
 
-    thresholds = list(range(0, 5050, 50))
+    thresholds = list(range(0, 4000, 20))
     true_positive_rates = []
     false_positive_rates = []
 
-    annotations = list(range(0, 5500, 500))
+    annotations = list(range(0, 4000, 250))
     annotation_coords = [] # so we can annotate these points on the scatterplot
 
     for i in thresholds:
@@ -139,22 +141,60 @@ def roc_curve():
 
 
 
-
-    plt.plot(false_positive_rates, true_positive_rates)
-    plt.scatter(false_positive_rates, true_positive_rates, c=['r'])
-    for threshold, coord in zip(annotations, annotation_coords):
-        plt.annotate(str(threshold), coord)
-    plt.title(f"ROC Curve for Cusum Thresholds from {thresholds[0]} to {thresholds[-1]}")
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.show()
-
+    if plot:
+        plt.figure()
+        plt.plot(false_positive_rates, true_positive_rates)
+        plt.scatter(false_positive_rates, true_positive_rates, c=['r'])
+        for threshold, coord in zip(annotations, annotation_coords):
+            plt.annotate(str(threshold), coord)
+        plt.title(f"ROC Curve for Cusum Thresholds from {thresholds[0]} to {thresholds[-1]}")
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.show()
+    #
     # calculate AUC (area under curve)
     auc = metrics.auc(false_positive_rates, true_positive_rates)
     print(f"AUC-ROC score is {auc}")
+    return auc
 
+
+def threshold_correction_sweep():
+
+    all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
+
+    correction_sweep = np.arange(0, 1, 0.01)
+    auc_scores = {}
+
+    for c in correction_sweep:
+        for idx in all_patients:
+            try:
+                cusum(idx, "cdae", dimension=100, save=True, correction=c)
+            except Exception as e:
+                # print(e)
+                pass
+
+        auc_scores[c] = roc_curve(plot=False)
+        print(f"AUC SCORE FOR C = {c} is {auc_scores[c]}")
+
+    return auc_scores
 
 
 if __name__ == "__main__":
     # recall_v_threshold()
-    roc_curve()
+    # roc_curve()
+    sweep = threshold_correction_sweep()
+    print(sweep)
+    with open('Working_Data/sweep.pickle', 'wb') as handle:
+        pickle.dump(sweep, handle)
+
+    #
+    # all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
+    # for idx in all_patients:
+    #     try:
+    #         cusum(idx, "cdae", dimension=100, save=True, correction=0.16)
+    #     except Exception as e:
+    #         # print(e)
+    #         pass
+    #
+    # roc_curve(plot=True)
+    # cusum_validation(100, control=True)
