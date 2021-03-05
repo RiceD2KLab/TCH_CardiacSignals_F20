@@ -107,11 +107,11 @@ def roc_curve(plot=True):
     :return: nothing
     """
 
-    thresholds = list(range(0, 4000, 20))
+    thresholds = list(range(0, 4020, 20))
     true_positive_rates = []
     false_positive_rates = []
 
-    annotations = list(range(0, 4000, 250))
+    annotations = list(range(0, 4000, 200))
     annotation_coords = [] # so we can annotate these points on the scatterplot
 
     for i in thresholds:
@@ -155,7 +155,7 @@ def roc_curve(plot=True):
     # calculate AUC (area under curve)
     auc = metrics.auc(false_positive_rates, true_positive_rates)
     print(f"AUC-ROC score is {auc}")
-    return auc
+    return auc, true_positive_rates, false_positive_rates
 
 
 def threshold_correction_sweep():
@@ -173,28 +173,55 @@ def threshold_correction_sweep():
                 # print(e)
                 pass
 
-        auc_scores[c] = roc_curve(plot=False)
+        auc_scores[c] = roc_curve(plot=False)[0]
         print(f"AUC SCORE FOR C = {c} is {auc_scores[c]}")
 
     return auc_scores
 
 
-if __name__ == "__main__":
-    # recall_v_threshold()
-    # roc_curve()
-    sweep = threshold_correction_sweep()
-    print(sweep)
-    with open('Working_Data/sweep.pickle', 'wb') as handle:
-        pickle.dump(sweep, handle)
+def plot_sweep():
+    """
+    Plots the AUC vs Cusum correction parameter graph
+    Need to run the threshold_sweep() function beforehand to calculate the AUC score distribution
+    :return:
+    """
+    with open('Working_Data/sweep.pickle', 'rb') as handle:
+        scores = pickle.load(handle)
+    plt.plot(scores.keys(), scores.values())
+    plt.xlabel("CUSUM Correction Parameter")
+    plt.ylabel("Area Under Curve")
+    plt.title("Area Under Curve vs. Correction Parameter")
+    plt.show()
 
-    #
-    # all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
-    # for idx in all_patients:
-    #     try:
-    #         cusum(idx, "cdae", dimension=100, save=True, correction=0.16)
-    #     except Exception as e:
-    #         # print(e)
-    #         pass
-    #
-    # roc_curve(plot=True)
-    # cusum_validation(100, control=True)
+    print(f"argmax correction parameter is {max(scores, key=scores.get)} yielding auc = {max(scores.values())}")
+
+if __name__ == "__main__":
+    ## sweep through the correction parameter and save out to a file since this is an expensive computation
+    # sweep = threshold_correction_sweep()
+    # print(sweep)
+    # with open('Working_Data/sweep.pickle', 'wb') as handle:
+    #     pickle.dump(sweep, handle)
+
+
+    # roc_curve(plot=False)
+    # cusum_validation(25, control=True)
+    plot_sweep()
+
+    # this compares the roc curves with different correcton parameters
+    # plt.clf()
+    # plt.figure()
+    # corrections = [0.05, 0.44]
+    # for c in corrections:
+    #     calculate_cusum_all_patients(c)
+    #     auc, tpr, fpr = roc_curve(plot=False)
+    #     plt.plot(fpr, tpr)
+    # plt.xlabel("False Positive Rate")
+    # plt.ylabel("True Positive Rate")
+    # plt.legend(corrections)
+    # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
+    # plt.show()
+
+
+
+
+

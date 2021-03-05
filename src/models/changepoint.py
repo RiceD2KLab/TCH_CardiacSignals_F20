@@ -13,7 +13,7 @@ from src.models.mse import mean_squared_error
 from scipy.stats import sem
 import os
 
-def cusum(patient, model_name, dimension, save=False, correction=0.05):
+def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=False):
     """
     Main CUSUM change point detection function. Plots results and saves CUSUM scores for a single patient
 
@@ -47,12 +47,12 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05):
 
     set_font_size()
     rcParams.update({'figure.autolayout': True})
-
-    plt.plot(time_stamps[len(time_stamps)//3:], cusum[len(time_stamps)//3:])
-    plt.title(f"Individual Patient: CUSUM statistic over time")
-    plt.xlabel("Time before cardiac arrest (hours)")
-    plt.ylabel("CUSUM Score")
-    # plt.savefig('images/cusum_single_patient.png', dpi=500)
+    if plot:
+        plt.plot(time_stamps[len(time_stamps)//3:], cusum[len(time_stamps)//3:])
+        plt.title(f"Individual Patient: CUSUM statistic over time")
+        plt.xlabel("Time before cardiac arrest (hours)")
+        plt.ylabel("CUSUM Score")
+        # plt.savefig('images/cusum_single_patient.png', dpi=500)
 
     # plt.show()
     if save:
@@ -99,6 +99,20 @@ def cusum_validation(threshold, control=False):
     print(f"Average Detection Earliness: {avg_time} +- {1.96 * sem_time} hours")
     return count, total, avg_time, sem_time
 
+
+def calculate_cusum_all_patients(c):
+    """
+    Recalculates and saves the cusum metric time series over all patients
+    :param c: cusum correction term to calculate cusum series with
+    :return:
+    """
+    all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
+    for idx in all_patients:
+        try:
+            cusum(idx, "cdae", dimension=100, save=True, correction=c, plot=False)
+        except Exception as e:
+            # print(e)
+            pass
 
 
 if __name__ == "__main__":
