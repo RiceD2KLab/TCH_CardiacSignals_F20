@@ -135,37 +135,7 @@ if __name__ == "__main__":
     #     cusum(idx, "cdae", dimension=100, plot=True)
     # plt.show()
 
-    for idx in [1, 12, 27, 41]:
-        error_signal = mean_squared_error(100, "cdae", idx)
-        test_error_signal = error_signal[int(len(error_signal)/3)+50:]
-        plt.hist(test_error_signal, bins=60)
-        plt.xlim(-3,3)
-        plt.xlabel('MSE')
-        plt.ylabel('Counts')
-        plt.title('MSE (Last 4 Hours): Test Patient '+str(idx))
-        plt.show()
-
-        plt.hist(np.log(test_error_signal), bins=60)
-        plt.xlim(-3,3)
-        plt.xlabel('ln(MSE)')
-        plt.ylabel('Counts')
-        plt.title('ln(MSE) (Last 4 Hours): Test Patient '+str(idx))
-        plt.show()
-
-        plt.hist((test_error_signal)**0.25, bins=60)
-        plt.xlim(-3,3)
-        plt.xlabel('(MSE)^0.25')
-        plt.ylabel('Counts')
-        plt.title('(MSE)^0.25 (Last 4 Hours): Test Patient '+str(idx))
-        plt.show()
-        # time_stamps = get_windowed_time(idx, 10, 1)
-        # if len(time_stamps) > len(error_signal):
-        #     time_stamps = time_stamps[-len(error_signal):]  # size mismatch correction
-        # else:
-        #     error_signal = error_signal[-len(time_stamps):]
-        #
-        # plt.plot(time_stamps, error_signal)
-        # plt.show()
+    error_signal = mean_squared_error(100, "cdae", "C103")
 
 
     pass

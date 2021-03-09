@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 import numpy as np
 import pickle
+from src.models.mse import mean_squared_error
 
 def cusum_box_plot(patient_indices, model_name, dimension):
     """
@@ -194,6 +195,36 @@ def plot_sweep():
     plt.show()
 
     print(f"argmax correction parameter is {max(scores, key=scores.get)} yielding auc = {max(scores.values())}")
+
+def plot_MSE_transform(patient_id):
+    """
+    patient_id is a string or integer denoting patient idx
+    :return: plots a histogram of MSE data for the last 4 hours, as well as with a natural log transform
+    """
+    error_signal = mean_squared_error(100, "cdae", patient_id)
+    test_error_signal = error_signal[int(len(error_signal)/3)+50:]
+    plt.hist(test_error_signal, bins=60)
+    plt.xlim(-3,3)
+    plt.xlabel('MSE')
+    plt.ylabel('Counts')
+    plt.title('MSE (Last 4 Hours): Test Patient '+str(idx))
+    plt.show()
+
+    plt.hist(np.log(test_error_signal), bins=60)
+    plt.xlim(-3,3)
+    plt.xlabel('ln(MSE)')
+    plt.ylabel('Counts')
+    plt.title('ln(MSE) (Last 4 Hours): Test Patient '+str(idx))
+    plt.show()
+
+    # plt.hist((test_error_signal)**0.25, bins=60)
+    # plt.xlim(-3,3)
+    # plt.xlabel('(MSE)^0.25')
+    # plt.ylabel('Counts')
+    # plt.title('(MSE)^0.25 (Last 4 Hours): Test Patient '+str(idx))
+    # plt.show()
+
+
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
