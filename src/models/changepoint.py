@@ -23,9 +23,9 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=Fals
     :param dimension: [int] the dimension of the latent space to which the data was reduced in the above model (e.g. 100 for "cdae")
     :return: None (saves plot of CUSUM over time and saves the numerical CUUSM values to the appropriate directories)
     """
-
-    error_signal = mean_squared_error(dimension, model_name, patient)
-    time_stamps = get_windowed_time(patient, 10, 1) # corresponding time stamps for the MSE
+    ## added a transform here
+    error_signal = np.log(mean_squared_error(dimension, model_name, patient))
+    time_stamps = get_windowed_time(patient, 10, 1)  # corresponding time stamps for the MSE
 
     duration = len(error_signal)
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     #     cusum(idx, "cdae", dimension=100, plot=True)
     # plt.show()
 
-    error_signal = mean_squared_error(100, "cdae", "C103")
+    # error_signal = mean_squared_error(100, "cdae", "C103")
 
 
     pass

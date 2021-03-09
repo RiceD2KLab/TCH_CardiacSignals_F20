@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 import numpy as np
 import pickle
+
+from src.models.changepoint import calculate_cusum_all_patients
 from src.models.mse import mean_squared_error
 
 def cusum_box_plot(patient_indices, model_name, dimension):
@@ -233,26 +235,26 @@ if __name__ == "__main__":
     # with open('Working_Data/sweep.pickle', 'wb') as handle:
     #     pickle.dump(sweep, handle)
 
-
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
-    #plot_sweep()
+    # plot_sweep()
 
-    # this compares the roc curves with different correcton parameters
-    # plt.clf()
-    # plt.figure()
+    # this compares the roc curves with different correction parameters
+    plt.clf()
+    plt.figure()
     # corrections = [0.05, 0.44]
-    # for c in corrections:
-    #     calculate_cusum_all_patients(c)
-    #     auc, tpr, fpr = roc_curve(plot=False)
-    #     plt.plot(fpr, tpr)
-    # plt.xlabel("False Positive Rate")
-    # plt.ylabel("True Positive Rate")
-    # plt.legend(corrections)
-    # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
-    # plt.show()
+    corrections = [0.05]
+    for c in corrections:
+        calculate_cusum_all_patients(c)
+        auc, tpr, fpr = roc_curve(plot=False)
+        plt.plot(fpr, tpr)
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend(corrections)
+    plt.title("ROC Comparison with tuned vs. untuned correction parameter")
+    plt.show()
 
-    
+
 
 
 

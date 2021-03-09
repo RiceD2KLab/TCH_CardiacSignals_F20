@@ -371,11 +371,11 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 
 if __name__ == "__main__":
 	plotting_utils.set_font_size()
-	indicies = get_patient_ids(control=True)
-	for idx, filename in zip(indicies, get_filenames(original=False, control=True)):
+	indicies = get_patient_ids(control=False)
+	for idx, filename in zip(indicies, get_filenames(original=True, control=False)):
 		idx = str(idx)
 		try:
-			preprocess_sum(filename, idx, beats_per_datapoint=10, control=True)
+			preprocess_sum(filename, idx, beats_per_datapoint=10, control=False)
 		except:
 			print(idx+'bad')
 		# preprocess_seperate(filename, idx)
