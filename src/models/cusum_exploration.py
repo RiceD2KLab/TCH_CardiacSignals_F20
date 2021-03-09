@@ -204,17 +204,17 @@ def plot_MSE_transform(patient_id):
     error_signal = mean_squared_error(100, "cdae", patient_id)
     test_error_signal = error_signal[int(len(error_signal)/3)+50:]
     plt.hist(test_error_signal, bins=60)
-    plt.xlim(-3,3)
+    plt.xlim(-3, 3)
     plt.xlabel('MSE')
     plt.ylabel('Counts')
-    plt.title('MSE (Last 4 Hours): Test Patient '+str(idx))
+    plt.title('MSE (Last 4 Hours): Test Patient '+str(patient_id))
     plt.show()
 
     plt.hist(np.log(test_error_signal), bins=60)
-    plt.xlim(-3,3)
+    plt.xlim(-3, 3)
     plt.xlabel('ln(MSE)')
     plt.ylabel('Counts')
-    plt.title('ln(MSE) (Last 4 Hours): Test Patient '+str(idx))
+    plt.title('ln(MSE) (Last 4 Hours): Test Patient '+str(patient_id))
     plt.show()
 
     # plt.hist((test_error_signal)**0.25, bins=60)
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
-    plot_sweep()
+    #plot_sweep()
 
     # this compares the roc curves with different correcton parameters
     # plt.clf()
@@ -252,7 +252,7 @@ if __name__ == "__main__":
     # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
     # plt.show()
 
-
+    
 
 
 
