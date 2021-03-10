@@ -165,7 +165,7 @@ def threshold_correction_sweep():
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.01)
+    correction_sweep = np.arange(0, 5, 0.05)
     auc_scores = {}
 
     for c in correction_sweep:
@@ -230,29 +230,29 @@ def plot_MSE_transform(patient_id):
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    # sweep = threshold_correction_sweep()
-    # print(sweep)
-    # with open('Working_Data/sweep.pickle', 'wb') as handle:
-    #     pickle.dump(sweep, handle)
+    sweep = threshold_correction_sweep()
+    print(sweep)
+    with open('Working_Data/sweep.pickle', 'wb') as handle:
+        pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
-    # plot_sweep()
+    plot_sweep()
 
     # this compares the roc curves with different correction parameters
-    plt.clf()
-    plt.figure()
-    # corrections = [0.05, 0.44]
-    corrections = [0.05]
-    for c in corrections:
-        calculate_cusum_all_patients(c)
-        auc, tpr, fpr = roc_curve(plot=False)
-        plt.plot(fpr, tpr)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.legend(corrections)
-    plt.title("ROC Comparison with tuned vs. untuned correction parameter")
-    plt.show()
+    # plt.clf()
+    # plt.figure()
+    # # corrections = [0.05, 0.44]
+    # corrections = [0.05]
+    # for c in corrections:
+    #     calculate_cusum_all_patients(c)
+    #     auc, tpr, fpr = roc_curve(plot=False)
+    #     plt.plot(fpr, tpr)
+    # plt.xlabel("False Positive Rate")
+    # plt.ylabel("True Positive Rate")
+    # plt.legend(corrections)
+    # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
+    # plt.show()
 
 
 
