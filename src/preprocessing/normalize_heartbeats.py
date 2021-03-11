@@ -26,10 +26,11 @@ def normalize_heartbeats(control=False):
 
             np.save(os.path.join(working_dir, "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(file_index)), original_signals)
             print("Normalized patient {}".format(file_index))
-        except:
+        except Exception as e:
+            print(e)
             pass
 
     return
 
 if __name__ == "__main__":
-    normalize_heartbeats(True)
+    normalize_heartbeats(False)

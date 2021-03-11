@@ -12,8 +12,8 @@ def create_sequences(data):
     Xs, ys = [], []
     time_steps = 10
     for i in range(len(data) - time_steps):
-        Xs.append(data[i:(i + time_steps)].reshape(1000*time_steps,4))
-        ys.append(data[i + time_steps].reshape(1000,4))
+        Xs.append(data[i:(i + time_steps)].reshape(100*time_steps,4))
+        ys.append(data[i + time_steps].reshape(100,4))
 
     return np.array(Xs), np.array(ys)
 
@@ -24,10 +24,10 @@ print(X.shape, y.shape)
 
 
 model = Sequential()
-model.add(LSTM(128, input_shape=(X.shape[1], X.shape[2])))
+model.add(LSTM(128, activation='relu', input_shape=(X.shape[1], X.shape[2])))
 model.add(Dropout(rate=0.2))
 model.add(RepeatVector(X.shape[1]))
-model.add(LSTM(128, return_sequences=True))
+model.add(LSTM(128, activation='relu', return_sequences=True))
 model.add(Dropout(rate=0.2))
 model.add(TimeDistributed(Dense(X.shape[2])))
 model.compile(optimizer='adam', loss='mse')
