@@ -36,4 +36,3 @@ model.summary()
 
 history = model.fit(X, X, epochs=100, batch_size=1, validation_split=0.1,
                     callbacks=[keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, mode='min')], shuffle=False)
-
