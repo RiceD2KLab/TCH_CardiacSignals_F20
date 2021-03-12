@@ -24,10 +24,10 @@ print(X.shape, y.shape)
 
 
 model = Sequential()
-model.add(LSTM(128, activation='relu', input_shape=(X.shape[1], X.shape[2])))
+model.add(LSTM(128, input_shape=(X.shape[1], X.shape[2])))
 model.add(Dropout(rate=0.2))
 model.add(RepeatVector(X.shape[1]))
-model.add(LSTM(128, activation='relu', return_sequences=True))
+model.add(LSTM(128, return_sequences=True))
 model.add(Dropout(rate=0.2))
 model.add(TimeDistributed(Dense(X.shape[2])))
 model.compile(optimizer='adam', loss='mse')
