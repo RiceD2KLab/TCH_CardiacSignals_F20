@@ -4,6 +4,7 @@ normal heartbeats. Randomly select half of the heartbeats of the first third to 
 """
 import numpy as np
 
+
 def patient_split_train(filepath, split_ratio):
     """
     patient_split splits file by the split ratio, first portion is split into train and test of "normal" heartbeats,
@@ -38,3 +39,28 @@ def patient_split_all(filepath, split_ratio):
     second_portion = data[splitting_idx:]
 
     return first_portion, second_portion, data
+
+
+def patient_split_adaptive(filepath, split_ratio):
+    """
+    patient_split splits file by the split ratio, the first portion is considered "normal" heartbeats
+    and the last section is abnormal, returns full array for encoding as well
+    other two thirds is considered abnormal data
+    :param filepath: [str] filepath of file to be split as string
+    :param split_ratio: [float] float value from 0 to 1 for the data split
+    :return: normal and irregular heartbeat sets as .npy arrays
+    """
+    data = np.load(filepath)
+    splitting_idx = round(len(data) * split_ratio)
+    first_third = data[0:splitting_idx]
+    remaining = data[splitting_idx:]
+
+    return first_third, remaining
+
+def split(a, n):
+    """
+    Splits a list a into n chunks
+    """
+    k, m = divmod(len(a), n)
+    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
