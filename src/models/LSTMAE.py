@@ -22,8 +22,6 @@ def create_sequences(data):
 X, y = create_sequences(data)
 print(X.shape, y.shape)
 
-sys.exit()
-
 
 model = Sequential()
 model.add(LSTM(10, input_shape=(X.shape[1], X.shape[2])))
