@@ -16,7 +16,7 @@ from src.models.patient_split import *
 from sklearn.model_selection import train_test_split
 from src.utils.file_indexer import get_patient_ids
 from src.utils.plotting_utils import *
-set_font_size()
+# set_font_size()
 
 
 def read_in(file_index, normalized, train, split_ratio):
@@ -38,7 +38,7 @@ def read_in(file_index, normalized, train, split_ratio):
             # returns normal data split into a train and test, and abnormal data
             normal_train, normal_test, abnormal = patient_split_train(filepath, split_ratio)
             return normal_train, normal_test, abnormal
-        elif train == 2:
+        elif train == 2: # used for model pipeline CDAE
             # 3x the data, adding gaussian noise to the 2 duplicated train arrays
             train_, test, full = patient_split_all(filepath, split_ratio)
             noise_factor = 0.5
@@ -46,6 +46,14 @@ def read_in(file_index, normalized, train, split_ratio):
             noise_train2 = train_ + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=train_.shape)
             train_ = np.concatenate((train_, noise_train, noise_train2))
             return train_, test, full
+        elif train == 3: # used for adaptive training
+            # 3x the data, adding gaussian noise to the 2 duplicated train arrays
+            train_, remaining = patient_split_adaptive(filepath, split_ratio)
+            noise_factor = 0.5
+            noise_train = train_ + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=train_.shape)
+            noise_train2 = train_ + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=train_.shape)
+            train_ = np.concatenate((train_, noise_train, noise_train2))
+            return train_, remaining
     else:
         # returns the full array
         data = np.load(os.path.join("Working_Data", "Fixed_Dim_HBs_Idx" + file_index + ".npy"))
@@ -187,7 +195,8 @@ def training_ae(num_epochs, reduced_dim, file_index, save_model):
     :param save_model: [boolean] if true saves model
     :return: None
     """
-    normal, abnormal, all = read_in(file_index, 1, 2, 0.3)
+    normal, post_normal = read_in(file_index, 1, 3, 0.3)
+    three, four, five, six = split(post_normal, 4)
     signal_shape = normal.shape[1:]
     batch_size = round(len(normal) * 0.15)
 
@@ -205,19 +214,19 @@ def training_ae(num_epochs, reduced_dim, file_index, save_model):
 
     if save_model:
         # save out the model
-        filename = 'Working_Data/CDAE_patient_' + str(file_index) + '_dim' + str(reduced_dim) + '_model.h5'
-        autoencoder.save(filename)
+        filename = 'Working_Data/CDAE_patient_' + str(file_index) + '_iter' + str(0) + '_model'
+        autoencoder.save_weights(filename, save_format = "tf")
         print('Model saved for patient: ' + str(file_index))
 
     # using autoencoder to encode all of the patient data
-    encoded = encoder.predict(all)
+    encoded = encoder.predict(three)
     reconstruction = decoder.predict(encoded)
 
     # save reconstruction and encoded files
-    reconstruction_save = "Working_Data/reconstructed_1hb_cae_" + str(file_index) + ".npy"
-    encoded_save = "Working_Data/encoded_1hb_cae_" + str(file_index) + ".npy"
+    reconstruction_save = "Working_Data/reconstructed_10hb_cae_" + str(file_index) + "_hour2_4" + ".npy"
+    # encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
     np.save(reconstruction_save, reconstruction)
-    np.save(encoded_save, encoded)
+    # np.save(encoded_save, encoded)
 
 
 def load_model(file_index):
@@ -243,7 +252,7 @@ def run(num_epochs, encoded_dim):
     # for patient_ in get_patient_ids():
     for patient_ in ['16']:
         print("Starting on index: " + str(patient_))
-        tuning_ae(num_epochs, encoded_dim, patient_, True, True)
+        training_ae(num_epochs, encoded_dim, patient_, True)
         print("Completed " + str(patient_) + " reconstruction and encoding, saved test data to assess performance")
 
 
@@ -251,7 +260,4 @@ def run(num_epochs, encoded_dim):
 if __name__ == "__main__":
     # load_model(16) # for use with pre trained models
     run(110, 10) # to train a whole new set of models
-
-
-
 
