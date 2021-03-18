@@ -4,8 +4,10 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Dropout, RepeatVector, TimeDistributed
 import numpy as np
 import os
+import sys
 
 data = np.load(os.path.join("Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(1) + ".npy"))
+data = data[0:500, :, :]
 # print(data[0:10].reshape(10000,4).shape)
 
 def create_sequences(data):
@@ -20,14 +22,14 @@ def create_sequences(data):
 X, y = create_sequences(data)
 print(X.shape, y.shape)
 
-
+sys.exit()
 
 
 model = Sequential()
-model.add(LSTM(128, input_shape=(X.shape[1], X.shape[2])))
+model.add(LSTM(10, input_shape=(X.shape[1], X.shape[2])))
 model.add(Dropout(rate=0.2))
 model.add(RepeatVector(X.shape[1]))
-model.add(LSTM(128, return_sequences=True))
+model.add(LSTM(10, return_sequences=True))
 model.add(Dropout(rate=0.2))
 model.add(TimeDistributed(Dense(X.shape[2])))
 model.compile(optimizer='adam', loss='mse')
