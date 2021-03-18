@@ -34,7 +34,7 @@ model.add(TimeDistributed(Dense(X.shape[2])))
 model.compile(optimizer='adam', loss='mse')
 model.summary()
 
-history = model.fit(X, X, epochs=2, batch_size=1, validation_split=0.1,
+history = model.fit(X, X, epochs=100, batch_size=1, validation_split=0.1,
                     callbacks=[keras.callbacks.EarlyStopping(monitor='loss', patience=3, mode='min')], shuffle=False)
 
 # plot the loss
@@ -44,4 +44,9 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
+plt.savefig("Working_Data/lstm_loss.png")
+plt.show()
+
+print("loss of the model is: ")
+print(history.history['loss'])
 
