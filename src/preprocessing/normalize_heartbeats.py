@@ -9,18 +9,19 @@ import numpy as np
 import os
 from src.preprocessing import heartbeat_split
 from sklearn.preprocessing import StandardScaler
-from src.utils.file_indexer import get_patient_ids
+from src.utils.file_indexer import scrape_indices_WD
 
 def normalize_heartbeats(control=False):
     """
     Normalizes the Fixed_Dims_HBs 3D matrices (shape n x 100 x 4) by normalizing each 100x4 matrix to mean 0, variance 1
     :return: nothing, saves the normalized heartbeats to a Normalized_Fixed_Dims_HBs_Idx{k}.npy file
     """
-    for file_index in get_patient_ids(control):
+    working_dir = "Working_Data"
+    for file_index in scrape_indices_WD(working_dir, control):
         try:
-            working_dir = "Control_Working_Data" if control else "Working_Data"
+            control_char = "C" if control else ""
 
-            original_signals = np.load(os.path.join(working_dir, "Fixed_Dim_HBs_Idx{}.npy".format(file_index)))
+            original_signals = np.load(os.path.join(working_dir, "Fixed_Dim_HBs_Idx{}{}.npy".format(control_char,file_index)))
             for i in range(np.shape(original_signals)[0]):
                 original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
 
@@ -33,4 +34,4 @@ def normalize_heartbeats(control=False):
     return
 
 if __name__ == "__main__":
-    normalize_heartbeats(False)
+    normalize_heartbeats(True)
