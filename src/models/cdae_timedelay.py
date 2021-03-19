@@ -134,17 +134,19 @@ def noise(data):
 
 # train a model, save reconstruction and then move to next time chunk training and reconstruction
 if __name__ == "__main__":
-    file_index = "16"
-    filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
-    split_ratio = 0.3
-    train_, remaining = patient_split_adaptive(filepath, split_ratio)
-    train_ = noise(train_)
-    three, four, five, six = split(remaining, 4)
-    first_predict = np.concatenate((three, four))
-    second_train = noise(three)
-    third_train = noise(four)
-    training_ae(110, 10, True, train_, first_predict, "16", 0, 0.001)
-    training_ae(30, 10, True, second_train, five, "16", 1, 0.01)
-    training_ae(30,10,True, third_train, six, "16", 2, 0.01)
-    # training_ae(30,10,True, train_3, five)
+    patient_set = ["4", "1", "5"] # , "C106", "C11", "C214", "C109"
+    for patient_index in patient_set:
+        file_index = patient_index
+        filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
+        split_ratio = 0.3
+        train_, remaining = patient_split_adaptive(filepath, split_ratio)
+        train_ = noise(train_)
+        three, four, five, six = split(remaining, 4)
+        first_predict = np.concatenate((three, four))
+        second_train = noise(three)
+        third_train = noise(four)
+        training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
+        training_ae(30, 10, True, second_train, five, patient_index, 1, 0.01)
+        training_ae(30,10,True, third_train, six, patient_index, 2, 0.01)
+        # training_ae(30,10,True, train_3, five)
 
