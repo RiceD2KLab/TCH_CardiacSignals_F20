@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 import sys
 
 data = np.load(os.path.join("Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(1) + ".npy"))
-data = data[0:500, :, :]
+data = data[0:1000, :, :]
 # print(data[0:10].reshape(10000,4).shape)
 
 def create_sequences(data):
     Xs, ys = [], []
-    time_steps = 10
+    time_steps = 5
     for i in range(len(data) - time_steps):
         Xs.append(data[i:(i + time_steps)].reshape(100*time_steps,4))
         ys.append(data[i + time_steps].reshape(100,4))
@@ -36,6 +36,10 @@ model.summary()
 
 history = model.fit(X, X, epochs=100, batch_size=1, validation_split=0.1,
                     callbacks=[keras.callbacks.EarlyStopping(monitor='loss', patience=3, mode='min')], shuffle=False)
+
+model.save('Working_Data/lstm_model')
+# model.predict(X[0:10, :])
+
 
 # plot the loss
 plt.plot(history.history['loss'])
