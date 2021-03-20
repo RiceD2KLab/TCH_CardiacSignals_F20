@@ -134,7 +134,7 @@ def noise(data):
 
 # train a model, save reconstruction and then move to next time chunk training and reconstruction
 if __name__ == "__main__":
-    patient_set = ["4", "1", "5"] # , "C106", "C11", "C214", "C109"
+    patient_set = [ "C106", "C11", "C214", "C109"] # "4", "1", "5",
     for patient_index in patient_set:
         file_index = patient_index
         filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
