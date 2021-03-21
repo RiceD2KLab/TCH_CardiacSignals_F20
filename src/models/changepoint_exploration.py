@@ -1,4 +1,4 @@
-from changepoint import *
+from src.modelschangepoint import *
 import matplotlib.pyplot as plt
 from sklearn import metrics
 import numpy as np
@@ -226,6 +226,7 @@ def plot_MSE_transform(patient_id):
 
 
 
+
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
     # sweep = threshold_correction_sweep()
@@ -238,16 +239,16 @@ if __name__ == "__main__":
     # plot_sweep()
 
     # this compares the roc curves with different correction parameters
-    plt.clf()
-    plt.figure()
-    # corrections = [0.05, 0.44]
-    corrections = [0.05]
-    for c in corrections:
-        calculate_cusum_all_patients(c)
-        auc, tpr, fpr = roc_curve(plot=False)
-        plt.plot(fpr, tpr)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.legend(corrections)
-    plt.title("ROC Comparison with tuned vs. untuned correction parameter")
-    plt.show()
+    # plt.clf()
+    # plt.figure()
+    # # corrections = [0.05, 0.44]
+    # corrections = [0.05]
+    # for c in corrections:
+    #     calculate_cusum_all_patients(c)
+    #     auc, tpr, fpr = roc_curve(plot=False)
+    #     plt.plot(fpr, tpr)
+    # plt.xlabel("False Positive Rate")
+    # plt.ylabel("True Positive Rate")
+    # plt.legend(corrections)
+    # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
+    # plt.show()

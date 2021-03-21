@@ -40,7 +40,50 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     #                                              "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
     #                                                                                      patient_num)))
     reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                 f"reconstructed_10hb_cae_{patient_num}.npy"))
+                                                 f"reconstructed_10hb_{model_name}_{patient_num}.npy"))
+    # compute mean squared error for each heartbeat
+
+    # original_signals = original_signals[-np.shape(reconstructed_signals)[0]:, :, :]
+
+    mse = np.zeros(np.shape(original_signals)[0])
+    for i in range(np.shape(original_signals)[0]):
+        mse[i] = (np.linalg.norm(original_signals[i,:,:] - reconstructed_signals[i,:,:]) ** 2) / (np.linalg.norm(original_signals[i,:,:]) ** 2)
+
+    if save_errors:
+        np.save(
+            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)), mse)
+
+    return mse
+
+def mean_squared_error_timedelay(reduced_dimensions, model_name, patient_num, save_errors=False):
+    """
+    Computes the mean squared error of the reconstructed signal against the original signal for each lead for each of the patient_num
+    Each signal's dimensions are reduced from 100 to 'reduced_dimensions', then reconstructed to obtain the reconstructed signal
+
+    ** Requires intermediate data for the model and patient that this computes the MSE for, including
+        reconstructions for three iterations of the model **
+
+    :param reduced_dimensions: [int] number of dimensions the file was originally reduced to
+    :param model_name: [str] "lstm, vae, ae, pca, test"
+    :return: [dict(int -> list(np.array))] dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
+    """
+    print("calculating mse for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
+
+    print("original normalized signal")
+
+    # reconstructed_signals = np.load(os.path.join("Working_Data",
+    #                                              "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
+    #            
+    #                                                                           patient_num)))
+    iter0 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter0.npy"))
+    iter1 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter1.npy"))
+    iter2 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter2.npy"))
+
+    reconstructed_signals = np.concatenate((iter0, iter1, iter2))
+    original_signals = original_signals[-np.shape(reconstructed_signals)[0]:, :, :]
+
     # compute mean squared error for each heartbeat
     mse = np.zeros(np.shape(original_signals)[0])
     for i in range(np.shape(original_signals)[0]):
