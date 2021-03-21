@@ -10,7 +10,6 @@ import sys
 from src.utils.plotting_utils import set_font_size
 
 
-import mse
 
 
 def create_model(X):
@@ -55,46 +54,45 @@ def create_sequences(data):
     return np.array(Xs), np.array(ys)
 
 
-orig_data = np.load(os.path.join("Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(1) + ".npy"))
-data = orig_data[0:1000, :, :]
-# print(data[0:10].reshape(10000,4).shape)
-X, y = create_sequences(data)
-print(X.shape, y.shape)
-# create_model(X)
+def compute_cusum(originals, predictions):
+    mses = []
+    # pass
+    for i in range(orig_data.shape[0] - 5):
+        mses.append(mean_squared_error(originals[i, :, :].flatten(), predictions[i, :, :].flatten()))
 
-model = keras.models.load_model('Working_Data/lstm_model')
+    error_signal = mses
+    correction = 0.04
+
+    val_data = error_signal[0:1000]  # third hour (assumed healthy)
+    sigma = np.std(val_data)  # standard deviation of third hour
+    c = np.mean(val_data) + correction  # cusum correction parameter
+
+    cusum = [0]
+    for x in error_signal:
+        L = (x - c) / sigma
+        cusum.append(max(cusum[-1] + L, 0))
+    cusum = cusum[1:]
+    return cusum
+
+if __name__ == "__main__":
+    orig_data = np.load(os.path.join("Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(1) + ".npy"))
+    data = orig_data[0:1000, :, :]
+    # print(data[0:10].reshape(10000,4).shape)
+    X, y = create_sequences(data)
+    print(X.shape, y.shape)
+    originals = create_sequences(orig_data)[0]
+
+    model = keras.models.load_model('Working_Data/lstm_model')
+    predictions = model.predict(originals)
+    cusum = compute_cusum(predictions)
 
 
+    set_font_size()
+    # rcParams.update({'figure.autolayout': True})
+    plt.plot(cusum)
+    plt.title(f"Individual Patient: CUSUM statistic over time")
+    plt.xlabel("Time before cardiac arrest (hours)")
+    plt.ylabel("CUSUM Score")
+        # plt.savefig('images/cusum_single_patient.png', dpi=500)
 
-# mse =
-print(f"mse is {mse}")
-mses = []
-originals = create_sequences(orig_data)[0]
-predictions = model.predict(originals)
-# pass
-for i in range(orig_data.shape[0] - 5):
-    mses.append(mean_squared_error(originals[i, :, :].flatten(), predictions[i, :, :].flatten()))
-
-error_signal = mses
-correction = 0.04
-duration = len(error_signal)
-
-val_data = error_signal[0:1000] # third hour (assumed healthy)
-sigma = np.std(val_data) # standard deviation of third hour
-c = np.mean(val_data) + correction # cusum correction parameter
-
-cusum = [0]
-for x in error_signal:
-    L = (x - c)/sigma
-    cusum.append(max(cusum[-1] + L, 0))
-cusum = cusum[1:]
-
-set_font_size()
-# rcParams.update({'figure.autolayout': True})
-plt.plot(cusum)
-plt.title(f"Individual Patient: CUSUM statistic over time")
-plt.xlabel("Time before cardiac arrest (hours)")
-plt.ylabel("CUSUM Score")
-    # plt.savefig('images/cusum_single_patient.png', dpi=500)
-
-plt.show()
+    plt.show()
