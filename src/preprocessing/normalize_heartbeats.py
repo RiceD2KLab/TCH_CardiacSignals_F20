@@ -25,7 +25,7 @@ def normalize_heartbeats(control=False):
             for i in range(np.shape(original_signals)[0]):
                 original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
 
-            np.save(os.path.join(working_dir, "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(file_index)), original_signals)
+            np.save(os.path.join(working_dir, "Normalized_Fixed_Dim_HBs_Idx{}{}.npy".format(control_char,file_index)), original_signals)
             print("Normalized patient {}".format(file_index))
         except Exception as e:
             print(e)
