@@ -16,8 +16,9 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from src.utils.plotting_utils import set_font_size
 from src.utils.dsp_utils import get_windowed_time
-from src.utils.file_indexer import get_patient_ids 
-
+from src.utils.file_indexer import get_patient_ids
+import sys
+import logging
 
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
@@ -34,8 +35,6 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    print("original normalized signal")
-
     # reconstructed_signals = np.load(os.path.join("Working_Data",
     #                                              "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
     #                                                                                      patient_num)))
@@ -44,6 +43,10 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     # compute mean squared error for each heartbeat
 
     # original_signals = original_signals[-np.shape(reconstructed_signals)[0]:, :, :]
+
+    if original_signals.shape != reconstructed_signals.shape:
+        logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
+        sys.exit(1)
 
     mse = np.zeros(np.shape(original_signals)[0])
     for i in range(np.shape(original_signals)[0]):
