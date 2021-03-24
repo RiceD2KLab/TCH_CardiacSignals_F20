@@ -133,7 +133,7 @@ def train_and_reconstruct():
     Trains an LSTM model and computes the reconstruction for each patient
     @return: nothing
     """
-    patients = get_patient_ids(control=False)[:5] + get_patient_ids(control=True)[:5]
+    patients = get_patient_ids(control=False)[5:] + get_patient_ids(control=True)[5:]
     time_steps = 5
     for patient in patients:
         try:
@@ -147,13 +147,15 @@ def train_and_reconstruct():
 
 
 if __name__ == "__main__":
-    patients = get_patient_ids(control=False)[5:] + get_patient_ids(control=True)[5:]
-    for patient in patients:
-        try:
-            compute_cusum(patient, 0.5)
-        except Exception as e:
-            print(e)
+    # patients = get_patient_ids(control=False)[5:] + get_patient_ids(control=True)[5:]
+    # for patient in patients:
+    #     try:
+    #         compute_cusum(patient, 0.5)
+    #     except Exception as e:
+    #         print(e)
 
+
+    train_and_reconstruct()
     pass
 
     ###################################
