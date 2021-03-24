@@ -19,13 +19,12 @@ def normalize_heartbeats(control=False):
     working_dir = "Working_Data"
     for file_index in get_patient_ids(control):
         try:
-            control_char = "C" if control else ""
 
-            original_signals = np.load(os.path.join(working_dir, "Fixed_Dim_HBs_Idx{}{}.npy".format(control_char,file_index)))
+            original_signals = np.load(f"Fixed_Dim_HBs_Idx{file_index}.npy")
             for i in range(np.shape(original_signals)[0]):
                 original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
 
-            np.save(os.path.join(working_dir, "Normalized_Fixed_Dim_HBs_Idx{}{}.npy".format(control_char,file_index)), original_signals)
+            np.save(f"Working_Data/Normalized_Fixed_Dim_HBs_Idx{file_index}.npy", original_signals)
             print("Normalized patient {}".format(file_index))
         except Exception as e:
             print(e)
