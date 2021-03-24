@@ -20,7 +20,7 @@ def normalize_heartbeats(control=False):
     for file_index in get_patient_ids(control):
         try:
 
-            original_signals = np.load(f"Fixed_Dim_HBs_Idx{file_index}.npy")
+            original_signals = np.load(f"Working_Data/Fixed_Dim_HBs_Idx{file_index}.npy")
             for i in range(np.shape(original_signals)[0]):
                 original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
 
