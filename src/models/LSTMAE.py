@@ -58,6 +58,8 @@ def create_LSTM_model(patient_idx, time_steps, save_model=False, plot_loss=False
         print("loss of the model is: ")
         print(history.history['loss'])
 
+    print(f"Created LSTM model for patient {patient_idx}")
+
     return model
 
 
@@ -134,6 +136,7 @@ if __name__ == "__main__":
     for patient in patients:
         m = create_LSTM_model(patient, time_steps, save_model=True)
         compute_reconstruction(patient, m, time_steps, save_reconstruction=True)
+        print(f"Completed reconstruction of {patient}, computing cusum")
         compute_cusum(patient)
 
     pass
