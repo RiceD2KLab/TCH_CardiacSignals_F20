@@ -24,7 +24,7 @@ def create_LSTM_model(patient_idx, time_steps, save_model=False, plot_loss=False
     @return:
     """
     orig_data = np.load(os.path.join("Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(patient_idx) + ".npy"))
-    data = orig_data[0:10, :, :]
+    data = orig_data[0:1000, :, :]
     # print(data[0:10].reshape(10000,4).shape)
     X, y = create_lstm_datapoints(data, time_steps)
 
