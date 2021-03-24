@@ -9,7 +9,7 @@ import numpy as np
 import os
 from src.preprocessing import heartbeat_split
 from sklearn.preprocessing import StandardScaler
-from src.utils.file_indexer import scrape_indices_WD
+from src.utils.file_indexer import *
 
 def normalize_heartbeats(control=False):
     """
@@ -17,7 +17,7 @@ def normalize_heartbeats(control=False):
     :return: nothing, saves the normalized heartbeats to a Normalized_Fixed_Dims_HBs_Idx{k}.npy file
     """
     working_dir = "Working_Data"
-    for file_index in scrape_indices_WD(working_dir, control):
+    for file_index in get_patient_ids(control):
         try:
             control_char = "C" if control else ""
 
