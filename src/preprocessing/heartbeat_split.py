@@ -370,7 +370,7 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 
 	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
 if __name__ == "__main__":
-	control_patients = False
+	control_patients = Truew
 
 	plotting_utils.set_font_size()
 	indicies = get_patient_ids(control=control_patients)

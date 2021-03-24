@@ -94,14 +94,15 @@ def reconstruct_original_heartbeats(sequence_data, time_steps):
     recreation[-time_steps:, :, :] = sequence_data[-1, :, :].reshape(5, 100, 4)
     return recreation
 
-def compute_cusum(patient_idx):
+def compute_cusum(patient_idx, correction):
     """
     Computes the cusum on the LSTM autoencoder
     ** Requires the reconstruction arrays of the LSTM to be saved to the Working_Data directory
+    @param correction: correction parameter for cusum
     @param patient_idx: number
     @return:
     """
-    changepoint.cusum(patient_idx, "lstm", 100, save=True, plot=True)
+    return changepoint.cusum(patient_idx, "lstm", 100, correction=correction, save=True, plot=True)
 
 
 def compute_reconstruction(patient_idx, model, time_steps, save_reconstruction=False):
@@ -127,17 +128,31 @@ def compute_reconstruction(patient_idx, model, time_steps, save_reconstruction=F
     return reconstructions
 
 
-
-if __name__ == "__main__":
-
+def train_and_reconstruct():
+    """
+    Trains an LSTM model and computes the reconstruction for each patient
+    @return: nothing
+    """
     patients = get_patient_ids(control=False)[:5] + get_patient_ids(control=True)[:5]
-    models = {}
     time_steps = 5
     for patient in patients:
-        m = create_LSTM_model(patient, time_steps, save_model=True)
-        compute_reconstruction(patient, m, time_steps, save_reconstruction=True)
-        print(f"Completed reconstruction of {patient}, computing cusum")
-        compute_cusum(patient)
+        try:
+            m = create_LSTM_model(patient, time_steps, save_model=True)
+            compute_reconstruction(patient, m, time_steps, save_reconstruction=True)
+            print(f"Completed reconstruction of {patient}, computing cusum")
+            compute_cusum(patient, correction=0.05)
+        except Exception as e:
+            print(f"Training/Reconstruction could not be completed for patient {patient} because:\n {e}")
+    return
+
+
+if __name__ == "__main__":
+    patients = get_patient_ids(control=False)[5:] + get_patient_ids(control=True)[5:]
+    for patient in patients:
+        try:
+            compute_cusum(patient, 0.5)
+        except Exception as e:
+            print(e)
 
     pass
 

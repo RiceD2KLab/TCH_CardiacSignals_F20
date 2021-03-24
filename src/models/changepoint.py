@@ -53,7 +53,7 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=Fals
     rcParams.update({'figure.autolayout': True})
     if plot:
         plt.plot(time_stamps[len(time_stamps)//3:], cusum[len(time_stamps)//3:])
-        plt.title(f"Individual Patient: CUSUM statistic over time")
+        plt.title(f"Individual Patient {patient}: CUSUM statistic over time")
         plt.xlabel("Time before cardiac arrest (hours)")
         plt.ylabel("CUSUM Score")
         # plt.savefig('images/cusum_single_patient.png', dpi=500)
