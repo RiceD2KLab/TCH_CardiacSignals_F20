@@ -140,7 +140,7 @@ def train_and_reconstruct():
             m = create_LSTM_model(patient, time_steps, save_model=True)
             compute_reconstruction(patient, m, time_steps, save_reconstruction=True)
             print(f"Completed reconstruction of {patient}, computing cusum")
-            compute_cusum(patient, correction=0.05)
+            compute_cusum(patient, correction=0.2)
         except Exception as e:
             print(f"Training/Reconstruction could not be completed for patient {patient} because:\n {e}")
     return
