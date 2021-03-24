@@ -1,4 +1,4 @@
-from src.modelschangepoint import *
+from src.models.changepoint import *
 import matplotlib.pyplot as plt
 from sklearn import metrics
 import numpy as np
@@ -252,3 +252,4 @@ if __name__ == "__main__":
     # plt.legend(corrections)
     # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
     # plt.show()
+    pass
