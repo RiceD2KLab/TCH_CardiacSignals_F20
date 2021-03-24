@@ -38,8 +38,12 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     # reconstructed_signals = np.load(os.path.join("Working_Data",
     #                                              "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
     #                                                                                      patient_num)))
-    reconstructed_signals = np.load(os.path.join("Working_Data",
+    try:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
                                                  f"reconstructed_10hb_{model_name}_{patient_num}.npy"))
+    except:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                     f"reconstructed_{model_name}_{patient_num}.npy"))
     # compute mean squared error for each heartbeat
 
     # original_signals = original_signals[-np.shape(reconstructed_signals)[0]:, :, :]
