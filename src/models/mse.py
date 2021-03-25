@@ -35,13 +35,15 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    # reconstructed_signals = np.load(os.path.join("Working_Data",
-    #                                              "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
-    #                                                                                      patient_num)))
-    try:
-        reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                 f"reconstructed_10hb_{model_name}_{patient_num}.npy"))
-    except:
+    # quick hack to get around the "cae" vs "cdae" renaming error - DON'T REMOVE
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
         reconstructed_signals = np.load(os.path.join("Working_Data",
                                                      f"reconstructed_{model_name}_{patient_num}.npy"))
     # compute mean squared error for each heartbeat
