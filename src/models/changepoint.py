@@ -105,7 +105,7 @@ def cusum_validation(threshold, control=False):
     return count, total, avg_time, sem_time
 
 
-def calculate_cusum_all_patients(c):
+def calculate_cusum_all_patients(c, model_name):
     """
     Recalculates and saves the cusum metric time series over all patients
     :param c: cusum correction term to calculate cusum series with
@@ -114,7 +114,7 @@ def calculate_cusum_all_patients(c):
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
     for idx in all_patients:
         try:
-            cusum(idx, "cdae", dimension=100, save=True, correction=c, plot=False)
+            cusum(idx, model_name, dimension=100, save=True, correction=c, plot=False)
         except Exception as e:
             # print(e)
             pass
