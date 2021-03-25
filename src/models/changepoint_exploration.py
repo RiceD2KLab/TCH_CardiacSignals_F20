@@ -163,7 +163,7 @@ def threshold_correction_sweep(model_name):
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.1)
+    correction_sweep = np.arange(0, 1, 0.05)
     auc_scores = {}
 
     for c in correction_sweep:
