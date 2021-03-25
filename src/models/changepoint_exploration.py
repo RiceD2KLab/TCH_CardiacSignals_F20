@@ -233,16 +233,16 @@ def plot_MSE_transform(patient_id):
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    # sweep = threshold_correction_sweep("lstm")
-    # print(sweep)
-    # with open('Working_Data/sweep.pickle', 'wb') as handle:
-    #     pickle.dump(sweep, handle)
+    sweep = threshold_correction_sweep("lstm")
+    print(sweep)
+    with open('Working_Data/sweep.pickle', 'wb') as handle:
+        pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
     # plot_sweep()
     # calculate_cusum_all_patients(0.19, "lstm")
-    roc_curve(True)
+    # roc_curve(True)
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()
