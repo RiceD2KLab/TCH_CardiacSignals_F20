@@ -109,12 +109,15 @@ def roc_curve(plot=True, correction=None, annotate=True):
     :return: nothing
     """
 
-    thresholds = list(range(0, 303, 3))
+    # thresholds = list(range(0, 303, 3)) # use this for LSTM
+    thresholds = list(range(0, 2500, 20))  # use this for CDAE
+
     # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
     true_positive_rates = [1.0]
     false_positive_rates = [1.0]
 
-    annotations = list(range(0, 306, 6))
+    # annotations = list(range(0, 306, 6))  # use this for LSTM
+    annotations = list(range(0,2600, 200))  # use this for CDAE
     annotation_coords = [] # so we can annotate these points on the scatterplot
 
     for i in thresholds:
@@ -168,7 +171,7 @@ def threshold_correction_sweep(model_name):
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.05)
+    correction_sweep = np.arange(0, 1, 0.01)
     auc_scores = {}
 
     for c in correction_sweep:
