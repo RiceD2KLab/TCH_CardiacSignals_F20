@@ -109,8 +109,9 @@ def roc_curve(plot=True):
     """
 
     thresholds = list(range(0, 303, 3))
-    true_positive_rates = []
-    false_positive_rates = []
+    # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
+    true_positive_rates = [1.0]
+    false_positive_rates = [1.0]
 
     annotations = list(range(0, 306, 6))
     annotation_coords = [] # so we can annotate these points on the scatterplot
@@ -140,6 +141,9 @@ def roc_curve(plot=True):
         if i in annotations:
             annotation_coords.append((fpr, tpr))
 
+    # append a (1,1) tpr,fpr coordinate so that the tpr, fpr are guaranteed to vary from 0 to 1
+    true_positive_rates.append(0.0)
+    false_positive_rates.append(0.0)
 
 
     if plot:
@@ -229,15 +233,16 @@ def plot_MSE_transform(patient_id):
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    sweep = threshold_correction_sweep("lstm")
-    print(sweep)
-    with open('Working_Data/sweep.pickle', 'wb') as handle:
-        pickle.dump(sweep, handle)
+    # sweep = threshold_correction_sweep("lstm")
+    # print(sweep)
+    # with open('Working_Data/sweep.pickle', 'wb') as handle:
+    #     pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
     # plot_sweep()
-
+    # calculate_cusum_all_patients(0.19, "lstm")
+    roc_curve(True)
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()
