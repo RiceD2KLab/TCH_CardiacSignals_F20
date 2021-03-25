@@ -108,11 +108,11 @@ def roc_curve(plot=True):
     :return: nothing
     """
 
-    thresholds = list(range(0, 4020, 20))
+    thresholds = list(range(0, 303, 3))
     true_positive_rates = []
     false_positive_rates = []
 
-    annotations = list(range(0, 4000, 200))
+    annotations = list(range(0, 306, 6))
     annotation_coords = [] # so we can annotate these points on the scatterplot
 
     for i in thresholds:
@@ -159,17 +159,17 @@ def roc_curve(plot=True):
     return auc, true_positive_rates, false_positive_rates
 
 
-def threshold_correction_sweep():
+def threshold_correction_sweep(model_name):
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.01)
+    correction_sweep = np.arange(0, 1, 0.1)
     auc_scores = {}
 
     for c in correction_sweep:
         for idx in all_patients:
             try:
-                cusum(idx, "cdae", dimension=100, save=True, correction=c)
+                cusum(idx, model_name=model_name, dimension=100, save=True, correction=c)
             except Exception as e:
                 # print(e)
                 pass
@@ -252,4 +252,5 @@ if __name__ == "__main__":
     # plt.legend(corrections)
     # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
     # plt.show()
+    threshold_correction_sweep("lstm")
     pass

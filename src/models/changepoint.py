@@ -148,6 +148,6 @@ if __name__ == "__main__":
     # plt.show()
 
     # error_signal = mean_squared_error(100, "cdae", "C103")
-
+    print(get_patient_ids(True))
 
     pass
