@@ -9,10 +9,9 @@ from matplotlib import rcParams
 from src.utils.file_indexer import get_patient_ids 
 from src.utils.dsp_utils import get_windowed_time
 from src.utils.plotting_utils import set_font_size
-from src.models.mse import mean_squared_error, mean_squared_error_timedelay
+from src.models.mse import mean_squared_error, mean_squared_error_timedelay, kl_divergence
 from scipy.stats import sem
 import os
-
 
 def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=False, timedelay=False):
     """
@@ -27,7 +26,8 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=Fals
     if timedelay:
         error_signal = mean_squared_error_timedelay(dimension, model_name, patient)
     else:
-        error_signal = mean_squared_error(dimension, model_name, patient)
+        error_signal = kl_divergence(dimension, model_name, patient)
+
     time_stamps = get_windowed_time(patient, 10, 1)  # corresponding time stamps for the MSE
 
     duration = len(error_signal)
@@ -127,11 +127,11 @@ if __name__ == "__main__":
     # generates the unwindowed_cusum files for each patient
     # for idx in get_patient_ids(control=True):
     #     try:
-    #         cusum(idx, "cdae", dimension=100, save=True, correction=0.05, plot=False)
+    #         cusum(idx, "cdae", dimension=100, save=True, correction=0.8, plot=False)
     #     except Exception as e:
     #         print(e)
     #         pass
-    # print(cusum_validation(500, control=True))
+    # print(cusum_validation(10, control=True))
 
     # for idx in ["C106", "C11", "C214", "C109"]:
     #     print(idx)
@@ -148,6 +148,6 @@ if __name__ == "__main__":
     # plt.show()
 
     # error_signal = mean_squared_error(100, "cdae", "C103")
-    print(get_patient_ids(True))
+    # print(get_patient_ids(True))
 
     pass
