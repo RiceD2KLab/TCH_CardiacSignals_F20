@@ -120,10 +120,14 @@ def kl_divergence(reduced_dimensions, model_name, patient_num, save_errors=False
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    try:
-        reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                 f"reconstructed_10hb_{model_name}_{patient_num}.npy"))
-    except:
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
         reconstructed_signals = np.load(os.path.join("Working_Data",
                                                      f"reconstructed_{model_name}_{patient_num}.npy"))
 
@@ -132,11 +136,11 @@ def kl_divergence(reduced_dimensions, model_name, patient_num, save_errors=False
 
         # logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
         # sys.exit(1)
-    print(original_signals.shape)
-    print(reconstructed_signals.shape)
+    # print(original_signals.shape)
+    # print(reconstructed_signals.shape)
     kld = entropy(abs(reconstructed_signals), abs(original_signals), axis=1)
     kld = np.mean(kld, axis=1)
-    print(kld.shape)
+    # print(kld.shape)
     return kld
 
 def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_num):
@@ -272,9 +276,11 @@ def raw_mse_over_time(patient_num, model_name, dimension_num, last_four_hours=Fa
 if __name__ == "__main__":
 
     # The following function calls generate plots for windowed MSE, raw MSE, and the aggregate boxplot MSE, respectively
-    for idx in get_patient_ids():
-        raw_mse_over_time(idx, "cdae", 100, last_four_hours=False)
+    # for idx in get_patient_ids():
+    #     raw_mse_over_time(idx, "cdae", 100, last_four_hours=False)
         # except: 
         #     pass
     # raw_mse_over_time(16, "cdae", 100, last_four_hours=True)
     # boxplot_error("cdae", 100, False)
+
+    kl_divergence(100, "cdae", 1, save_errors=False)
