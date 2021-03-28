@@ -136,8 +136,7 @@ def noise(data):
 # train a model, save reconstruction and then move to next time chunk training and reconstruction
 if __name__ == "__main__":
     # patient_set = ["11"] # "4", "1", "5","C106", "C11", "C214", "C109"
-    for patient_index in ['C11', 'C17', 'C19', 'C22', 'C106', 'C109', 'C111', 'C117', 'C127', 'C152', 'C153', 'C156',
-                          'C158', 'C160', 'C162', 'C163', 'C164', 'C166', 'C167', 'C172', 'C174', 'C176', 'C181',
+    for patient_index in ['C172', 'C174', 'C176', 'C181',
                           'C186', 'C203', 'C205', 'C206', 'C207', 'C209', 'C213', 'C214', 'C218', 'C219', 'C221',
                           'C222', 'C225', 'C234', 'C238', 'C241', 'C248', 'C249', 'C251', 'C252']:
         # if int(patient_index) < 22:
