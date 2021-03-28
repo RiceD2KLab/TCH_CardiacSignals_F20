@@ -10,6 +10,7 @@ from tensorflow.keras.models import Sequential, Model
 from src.models.patient_split import *
 from sklearn.model_selection import train_test_split
 from src.models.conv_denoising_ae import *
+from src.utils.file_indexer import get_patient_ids
 
 
 def build_model(encode_size):
@@ -83,7 +84,7 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         reconstruction = decoder.predict(encoded)
 
         # save reconstruction and encoded files
-        reconstruction_save = "Working_Data/reconstructed_10hb_cae_" + str(file_index) + "iter" + str(iteration) + ".npy"
+        reconstruction_save = "Working_Data/reconstructed_10hb_CDAE_" + str(file_index) + "_iter" + str(iteration) + ".npy"
         # encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
         np.save(reconstruction_save, reconstruction)
         print("Reconstructed hbs saved for patient:" + str(file_index) + " iteration: " + str(iteration))
@@ -116,7 +117,7 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         reconstruction = decoder.predict(encoded)
 
         # save reconstruction and encoded files
-        reconstruction_save = "Working_Data/reconstructed_10hb_cae_" + str(file_index) + "iter" + str(
+        reconstruction_save = "Working_Data/reconstructed_10hb_CDAE_" + str(file_index) + "_iter" + str(
             iteration) + ".npy"
         # encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
         np.save(reconstruction_save, reconstruction)
@@ -134,19 +135,25 @@ def noise(data):
 
 # train a model, save reconstruction and then move to next time chunk training and reconstruction
 if __name__ == "__main__":
-    patient_set = [ "C106", "C11", "C214", "C109"] # "4", "1", "5",
-    for patient_index in patient_set:
+    # patient_set = ["11"] # "4", "1", "5","C106", "C11", "C214", "C109"
+    for patient_index in ['C11', 'C17', 'C19', 'C22', 'C106', 'C109', 'C111', 'C117', 'C127', 'C152', 'C153', 'C156',
+                          'C158', 'C160', 'C162', 'C163', 'C164', 'C166', 'C167', 'C172', 'C174', 'C176', 'C181',
+                          'C186', 'C203', 'C205', 'C206', 'C207', 'C209', 'C213', 'C214', 'C218', 'C219', 'C221',
+                          'C222', 'C225', 'C234', 'C238', 'C241', 'C248', 'C249', 'C251', 'C252']:
+        # if int(patient_index) < 22:
+        #     continue
         file_index = patient_index
+        print("Starting training on patient ", patient_index)
         filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
         split_ratio = 0.3
         train_, remaining = patient_split_adaptive(filepath, split_ratio)
-        train_ = noise(train_)
+        train_noise = noise(train_)
         three, four, five, six = split(remaining, 4)
-        first_predict = np.concatenate((three, four))
+        first_predict = np.concatenate((train_, three, four))
         second_train = noise(three)
         third_train = noise(four)
-        training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
-        training_ae(30, 10, True, second_train, five, patient_index, 1, 0.01)
-        training_ae(30,10,True, third_train, six, patient_index, 2, 0.01)
+        training_ae(110, 10, True, train_noise, first_predict, patient_index, 0, 0.001)
+        training_ae(30, 10, True, second_train, five, patient_index, 1, 0.005)
+        training_ae(30,10,True, third_train, six, patient_index, 2, 0.005)
         # training_ae(30,10,True, train_3, five)
 
