@@ -9,7 +9,7 @@ from matplotlib import rcParams
 from src.utils.file_indexer import get_patient_ids 
 from src.utils.dsp_utils import get_windowed_time
 from src.utils.plotting_utils import set_font_size
-from src.models.mse import mean_squared_error, mean_squared_error_timedelay, kl_divergence
+from src.models.mse import mean_squared_error, mean_squared_error_timedelay, kl_divergence, bhattacharya
 from scipy.stats import sem
 import os
 
@@ -26,7 +26,7 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=Fals
     if timedelay:
         error_signal = mean_squared_error_timedelay(dimension, model_name, patient)
     else:
-        error_signal = kl_divergence(dimension, model_name, patient)
+        error_signal = bhattacharya(dimension, model_name, patient)
 
     time_stamps = get_windowed_time(patient, 10, 1)  # corresponding time stamps for the MSE
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     # generates the unwindowed_cusum files for each patient
     # for idx in get_patient_ids(control=True):
     #     try:
-    #         cusum(idx, "cdae", dimension=100, save=True, correction=0.8, plot=False)
+    #         cusum(idx, "cdae", dimension=100, save=False, correction=1.0, plot=True)
     #     except Exception as e:
     #         print(e)
     #         pass

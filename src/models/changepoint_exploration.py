@@ -171,13 +171,13 @@ def threshold_correction_sweep(model_name):
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.01)
+    correction_sweep = np.arange(0, 1, 0.05)
     auc_scores = {}
 
     for c in correction_sweep:
         for idx in all_patients:
             try:
-                cusum(idx, model_name=model_name, dimension=100, save=True, correction=c, timedelay=True)
+                cusum(idx, model_name=model_name, dimension=100, save=True, correction=c, timedelay=False)
             except Exception as e:
                 # print(e)
                 pass
@@ -200,7 +200,7 @@ def plot_sweep():
     plt.xlabel("CUSUM Correction Parameter")
     plt.ylabel("Area Under Curve")
     plt.title("Area Under Curve vs. Correction Parameter")
-    plt.show(dpi=800)
+    plt.show()
 
     print(f"argmax correction parameter is {max(scores, key=scores.get)} yielding auc = {max(scores.values())}")
 
@@ -237,7 +237,7 @@ def plot_MSE_transform(patient_id):
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    sweep = threshold_correction_sweep("CDAE")
+    sweep = threshold_correction_sweep("cdae")
     print(sweep)
     with open('Working_Data/sweep.pickle', 'wb') as handle:
         pickle.dump(sweep, handle)
