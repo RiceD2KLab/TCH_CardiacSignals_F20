@@ -109,8 +109,8 @@ def roc_curve(plot=True, correction=None, annotate=True):
     :return: nothing
     """
 
-    # thresholds = list(range(0, 303, 3)) # use this for LSTM
-    thresholds = list(range(0, 2500, 20))  # use this for CDAE
+    thresholds = list(range(0, 303, 3)) # use this for LSTM
+    # thresholds = list(range(0, 2500, 20))  # use this for CDAE
 
     # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
     true_positive_rates = [1.0]
@@ -164,6 +164,7 @@ def roc_curve(plot=True, correction=None, annotate=True):
     # calculate AUC (area under curve)
     auc = metrics.auc(false_positive_rates, true_positive_rates)
     print(f"AUC-ROC score is {auc}")
+    print(list(zip(true_positive_rates, false_positive_rates)))
     return auc, true_positive_rates, false_positive_rates
 
 
@@ -171,7 +172,7 @@ def threshold_correction_sweep(model_name):
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.05)
+    correction_sweep = np.arange(0, 1, 0.01)
     auc_scores = {}
 
     for c in correction_sweep:
@@ -200,7 +201,7 @@ def plot_sweep():
     plt.xlabel("CUSUM Correction Parameter")
     plt.ylabel("Area Under Curve")
     plt.title("Area Under Curve vs. Correction Parameter")
-    plt.show()
+    plt.show(dpi=800)
 
     print(f"argmax correction parameter is {max(scores, key=scores.get)} yielding auc = {max(scores.values())}")
 
@@ -244,9 +245,9 @@ if __name__ == "__main__":
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
-    plot_sweep()
-    # calculate_cusum_all_patients(0.62, "lstm")
-    # roc_curve(True,  correction=0.62, annotate=False)
+    # plot_sweep()
+    calculate_cusum_all_patients(0.62, "lstm")
+    roc_curve(True,  correction=0.62, annotate=False)
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()

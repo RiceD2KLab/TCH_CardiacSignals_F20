@@ -29,10 +29,10 @@ def create_LSTM_model(patient_idx, time_steps, save_model=False, plot_loss=False
     X, y = create_lstm_datapoints(data, time_steps)
 
     model = Sequential()
-    model.add(LSTM(10, input_shape=(X.shape[1], X.shape[2])))
+    model.add(LSTM(30, input_shape=(X.shape[1], X.shape[2])))
     model.add(Dropout(rate=0.2))
     model.add(RepeatVector(X.shape[1]))
-    model.add(LSTM(10, return_sequences=True))
+    model.add(LSTM(30, return_sequences=True))
     model.add(Dropout(rate=0.2))
     model.add(TimeDistributed(Dense(X.shape[2])))
     model.compile(optimizer='adam', loss='mse')
@@ -133,7 +133,7 @@ def train_and_reconstruct():
     Trains an LSTM model and computes the reconstruction for each patient
     @return: nothing
     """
-    patients = get_patient_ids(control=False)[5:] + get_patient_ids(control=True)[5:]
+    patients = get_patient_ids(control=False) + get_patient_ids(control=True)
     time_steps = 5
     for patient in patients:
         try:
@@ -147,15 +147,15 @@ def train_and_reconstruct():
 
 
 if __name__ == "__main__":
-    patients = get_patient_ids(control=False)[:15] + get_patient_ids(control=True)[:5]
-    for patient in patients:
-        try:
-            compute_cusum(patient, 0.2)
-        except Exception as e:
-            print(e)
+    # patients = get_patient_ids(control=False)[:15] + get_patient_ids(control=True)[:5]
+    # for patient in patients:
+    #     try:
+    #         compute_cusum(patient, 0.2)
+    #     except Exception as e:
+    #         print(e)
 
 
-    # train_and_reconstruct()
+    train_and_reconstruct()
     pass
 
     ###################################
