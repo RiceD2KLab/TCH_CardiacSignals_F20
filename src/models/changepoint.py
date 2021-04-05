@@ -9,12 +9,11 @@ from matplotlib import rcParams
 from src.utils.file_indexer import get_patient_ids 
 from src.utils.dsp_utils import get_windowed_time
 from src.utils.plotting_utils import set_font_size
-from src.models.mse import mean_squared_error
+from src.models.mse import mean_squared_error, mean_squared_error_timedelay, kl_divergence, bhattacharya
 from scipy.stats import sem
 import os
 
-
-def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=False):
+def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=False, timedelay=False):
     """
     Main CUSUM change point detection function. Plots results and saves CUSUM scores for a single patient
 
@@ -24,7 +23,11 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=Fals
     :return: None (saves plot of CUSUM over time and saves the numerical CUUSM values to the appropriate directories)
     """
     ## added a transform here
-    error_signal = np.log(mean_squared_error(dimension, model_name, patient))
+    if timedelay:
+        error_signal = mean_squared_error_timedelay(dimension, model_name, patient)
+    else:
+        error_signal = bhattacharya(dimension, model_name, patient)
+
     time_stamps = get_windowed_time(patient, 10, 1)  # corresponding time stamps for the MSE
 
     duration = len(error_signal)
@@ -50,16 +53,17 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=Fals
     rcParams.update({'figure.autolayout': True})
     if plot:
         plt.plot(time_stamps[len(time_stamps)//3:], cusum[len(time_stamps)//3:])
-        plt.title(f"Individual Patient: CUSUM statistic over time")
+        plt.title(f"Individual Patient {patient}: CUSUM statistic over time")
         plt.xlabel("Time before cardiac arrest (hours)")
         plt.ylabel("CUSUM Score")
         # plt.savefig('images/cusum_single_patient.png', dpi=500)
 
-    # plt.show()
+        plt.show()
     if save:
         filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
         np.save(filename, cusum)
     return cusum
+
 
 def cusum_validation(threshold, control=False):
     """
@@ -101,7 +105,7 @@ def cusum_validation(threshold, control=False):
     return count, total, avg_time, sem_time
 
 
-def calculate_cusum_all_patients(c):
+def calculate_cusum_all_patients(c, model_name):
     """
     Recalculates and saves the cusum metric time series over all patients
     :param c: cusum correction term to calculate cusum series with
@@ -110,7 +114,7 @@ def calculate_cusum_all_patients(c):
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
     for idx in all_patients:
         try:
-            cusum(idx, "cdae", dimension=100, save=True, correction=c, plot=False)
+            cusum(idx, model_name, dimension=100, save=True, correction=c, plot=False)
         except Exception as e:
             # print(e)
             pass
@@ -123,11 +127,19 @@ if __name__ == "__main__":
     # generates the unwindowed_cusum files for each patient
     # for idx in get_patient_ids(control=True):
     #     try:
-    #         cusum(idx, "cdae", dimension=100, save=True)
+    #         cusum(idx, "cdae", dimension=100, save=False, correction=1.0, plot=True)
     #     except Exception as e:
     #         print(e)
     #         pass
-    # print(cusum_validation(500, control=False))
+    # print(cusum_validation(10, control=True))
+
+    # for idx in ["C106", "C11", "C214", "C109"]:
+    #     print(idx)
+    #     try:
+    #         cusum(idx, "cae", dimension=100, save=False, correction=0.05, plot=True, timedelay=True)
+    #     except Exception as e:
+    #         print(e)
+    #         pass
 
 
 
@@ -136,6 +148,6 @@ if __name__ == "__main__":
     # plt.show()
 
     # error_signal = mean_squared_error(100, "cdae", "C103")
-
+    # print(get_patient_ids(True))
 
     pass

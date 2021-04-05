@@ -49,18 +49,24 @@ def scrape_indices(filenames):
 		ids.append(fname[start:end])
 	return ids
 
-def scrape_indices_WD(directory_path):
+def scrape_indices_WD(directory_path, control = False):
 	"""
 	Function to get valid patient IDs from a directory containing preprocessed files
+	based off filenames of form:
+	Fixed_Dim_HBs_Idx[C]###.npy
 	:param directory_path: String, path to directory
 	:returns: [list[string]] corresponding patient IDs
 	"""
 	files = os.listdir(directory_path)
 	file_ids = set([])
+	comparisonStr = "IdxC" if control else "Idx"
 	for file in files:
 		items = file.split("_")
-		if items[2][:3] == "Idx":
-			file_ids.add(items[2][3:-4])
+		try:
+			if items[3][:len(comparisonStr)] == comparisonStr:
+				file_ids.add(items[3][len(comparisonStr):-4])
+		except:
+			pass
 	return list(file_ids)
 
 def get_patient_ids(control=False):
@@ -77,7 +83,8 @@ def get_patient_ids(control=False):
 
 if __name__ == "__main__":
 	#print(get_patient_ids(control=True))
-	print(get_filenames(original=False, control=True))
-	# ids = scrape_indices(filenames)
-	# print(len(ids))
-	# print(len(original_patient_ids))
+	filenames = (get_filenames(original=False, control=True))
+	print(get_patient_ids(True))
+	ids = scrape_indices(filenames)
+	print(len(ids))
+	print(len(original_patient_ids))

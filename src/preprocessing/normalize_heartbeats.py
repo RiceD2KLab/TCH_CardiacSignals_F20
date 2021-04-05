@@ -9,22 +9,22 @@ import numpy as np
 import os
 from src.preprocessing import heartbeat_split
 from sklearn.preprocessing import StandardScaler
-from src.utils.file_indexer import get_patient_ids
+from src.utils.file_indexer import *
 
 def normalize_heartbeats(control=False):
     """
     Normalizes the Fixed_Dims_HBs 3D matrices (shape n x 100 x 4) by normalizing each 100x4 matrix to mean 0, variance 1
     :return: nothing, saves the normalized heartbeats to a Normalized_Fixed_Dims_HBs_Idx{k}.npy file
     """
+    working_dir = "Working_Data"
     for file_index in get_patient_ids(control):
         try:
-            working_dir = "Control_Working_Data" if control else "Working_Data"
 
-            original_signals = np.load(os.path.join(working_dir, "Fixed_Dim_HBs_Idx{}.npy".format(file_index)))
+            original_signals = np.load(f"Working_Data/Fixed_Dim_HBs_Idx{file_index}.npy")
             for i in range(np.shape(original_signals)[0]):
                 original_signals[i, :,:] = StandardScaler().fit_transform(original_signals[i,:,:])
 
-            np.save(os.path.join(working_dir, "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(file_index)), original_signals)
+            np.save(f"Working_Data/Normalized_Fixed_Dim_HBs_Idx{file_index}.npy", original_signals)
             print("Normalized patient {}".format(file_index))
         except Exception as e:
             print(e)
@@ -33,4 +33,4 @@ def normalize_heartbeats(control=False):
     return
 
 if __name__ == "__main__":
-    normalize_heartbeats(False)
+    normalize_heartbeats(True)

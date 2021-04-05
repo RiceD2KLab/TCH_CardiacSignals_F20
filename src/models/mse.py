@@ -14,10 +14,13 @@ from src.preprocessing import heartbeat_split
 import random
 import matplotlib.pyplot as plt
 from scipy import signal
+from scipy.stats import entropy
+from scipy.spatial.distance import jensenshannon
 from src.utils.plotting_utils import set_font_size
 from src.utils.dsp_utils import get_windowed_time
-from src.utils.file_indexer import get_patient_ids 
-
+from src.utils.file_indexer import get_patient_ids
+import sys
+import logging
 
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
@@ -34,13 +37,64 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
+    # quick hack to get around the "cae" vs "cdae" renaming error - DON'T REMOVE
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                     f"reconstructed_{model_name}_{patient_num}.npy"))
+    # compute mean squared error for each heartbeat
+
+    # original_signals = original_signals[-np.shape(reconstructed_signals)[0]:, :, :]
+
+    if original_signals.shape != reconstructed_signals.shape:
+        logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
+        sys.exit(1)
+
+    mse = np.zeros(np.shape(original_signals)[0])
+    for i in range(np.shape(original_signals)[0]):
+        mse[i] = (np.linalg.norm(original_signals[i,:,:] - reconstructed_signals[i,:,:]) ** 2) / (np.linalg.norm(original_signals[i,:,:]) ** 2)
+
+    if save_errors:
+        np.save(
+            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)), mse)
+
+    return mse
+
+def mean_squared_error_timedelay(reduced_dimensions, model_name, patient_num, save_errors=False):
+    """
+    Computes the mean squared error of the reconstructed signal against the original signal for each lead for each of the patient_num
+    Each signal's dimensions are reduced from 100 to 'reduced_dimensions', then reconstructed to obtain the reconstructed signal
+
+    ** Requires intermediate data for the model and patient that this computes the MSE for, including
+        reconstructions for three iterations of the model **
+
+    :param reduced_dimensions: [int] number of dimensions the file was originally reduced to
+    :param model_name: [str] "lstm, vae, ae, pca, test"
+    :return: [dict(int -> list(np.array))] dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
+    """
+    print("calculating mse for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
+
     print("original normalized signal")
 
     # reconstructed_signals = np.load(os.path.join("Working_Data",
     #                                              "reconstructed_{}_{}d_Idx{}.npy".format(model_name, reduced_dimensions,
-    #                                                                                      patient_num)))
-    reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                 f"reconstructed_10hb_cae_{patient_num}.npy"))
+    #            
+    #                                                                           patient_num)))
+    iter0 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter0.npy"))
+    iter1 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter1.npy"))
+    iter2 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter2.npy"))
+
+    reconstructed_signals = np.concatenate((iter0, iter1, iter2))
+    original_signals = original_signals[-np.shape(reconstructed_signals)[0]:, :, :]
+
     # compute mean squared error for each heartbeat
     mse = np.zeros(np.shape(original_signals)[0])
     for i in range(np.shape(original_signals)[0]):
@@ -51,6 +105,125 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
             os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)), mse)
 
     return mse
+
+
+def kl_divergence(reduced_dimensions, model_name, patient_num, save_errors=False):
+    """
+    Computes the KL-Divergence between original and reconstructed data (absolute val + normalized to make a valid dist.)
+
+    ** Requires intermediate data for the model and patient that this computes the MSE for **
+
+    :param reduced_dimensions: [int] number of dimensions the file was originally reduced to
+    :param model_name: [str] "lstm, vae, ae, pca, test"
+    :return: [dict(int -> list(np.array))] dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
+    """
+    print("calculating KL div. for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
+
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                     f"reconstructed_{model_name}_{patient_num}.npy"))
+
+    if original_signals.shape != reconstructed_signals.shape:
+        original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
+
+        # logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
+        # sys.exit(1)
+    # print(original_signals.shape)
+    # print(reconstructed_signals.shape)
+    kld = entropy(abs(reconstructed_signals), abs(original_signals), axis=1)
+    kld = np.mean(kld, axis=1)
+    # print(kld.shape)
+    return kld
+
+def jensen_shannon(reduced_dimensions, model_name, patient_num, save_errors=False):
+    """
+    Computes the Jensen-Shannon Divergence between original and reconstructed data (absolute val + normalized to make a valid dist.)
+
+    ** Requires intermediate data for the model and patient that this computes the MSE for **
+
+    :param reduced_dimensions: [int] number of dimensions the file was originally reduced to
+    :param model_name: [str] "lstm, vae, ae, pca, test"
+    :return: [dict(int -> list(np.array))] dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
+    """
+    print("calculating JS div. for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
+
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                            f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                            f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                        f"reconstructed_{model_name}_{patient_num}.npy"))
+
+    if original_signals.shape != reconstructed_signals.shape:
+        original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
+
+        # logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
+        # sys.exit(1)
+    # print(original_signals.shape)
+    # print(reconstructed_signals.shape)
+    jsd = np.zeros(np.shape(original_signals)[0])
+    print(jsd.shape)
+    for i in range(np.shape(original_signals)[0]):
+        jsd[i] = 0
+        for j in range(4):
+            jsd[i] += jensenshannon(abs(original_signals[i, :, j]), abs(reconstructed_signals[i, :, j]))
+    print(jsd.shape)
+    return jsd
+
+def bhattacharya(reduced_dimensions, model_name, patient_num, save_errors=False):
+    """
+    Computes the Bhattacharya Divergence between original and reconstructed data (absolute val + normalized to make a valid dist.)
+
+    ** Requires intermediate data for the model and patient that this computes the MSE for **
+
+    :param reduced_dimensions: [int] number of dimensions the file was originally reduced to
+    :param model_name: [str] "lstm, vae, ae, pca, test"
+    :return: [dict(int -> list(np.array))] dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
+    """
+    print("calculating Bh. div. for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
+
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                            f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                            f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                        f"reconstructed_{model_name}_{patient_num}.npy"))
+
+    if original_signals.shape != reconstructed_signals.shape:
+        original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
+
+        # logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
+        # sys.exit(1)
+    # print(original_signals.shape)
+    # print(reconstructed_signals.shape)
+    bh = np.zeros(np.shape(original_signals)[0])
+    for i in range(np.shape(original_signals)[0]):
+        bh[i] = 0
+        for j in range(4):
+            bh[i] += np.sum(np.sqrt(abs(original_signals[i, :, j]) * abs(reconstructed_signals[i, :, j])))
+    # print(bh.shape)
+    return bh
 
 
 def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_num):
@@ -186,9 +359,12 @@ def raw_mse_over_time(patient_num, model_name, dimension_num, last_four_hours=Fa
 if __name__ == "__main__":
 
     # The following function calls generate plots for windowed MSE, raw MSE, and the aggregate boxplot MSE, respectively
-    for idx in get_patient_ids():
-        raw_mse_over_time(idx, "cdae", 100, last_four_hours=False)
+    # for idx in get_patient_ids():
+    #     raw_mse_over_time(idx, "cdae", 100, last_four_hours=False)
         # except: 
         #     pass
     # raw_mse_over_time(16, "cdae", 100, last_four_hours=True)
     # boxplot_error("cdae", 100, False)
+
+    # kl_divergence(100, "cdae", 1, save_errors=False)
+    pass
