@@ -109,15 +109,15 @@ def roc_curve(plot=True, correction=None, annotate=True):
     :return: nothing
     """
 
-    thresholds = list(range(0, 303, 3)) # use this for LSTM
+    thresholds = list(range(0, 101, 1)) # use this for LSTM
     # thresholds = list(range(0, 2500, 20))  # use this for CDAE
 
     # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
     true_positive_rates = [1.0]
     false_positive_rates = [1.0]
 
-    # annotations = list(range(0, 306, 6))  # use this for LSTM
-    annotations = list(range(0,2600, 200))  # use this for CDAE
+    annotations = list(range(0, 105, 5))  # use this for LSTM
+    # annotations = list(range(0,2600, 200))  # use this for CDAE
     annotation_coords = [] # so we can annotate these points on the scatterplot
 
     for i in thresholds:
@@ -164,7 +164,7 @@ def roc_curve(plot=True, correction=None, annotate=True):
     # calculate AUC (area under curve)
     auc = metrics.auc(false_positive_rates, true_positive_rates)
     print(f"AUC-ROC score is {auc}")
-    print(list(zip(true_positive_rates, false_positive_rates)))
+    print(list(zip(thresholds, true_positive_rates[1:-1], false_positive_rates[1:-1])))
     return auc, true_positive_rates, false_positive_rates
 
 
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     # cusum_validation(25, control=True)
     # plot_sweep()
     calculate_cusum_all_patients(0.62, "lstm")
-    roc_curve(True,  correction=0.62, annotate=False)
+    roc_curve(True,  correction=0.62, annotate=True)
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()

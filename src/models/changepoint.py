@@ -26,7 +26,7 @@ def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=Fals
     if timedelay:
         error_signal = mean_squared_error_timedelay(dimension, model_name, patient)
     else:
-        error_signal = bhattacharya(dimension, model_name, patient)
+        error_signal = mean_squared_error(dimension, model_name, patient)
 
     time_stamps = get_windowed_time(patient, 10, 1)  # corresponding time stamps for the MSE
 
