@@ -14,7 +14,7 @@ from src.preprocessing import heartbeat_split
 import random
 import matplotlib.pyplot as plt
 from scipy import signal
-from scipy.stats import entropy
+from scipy.stats import entropy, wasserstein_distance
 from scipy.spatial.distance import jensenshannon
 from src.utils.plotting_utils import set_font_size
 from src.utils.dsp_utils import get_windowed_time
@@ -224,6 +224,46 @@ def bhattacharya(reduced_dimensions, model_name, patient_num, save_errors=False)
             bh[i] += np.sum(np.sqrt(abs(original_signals[i, :, j]) * abs(reconstructed_signals[i, :, j])))
     # print(bh.shape)
     return bh
+
+def wasserstein(reduced_dimensions, model_name, patient_num, save_errors=False):
+    """
+    Computes the Wasserstein between original and reconstructed data
+
+    ** Requires intermediate data for the model and patient **
+
+    :param reduced_dimensions: [int] number of dimensions the file was originally reduced to
+    :param model_name: [str] "lstm, vae, ae, pca, test"
+    :return: [dict(int -> list(np.array))] dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
+    """
+    print("calculating Wasserstein. div. for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    original_signals = np.load(
+        os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
+
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                            f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                            f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                        f"reconstructed_{model_name}_{patient_num}.npy"))
+
+    if original_signals.shape != reconstructed_signals.shape:
+        original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
+
+        # logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
+        # sys.exit(1)
+    # print(original_signals.shape)
+    # print(reconstructed_signals.shape)
+    ws = np.zeros(np.shape(original_signals)[0])
+    for i in range(np.shape(original_signals)[0]):
+        ws[i] = 0
+        for j in range(4):
+            ws[i] += np.sum(np.sqrt(abs(original_signals[i, :, j]) * abs(reconstructed_signals[i, :, j])))
+    # print(ws)
+    return ws
 
 
 def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_num):
