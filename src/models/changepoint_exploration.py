@@ -172,7 +172,7 @@ def threshold_correction_sweep(model_name):
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.01)
+    correction_sweep = np.arange(0, 1, 0.1)
     auc_scores = {}
 
     for c in correction_sweep:
@@ -238,16 +238,16 @@ def plot_MSE_transform(patient_id):
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    # sweep = threshold_correction_sweep("cdae")
-    # print(sweep)
-    # with open('Working_Data/sweep.pickle', 'wb') as handle:
-    #     pickle.dump(sweep, handle)
+    sweep = threshold_correction_sweep("cdae")
+    print(sweep)
+    with open('Working_Data/sweep.pickle', 'wb') as handle:
+        pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
     # plot_sweep()
-    calculate_cusum_all_patients(0.62, "lstm")
-    roc_curve(True,  correction=0.62, annotate=True)
+    # calculate_cusum_all_patients(0.62, "lstm")
+    # roc_curve(True,  correction=0.62, annotate=True)
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()

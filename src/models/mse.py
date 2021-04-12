@@ -261,8 +261,8 @@ def wasserstein(reduced_dimensions, model_name, patient_num, save_errors=False):
     for i in range(np.shape(original_signals)[0]):
         ws[i] = 0
         for j in range(4):
-            ws[i] += np.sum(np.sqrt(abs(original_signals[i, :, j]) * abs(reconstructed_signals[i, :, j])))
-    # print(ws)
+            ws[i] += wasserstein_distance(abs(original_signals[i, :, j]), abs(reconstructed_signals[i, :, j]))
+    print(ws.shape)
     return ws
 
 
