@@ -22,6 +22,9 @@ from src.utils.file_indexer import get_patient_ids
 import sys
 import logging
 
+
+
+
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
     Computes the mean squared error of the reconstructed signal against the original signal for each lead for each of the patient_num
@@ -37,20 +40,8 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    # quick hack to get around the "cae" vs "cdae" renaming error - DON'T REMOVE
-    if model_name == "cdae" or model_name == "cae":
-        try:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                         f"reconstructed_10hb_cdae_{patient_num}.npy"))
-        except:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                         f"reconstructed_10hb_cae_{patient_num}.npy"))
-    else:
-        reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                     f"reconstructed_{model_name}_{patient_num}.npy"))
+    reconstructed_signals = load_reconstructed_heartbeats(model_name, patient_num)
     # compute mean squared error for each heartbeat
-
-    # original_signals = original_signals[-np.shape(reconstructed_signals)[0]:, :, :]
 
     if original_signals.shape != reconstructed_signals.shape:
         logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
@@ -65,6 +56,7 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
             os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)), mse)
 
     return mse
+
 
 def mean_squared_error_timedelay(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
@@ -121,16 +113,7 @@ def kl_divergence(reduced_dimensions, model_name, patient_num, save_errors=False
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    if model_name == "cdae" or model_name == "cae":
-        try:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                         f"reconstructed_10hb_cdae_{patient_num}.npy"))
-        except:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                         f"reconstructed_10hb_cae_{patient_num}.npy"))
-    else:
-        reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                     f"reconstructed_{model_name}_{patient_num}.npy"))
+    reconstructed_signals = load_reconstructed_heartbeats(model_name, patient_num)
 
     if original_signals.shape != reconstructed_signals.shape:
         original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
@@ -158,16 +141,7 @@ def jensen_shannon(reduced_dimensions, model_name, patient_num, save_errors=Fals
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    if model_name == "cdae" or model_name == "cae":
-        try:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                            f"reconstructed_10hb_cdae_{patient_num}.npy"))
-        except:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                            f"reconstructed_10hb_cae_{patient_num}.npy"))
-    else:
-        reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                        f"reconstructed_{model_name}_{patient_num}.npy"))
+    reconstructed_signals = load_reconstructed_heartbeats(model_name, patient_num)
 
     if original_signals.shape != reconstructed_signals.shape:
         original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
@@ -199,16 +173,7 @@ def bhattacharya(reduced_dimensions, model_name, patient_num, save_errors=False)
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    if model_name == "cdae" or model_name == "cae":
-        try:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                            f"reconstructed_10hb_cdae_{patient_num}.npy"))
-        except:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                            f"reconstructed_10hb_cae_{patient_num}.npy"))
-    else:
-        reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                        f"reconstructed_{model_name}_{patient_num}.npy"))
+    reconstructed_signals = load_reconstructed_heartbeats(model_name, patient_num)
 
     if original_signals.shape != reconstructed_signals.shape:
         original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
@@ -239,16 +204,7 @@ def wasserstein(reduced_dimensions, model_name, patient_num, save_errors=False):
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
-    if model_name == "cdae" or model_name == "cae":
-        try:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                            f"reconstructed_10hb_cdae_{patient_num}.npy"))
-        except:
-            reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                            f"reconstructed_10hb_cae_{patient_num}.npy"))
-    else:
-        reconstructed_signals = np.load(os.path.join("Working_Data",
-                                                        f"reconstructed_{model_name}_{patient_num}.npy"))
+    reconstructed_signals = load_reconstructed_heartbeats(model_name, patient_num)
 
     if original_signals.shape != reconstructed_signals.shape:
         original_signals = original_signals[-reconstructed_signals.shape[0]:, :, :]
@@ -264,6 +220,25 @@ def wasserstein(reduced_dimensions, model_name, patient_num, save_errors=False):
             ws[i] += wasserstein_distance(abs(original_signals[i, :, j]), abs(reconstructed_signals[i, :, j]))
     print(ws.shape)
     return ws
+
+def load_reconstructed_heartbeats(model_name, patient_num):
+    """
+    Loads the reconstruction heartbeats from disk
+    @param model_name: the name of the model used
+    @param patient_num: patient index
+    @return: numpy array of the reconstructed heartbeats
+    """
+    if model_name == "cdae" or model_name == "cae":
+        try:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cdae_{patient_num}.npy"))
+        except:
+            reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                         f"reconstructed_10hb_cae_{patient_num}.npy"))
+    else:
+        reconstructed_signals = np.load(os.path.join("Working_Data",
+                                                     f"reconstructed_{model_name}_{patient_num}.npy"))
+    return reconstructed_signals
 
 
 def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_num):
