@@ -102,7 +102,7 @@ def compute_cusum(patient_idx, correction):
     @param patient_idx: number
     @return:
     """
-    return changepoint.cusum(patient_idx, "lstm", 100, correction=correction, save=True, plot=True)
+    return changepoint.cusum(patient_idx, "lstm", 100,  changepoint.kl_divergence, correction=correction, save=True, plot=True)
 
 
 def compute_reconstruction(patient_idx, model, time_steps, save_reconstruction=False):

@@ -23,8 +23,6 @@ import sys
 import logging
 
 
-
-
 def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
     Computes the mean squared error of the reconstructed signal against the original signal for each lead for each of the patient_num
@@ -44,16 +42,19 @@ def mean_squared_error(reduced_dimensions, model_name, patient_num, save_errors=
     # compute mean squared error for each heartbeat
 
     if original_signals.shape != reconstructed_signals.shape:
-        logging.exception(f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
+        logging.exception(
+            f"original signals length of {original_signals.shape[0]} is not equal to reconstructed signal length of {reconstructed_signals.shape[0]}")
         sys.exit(1)
 
     mse = np.zeros(np.shape(original_signals)[0])
     for i in range(np.shape(original_signals)[0]):
-        mse[i] = (np.linalg.norm(original_signals[i,:,:] - reconstructed_signals[i,:,:]) ** 2) / (np.linalg.norm(original_signals[i,:,:]) ** 2)
+        mse[i] = (np.linalg.norm(original_signals[i, :, :] - reconstructed_signals[i, :, :]) ** 2) / (
+                    np.linalg.norm(original_signals[i, :, :]) ** 2)
 
     if save_errors:
         np.save(
-            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)), mse)
+            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)),
+            mse)
 
     return mse
 
@@ -90,11 +91,13 @@ def mean_squared_error_timedelay(reduced_dimensions, model_name, patient_num, sa
     # compute mean squared error for each heartbeat
     mse = np.zeros(np.shape(original_signals)[0])
     for i in range(np.shape(original_signals)[0]):
-        mse[i] = (np.linalg.norm(original_signals[i,:,:] - reconstructed_signals[i,:,:]) ** 2) / (np.linalg.norm(original_signals[i,:,:]) ** 2)
+        mse[i] = (np.linalg.norm(original_signals[i, :, :] - reconstructed_signals[i, :, :]) ** 2) / (
+                    np.linalg.norm(original_signals[i, :, :]) ** 2)
 
     if save_errors:
         np.save(
-            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)), mse)
+            os.path.join("Working_Data", "{}_errors_{}d_Idx{}.npy".format(model_name, reduced_dimensions, patient_num)),
+            mse)
 
     return mse
 
@@ -126,6 +129,7 @@ def kl_divergence(reduced_dimensions, model_name, patient_num, save_errors=False
     kld = np.mean(kld, axis=1)
     # print(kld.shape)
     return kld
+
 
 def jensen_shannon(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
@@ -159,6 +163,7 @@ def jensen_shannon(reduced_dimensions, model_name, patient_num, save_errors=Fals
     print(jsd.shape)
     return jsd
 
+
 def bhattacharya(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
     Computes the Bhattacharya Divergence between original and reconstructed data (absolute val + normalized to make a valid dist.)
@@ -190,6 +195,7 @@ def bhattacharya(reduced_dimensions, model_name, patient_num, save_errors=False)
     # print(bh.shape)
     return bh
 
+
 def wasserstein(reduced_dimensions, model_name, patient_num, save_errors=False):
     """
     Computes the Wasserstein between original and reconstructed data
@@ -200,7 +206,8 @@ def wasserstein(reduced_dimensions, model_name, patient_num, save_errors=False):
     :param model_name: [str] "lstm, vae, ae, pca, test"
     :return: [dict(int -> list(np.array))] dictionary of patient_index -> length n array of MSE for each heartbeat (i.e. MSE of 100x4 arrays)
     """
-    print("calculating Wasserstein. div. for file index {} on the reconstructed {} model".format(patient_num, model_name))
+    print(
+        "calculating Wasserstein. div. for file index {} on the reconstructed {} model".format(patient_num, model_name))
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
 
@@ -220,6 +227,7 @@ def wasserstein(reduced_dimensions, model_name, patient_num, save_errors=False):
             ws[i] += wasserstein_distance(abs(original_signals[i, :, j]), abs(reconstructed_signals[i, :, j]))
     print(ws.shape)
     return ws
+
 
 def load_reconstructed_heartbeats(model_name, patient_num):
     """
@@ -254,12 +262,15 @@ def compare_reconstructed_hb(patient_num, heartbeat_num, model_name, dimension_n
     original_signals = np.load(
         os.path.join("Working_Data", "Normalized_Fixed_Dim_HBs_Idx{}.npy".format(str(patient_num))))
     reconstructed_signals = np.load(
-        os.path.join("Working_Data", "reconstructed_{}_{}d_Idx{}.npy".format(model_name, str(dimension_num), str(patient_num))))
+        os.path.join("Working_Data",
+                     "reconstructed_{}_{}d_Idx{}.npy".format(model_name, str(dimension_num), str(patient_num))))
 
     for lead_num in range(4):
         plt.plot(original_signals[heartbeat_num, :, lead_num])
         plt.plot(reconstructed_signals[heartbeat_num, :, lead_num])
-        plt.title("Reconstructed {} vs Original Signal for heartbeat {} on patient {} for lead {} reduced to {} dims".format(model_name, heartbeat_num, patient_num, lead_num, dimension_num))
+        plt.title(
+            "Reconstructed {} vs Original Signal for heartbeat {} on patient {} for lead {} reduced to {} dims".format(
+                model_name, heartbeat_num, patient_num, lead_num, dimension_num))
         plt.xlabel("Sample Index")
         plt.show()
 
@@ -284,18 +295,21 @@ def boxplot_error(model_name, dimension_num, show_outliers=True):
         for i, box in enumerate(boxes):
             combined_errors[i] = np.concatenate([combined_errors[i], box])
 
-
     # 12 b/c 6 hours and 2 half-hour windows per hour
-    plt.boxplot(combined_errors, vert=True, positions=np.arange(-4, 0, 1/boxplots_per_hour), showfliers=show_outliers, widths=1/9,
-                medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'), capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
+    plt.boxplot(combined_errors, vert=True, positions=np.arange(-4, 0, 1 / boxplots_per_hour), showfliers=show_outliers,
+                widths=1 / 9,
+                medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'),
+                capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
     set_font_size()
-    plt.title(f"Mean Squared Error Distribution of Ten-Minute Windows\n over all patients with {model_name.upper()} model")
+    plt.title(
+        f"Mean Squared Error Distribution of Ten-Minute Windows\n over all patients with {model_name.upper()} model")
     plt.xlabel("Window Start Time (Hour)")
     plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
     plt.ylabel("Mean Squared Error")
     plt.savefig(f"images/boxplot_mse.png", dpi=700)
     plt.show()
     return
+
 
 def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size, last_four_hours=False):
     """
@@ -315,7 +329,7 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size, 
     # window the errors - assume 500 samples ~ 5 min
     windowed_errors = []
     for i in range(0, len(errors) - window_size, window_size):
-        windowed_errors.append(np.mean(errors[i:i+window_size]))
+        windowed_errors.append(np.mean(errors[i:i + window_size]))
 
     if last_four_hours:
         # finds the nearest point in time to four hours
@@ -337,6 +351,7 @@ def windowed_mse_over_time(patient_num, model_name, dimension_num, window_size, 
     # plt.savefig(f"images/windowed_mse_Idx{patient_num}.png", dpi=700)
     # plt.show()
     np.save(f"Working_Data/windowed_mse_{dimension_num}d_Idx{patient_num}.npy", windowed_errors)
+
 
 def raw_mse_over_time(patient_num, model_name, dimension_num, last_four_hours=False):
     """
@@ -371,13 +386,13 @@ def raw_mse_over_time(patient_num, model_name, dimension_num, last_four_hours=Fa
     # plt.show()
     np.save(f"Working_Data/raw_mse_{dimension_num}d_Idx{patient_num}.npy", errors)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     # The following function calls generate plots for windowed MSE, raw MSE, and the aggregate boxplot MSE, respectively
     # for idx in get_patient_ids():
     #     raw_mse_over_time(idx, "cdae", 100, last_four_hours=False)
-        # except: 
-        #     pass
+    # except:
+    #     pass
     # raw_mse_over_time(16, "cdae", 100, last_four_hours=True)
     # boxplot_error("cdae", 100, False)
 

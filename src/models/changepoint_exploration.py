@@ -169,6 +169,11 @@ def roc_curve(plot=True, correction=None, annotate=True):
 
 
 def threshold_correction_sweep(model_name):
+    """
+    Performs a sweep over the threshold and correction parameters for changepoint
+    @param model_name: the model used (LSTM, conv AE, etc)
+    @return: the AUC scores for each of the c values
+    """
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
@@ -178,7 +183,7 @@ def threshold_correction_sweep(model_name):
     for c in correction_sweep:
         for idx in all_patients:
             try:
-                cusum(idx, model_name=model_name, dimension=100, save=True, correction=c, timedelay=False)
+                cusum(idx, model_name, 100, wasserstein, save=True, correction=c)
             except Exception as e:
                 # print(e)
                 pass
