@@ -183,7 +183,7 @@ def threshold_correction_sweep(model_name):
     for c in correction_sweep:
         for idx in all_patients:
             try:
-                cusum(idx, model_name, 100, mean_squared_error_timedelay(), save=True, correction=c)
+                cusum(idx, model_name, 100, mean_squared_error_timedelay, save=True, correction=c)
             except Exception as e:
                 # print(e)
                 pass
