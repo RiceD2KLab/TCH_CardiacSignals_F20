@@ -7,3 +7,4 @@ __pycache__/
 Data_H5_Files/
 *.pyc
 *.h5
+*.png

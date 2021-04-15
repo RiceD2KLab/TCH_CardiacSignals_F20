@@ -80,36 +80,36 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
                 if hasattr(layer, attr):
                     setattr(layer, attr, regularizer)
         autoencoder.compile(optimizer=opt, loss='mse')
-        normal_train, normal_valid = train_test_split(fit_data, train_size=0.85, random_state=1)
-        model = autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, batch_size=batch_size,
-                                validation_data=(normal_valid, normal_valid))
+        # normal_train, normal_valid = train_test_split(fit_data, train_size=0.85, random_state=1)
+        model = autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
+                                # validation_data=(normal_valid, normal_valid))
 
         # autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
 
         # if plot_loss:
-        SMALLER_SIZE = 10
-        MED_SIZE = 12
-        BIG_SIZE = 18
-        plt.figure()
-        # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-        plt.rc('axes', titlesize=MED_SIZE)  # fontsize of the axes title
-        plt.rc('axes', labelsize=MED_SIZE)  # fontsize of the x and y labels
-        plt.rc('xtick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        plt.rc('ytick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        plt.rc('legend', fontsize=MED_SIZE)  # legend fontsize
-        plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
-
-        plt.plot(model.history['loss'])
-        plt.plot(model.history['val_loss'])
-        # plt.title('Example of Training and Validation Loss')
-        plt.ylabel('Mean Squared Error')
-        plt.title("T/V: " + file_index)
-        plt.xlabel('Epochs')
-        plt.legend(['Train', 'Validation'], loc='upper right')
-        plt.ylim(0,1)
-        # plt.savefig("images/CDAE_" + file_index + "_loss.png", dpi=500)
-
-        plt.show()
+        # SMALLER_SIZE = 10
+        # MED_SIZE = 12
+        # BIG_SIZE = 18
+        # plt.figure()
+        # # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+        # plt.rc('axes', titlesize=MED_SIZE)  # fontsize of the axes title
+        # plt.rc('axes', labelsize=MED_SIZE)  # fontsize of the x and y labels
+        # plt.rc('xtick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
+        # plt.rc('ytick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
+        # plt.rc('legend', fontsize=MED_SIZE)  # legend fontsize
+        # plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
+        #
+        # plt.plot(model.history['loss'])
+        # plt.plot(model.history['val_loss'])
+        # # plt.title('Example of Training and Validation Loss')
+        # plt.ylabel('Mean Squared Error')
+        # plt.title("T/V: " + file_index)
+        # plt.xlabel('Epochs')
+        # plt.legend(['Train', 'Validation'], loc='upper right')
+        # plt.ylim(0,1)
+        # # plt.savefig("images/CDAE_" + file_index + "_loss.png", dpi=500)
+        #
+        # plt.show()
 
         if save_model:
             # save out the model
@@ -142,35 +142,35 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         opt = keras.optimizers.Adam(learning_rate=lr)
         autoencoder.compile(optimizer=opt, loss='mse')
 
-        normal_train, normal_valid = train_test_split(fit_data, train_size=0.85, random_state=1)
-        model = autoencoder.fit(x=normal_train, y=normal_train, epochs=num_epochs, batch_size=batch_size,
-                                validation_data=(normal_valid, normal_valid))
+        # normal_train, normal_valid = train_test_split(fit_data, train_size=0.85, random_state=1)
+        model = autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
+                                # validation_data=(normal_valid, normal_valid))
 
         # autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
 
         # if plot_loss:
-        SMALLER_SIZE = 10
-        MED_SIZE = 12
-        BIG_SIZE = 18
-        plt.figure()
-        # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-        plt.rc('axes', titlesize=MED_SIZE)  # fontsize of the axes title
-        plt.rc('axes', labelsize=MED_SIZE)  # fontsize of the x and y labels
-        plt.rc('xtick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        plt.rc('ytick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        plt.rc('legend', fontsize=MED_SIZE)  # legend fontsize
-        plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
-
-        plt.plot(model.history['loss'])
-        plt.plot(model.history['val_loss'])
-        # plt.title('Example of Training and Validation Loss')
-        plt.ylabel('Mean Squared Error')
-        plt.xlabel('Epochs')
-        plt.title("T/V: " + file_index)
-        plt.legend(['Train', 'Validation'], loc='upper right')
-        # plt.savefig("images/CDAE_" + file_index + "_loss.png", dpi=500)
-        plt.ylim(0, 1)
-        plt.show()
+        # SMALLER_SIZE = 10
+        # MED_SIZE = 12
+        # BIG_SIZE = 18
+        # plt.figure()
+        # # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+        # plt.rc('axes', titlesize=MED_SIZE)  # fontsize of the axes title
+        # plt.rc('axes', labelsize=MED_SIZE)  # fontsize of the x and y labels
+        # plt.rc('xtick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
+        # plt.rc('ytick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
+        # plt.rc('legend', fontsize=MED_SIZE)  # legend fontsize
+        # plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
+        #
+        # plt.plot(model.history['loss'])
+        # plt.plot(model.history['val_loss'])
+        # # plt.title('Example of Training and Validation Loss')
+        # plt.ylabel('Mean Squared Error')
+        # plt.xlabel('Epochs')
+        # plt.title("T/V: " + file_index)
+        # plt.legend(['Train', 'Validation'], loc='upper right')
+        # # plt.savefig("images/CDAE_" + file_index + "_loss.png", dpi=500)
+        # plt.ylim(0, 1)
+        # plt.show()
 
         if save_model:
             # save out the model
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     #                           'C186', 'C203', 'C205', 'C206', 'C207', 'C209', 'C213', 'C214', 'C218', 'C219', 'C221',
     #                           'C222', 'C225', 'C234', 'C238', 'C241', 'C248', 'C249', 'C251', 'C252']
     # patient_set = ["11"] # "4", "1", "5","C106", "C11", "C214", "C109"
-    for patient_index in ["C106", "1"]:  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
+    for patient_index in get_patient_ids(True):  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
         # if int(patient_index) < 22:
         #     continue
         file_index = patient_index
@@ -216,11 +216,11 @@ if __name__ == "__main__":
         # train_noise = noise(train_)
         three, four, five, six = split(remaining, 4)
         first_predict = np.concatenate((train_, three, four))
-        # second_train = noise(three)
-        # third_train = noise(four)
+        second_train = noise(three)
+        third_train = noise(four)
         training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
-        training_ae(30, 10, True, three, five, patient_index, 1, 0.001)
-        training_ae(30,10,True, four, six, patient_index, 2, 0.001)
+        training_ae(30, 10, True, second_train, five, patient_index, 1, 0.001)
+        training_ae(30,10,True, third_train, six, patient_index, 2, 0.001)
         # training_ae(30,10,True, train_3, five)
 
         ## add regularizers and also potentially try retrinaing only once
@@ -228,3 +228,20 @@ if __name__ == "__main__":
         ## try with the same amount of data every time
         ## make the y-axis the same everytime
         ##  can we keep updating the regularizer as we retrain to prevent overfitting
+
+    for patient_index in get_patient_ids(False):  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
+        # if int(patient_index) < 22:
+        #     continue
+        file_index = patient_index
+        print("Starting training on patient ", patient_index)
+        filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
+        split_ratio = 0.3
+        train_, remaining = patient_split_adaptive(filepath, split_ratio)
+        # train_noise = noise(train_)
+        three, four, five, six = split(remaining, 4)
+        first_predict = np.concatenate((train_, three, four))
+        second_train = noise(three)
+        third_train = noise(four)
+        training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
+        training_ae(30, 10, True, second_train, five, patient_index, 1, 0.001)
+        training_ae(30,10,True, third_train, six, patient_index, 2, 0.001)
