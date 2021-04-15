@@ -83,7 +83,8 @@ def get_patient_ids(control=False):
 
 if __name__ == "__main__":
 	#print(get_patient_ids(control=True))
-	print(get_filenames(original=False, control=True))
+	# filenames = (get_filenames(original=False, control=True))
+	print(get_patient_ids(True))
 	# ids = scrape_indices(filenames)
 	# print(len(ids))
 	# print(len(original_patient_ids))

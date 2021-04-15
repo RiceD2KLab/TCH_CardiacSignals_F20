@@ -1,4 +1,4 @@
-from changepoint import *
+from src.models.changepoint import *
 import matplotlib.pyplot as plt
 from sklearn import metrics
 import numpy as np
@@ -100,7 +100,8 @@ def recall_v_threshold():
 
     return
 
-def roc_curve(plot=True):
+
+def roc_curve(plot=True, correction=None, annotate=True):
     """
     Plot Receiver Operating Characteristic curve (i.e. true positive vs false positive rate)
     True Positive Rate = True Positives / (True Positives + False Negatives)
@@ -108,11 +109,15 @@ def roc_curve(plot=True):
     :return: nothing
     """
 
-    thresholds = list(range(0, 4020, 20))
-    true_positive_rates = []
-    false_positive_rates = []
+    # thresholds = list(range(0, 101, 1)) # use this for LSTM
+    thresholds = list(range(0, 2500, 20))  # use this for CDAE
 
-    annotations = list(range(0, 4000, 200))
+    # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
+    true_positive_rates = [1.0]
+    false_positive_rates = [1.0]
+
+    # annotations = list(range(0, 105, 5))  # use this for LSTM
+    annotations = list(range(0,2600, 200))  # use this for CDAE
     annotation_coords = [] # so we can annotate these points on the scatterplot
 
     for i in thresholds:
@@ -140,15 +145,18 @@ def roc_curve(plot=True):
         if i in annotations:
             annotation_coords.append((fpr, tpr))
 
-
+    # append a (1,1) tpr,fpr coordinate so that the tpr, fpr are guaranteed to vary from 0 to 1
+    true_positive_rates.append(0.0)
+    false_positive_rates.append(0.0)
 
     if plot:
         plt.figure()
         plt.plot(false_positive_rates, true_positive_rates)
-        plt.scatter(false_positive_rates, true_positive_rates, c=['r'])
-        for threshold, coord in zip(annotations, annotation_coords):
-            plt.annotate(str(threshold), coord)
-        plt.title(f"ROC Curve for Cusum Thresholds from {thresholds[0]} to {thresholds[-1]}")
+        if annotate:
+            plt.scatter(false_positive_rates, true_positive_rates, c=['r'])
+            for threshold, coord in zip(annotations, annotation_coords):
+                plt.annotate(str(threshold), coord)
+        plt.title(f"ROC Curve with c={correction} for Cusum Thresholds from {thresholds[0]} to {thresholds[-1]}")
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
         plt.show()
@@ -156,22 +164,28 @@ def roc_curve(plot=True):
     # calculate AUC (area under curve)
     auc = metrics.auc(false_positive_rates, true_positive_rates)
     print(f"AUC-ROC score is {auc}")
+    print(list(zip(thresholds, true_positive_rates[1:-1], false_positive_rates[1:-1])))
     return auc, true_positive_rates, false_positive_rates
 
 
-def threshold_correction_sweep():
+def threshold_correction_sweep(model_name):
+    """
+    Performs a sweep over the threshold and correction parameters for changepoint
+    @param model_name: the model used (LSTM, conv AE, etc)
+    @return: the AUC scores for each of the c values
+    """
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
-    correction_sweep = np.arange(0, 1, 0.01)
+    correction_sweep = np.arange(0, 1, 0.03)
     auc_scores = {}
 
     for c in correction_sweep:
         for idx in all_patients:
             try:
-                cusum(idx, "cdae", dimension=100, save=True, correction=c)
+                cusum(idx, model_name, 100, kl_divergence_timedelay, save=True, correction=c)
             except Exception as e:
-                # print(e)
+                print(e)
                 pass
 
         auc_scores[c] = roc_curve(plot=False)[0]
@@ -192,7 +206,7 @@ def plot_sweep():
     plt.xlabel("CUSUM Correction Parameter")
     plt.ylabel("Area Under Curve")
     plt.title("Area Under Curve vs. Correction Parameter")
-    plt.show()
+    plt.show(dpi=800)
 
     print(f"argmax correction parameter is {max(scores, key=scores.get)} yielding auc = {max(scores.values())}")
 
@@ -224,30 +238,69 @@ def plot_MSE_transform(patient_id):
     # plt.title('(MSE)^0.25 (Last 4 Hours): Test Patient '+str(idx))
     # plt.show()
 
+def save_roc_curve():
+    calculate_cusum_all_patients(0.29, "cdae", kl_divergence)
+    auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.4, annotate=True)
+    pairs = np.array([true_positive_rates, false_positive_rates])
+    np.save("Working_Data/cdae_kl_roc.npy", pairs)
+
+
+def compare_roc_curves():
+    """
+    Used to generate the figure comparing the best roc curves across the models/error metrics
+    ** This function requires that the files defined in the function body exist in the Working_Data folder
+
+    :return: nothing
+    """
+
+    models = ["cdae", "lstm"]
+    error_funcs = ["mse", "kl"]
+    legend_items = []
+    for model in models:
+        for func in error_funcs:
+            tpr_fpr = np.load(f"Working_Data/{model}_{func}_roc.npy")
+            legend_items.append(f"{model} model with {func} error metric")
+            tpr = tpr_fpr[0, :]
+            fpr = tpr_fpr[1, :]
+            plt.plot(fpr, tpr)
+
+    plt.legend(["CDAE Model With MSE Error Metric",
+                "CDAE Model With KL-Divergence Error Metric",
+                "LSTM Model With MSE Error Metric",
+                "LSTM Model With KL-Divergence Error Metric"])
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Comparison of ROC Curves for Model/Error Metric Pairs")
+    plt.show()
+
 
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    # sweep = threshold_correction_sweep()
-    # print(sweep)
-    # with open('Working_Data/sweep.pickle', 'wb') as handle:
-    #     pickle.dump(sweep, handle)
+    sweep = threshold_correction_sweep("cdae")
+    print(sweep)
+    with open('Working_Data/cdae_kl_sweep.pickle', 'wb') as handle:
+        pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
     # plot_sweep()
-
+    # calculate_cusum_all_patients(0.4, "lstm", mean_squared_error)
+    # roc_curve(True,  correction=0.4, annotate=True)
+    # save_roc_curve()
+    # compare_roc_curves()
     # this compares the roc curves with different correction parameters
-    plt.clf()
-    plt.figure()
-    # corrections = [0.05, 0.44]
-    corrections = [0.05]
-    for c in corrections:
-        calculate_cusum_all_patients(c)
-        auc, tpr, fpr = roc_curve(plot=False)
-        plt.plot(fpr, tpr)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.legend(corrections)
-    plt.title("ROC Comparison with tuned vs. untuned correction parameter")
-    plt.show()
+    # plt.clf()
+    # plt.figure()
+    # # corrections = [0.05, 0.44]
+    # corrections = [0.05]
+    # for c in corrections:
+    #     calculate_cusum_all_patients(c)
+    #     auc, tpr, fpr = roc_curve(plot=False)
+    #     plt.plot(fpr, tpr)
+    # plt.xlabel("False Positive Rate")
+    # plt.ylabel("True Positive Rate")
+    # plt.legend(corrections)
+    # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
+    # plt.show()
+    pass
