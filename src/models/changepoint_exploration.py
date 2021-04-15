@@ -169,6 +169,11 @@ def roc_curve(plot=True, correction=None, annotate=True):
 
 
 def threshold_correction_sweep(model_name):
+    """
+    Performs a sweep over the threshold and correction parameters for changepoint
+    @param model_name: the model used (LSTM, conv AE, etc)
+    @return: the AUC scores for each of the c values
+    """
 
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
 
@@ -178,7 +183,7 @@ def threshold_correction_sweep(model_name):
     for c in correction_sweep:
         for idx in all_patients:
             try:
-                cusum(idx, model_name=model_name, dimension=100, save=True, correction=c, timedelay=False)
+                cusum(idx, model_name, 100, mean_squared_error, save=True, correction=c)
             except Exception as e:
                 # print(e)
                 pass
@@ -233,21 +238,28 @@ def plot_MSE_transform(patient_id):
     # plt.title('(MSE)^0.25 (Last 4 Hours): Test Patient '+str(idx))
     # plt.show()
 
+def save_roc_curve():
+    calculate_cusum_all_patients(0.6, "lstm", kl_divergence)
+    auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.4, annotate=True)
+    pairs = np.array([true_positive_rates, false_positive_rates])
+    np.save("Working_Data/lstm_kl_roc.npy", pairs)
+
 
 
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    sweep = threshold_correction_sweep("cdae")
-    print(sweep)
-    with open('Working_Data/sweep.pickle', 'wb') as handle:
-        pickle.dump(sweep, handle)
+    # sweep = threshold_correction_sweep("lstm")
+    # print(sweep)
+    # with open('Working_Data/sweep.pickle', 'wb') as handle:
+    #     pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
     # plot_sweep()
-    # calculate_cusum_all_patients(0.62, "lstm")
-    # roc_curve(True,  correction=0.62, annotate=True)
+    # calculate_cusum_all_patients(0.4, "lstm", mean_squared_error)
+    # roc_curve(True,  correction=0.4, annotate=True)
+    save_roc_curve()
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()

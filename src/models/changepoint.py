@@ -12,21 +12,21 @@ from src.utils.plotting_utils import set_font_size
 from src.models.mse import mean_squared_error, mean_squared_error_timedelay, kl_divergence, bhattacharya, wasserstein
 from scipy.stats import sem
 import os
+from mse import *
 
-def cusum(patient, model_name, dimension, save=False, correction=0.05, plot=False, timedelay=False):
+
+def cusum(patient, model_name, dimension, error_function, save=False, correction=0.05, plot=False):
     """
     Main CUSUM change point detection function. Plots results and saves CUSUM scores for a single patient
 
-    :param patient: [int] numerical identifier for a patient
-    :param model_name: [string] the model which was used to generate the data (typically "cdae", "pca", or "if")
-    :param dimension: [int] the dimension of the latent space to which the data was reduced in the above model (e.g. 100 for "cdae")
+    @param patient: [int] numerical identifier for a patient
+    @param model_name: [string] the model which was used to generate the data (typically "cdae", "pca", or "if")
+    @param dimension: [int] the dimension of the latent space to which the data was reduced in the above model (e.g. 100 for "cdae")
+    @param error_function: the error function (MSE, wasserstein, kl_divergence) to be used to compute distance
     :return: None (saves plot of CUSUM over time and saves the numerical CUUSM values to the appropriate directories)
     """
-    ## added a transform here
-    if timedelay:
-        error_signal = mean_squared_error_timedelay(dimension, model_name, patient)
-    else:
-        error_signal = wasserstein(dimension, model_name, patient)
+    # computes the error function
+    error_signal = error_function(dimension, model_name, patient)
 
     time_stamps = get_windowed_time(patient, 10, 1)  # corresponding time stamps for the MSE
 
@@ -105,7 +105,7 @@ def cusum_validation(threshold, control=False):
     return count, total, avg_time, sem_time
 
 
-def calculate_cusum_all_patients(c, model_name):
+def calculate_cusum_all_patients(c, model_name, error_func):
     """
     Recalculates and saves the cusum metric time series over all patients
     :param c: cusum correction term to calculate cusum series with
@@ -114,7 +114,7 @@ def calculate_cusum_all_patients(c, model_name):
     all_patients = get_patient_ids(control=False) + get_patient_ids(control=True)
     for idx in all_patients:
         try:
-            cusum(idx, model_name, dimension=100, save=True, correction=c, plot=False)
+            cusum(idx, model_name, 100, error_func, save=True, correction=c, plot=False)
         except Exception as e:
             # print(e)
             pass
