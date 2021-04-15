@@ -183,9 +183,9 @@ def threshold_correction_sweep(model_name):
     for c in correction_sweep:
         for idx in all_patients:
             try:
-                cusum(idx, model_name, 100, kl_divergence_timedelay, save=True, correction=c)
+                cusum(idx, model_name, 100, mean_squared_error_timedelay, save=True, correction=c)
             except Exception as e:
-                # print(e)
+                print(e)
                 pass
 
         auc_scores[c] = roc_curve(plot=False)[0]
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
     sweep = threshold_correction_sweep("cdae")
     print(sweep)
-    with open('Working_Data/cdae_kl_sweep.pickle', 'wb') as handle:
+    with open('Working_Data/cdae_mse_sweep.pickle', 'wb') as handle:
         pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
