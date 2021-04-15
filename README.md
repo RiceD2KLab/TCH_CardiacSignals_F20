@@ -28,7 +28,7 @@ NOTE: tensorflow is not yet available for Python 3.9; please use Python 3.8.5
 4) Optional (if you want to run the entire pipeline over the original data): Download the H5 files folder from the TCH box into the project root. **Rename  to `Data_H5_Files`**
 
 ## Running code 
-We provide the notebook `run.ipynb` that runs a sample patient (id = 16) through our pipeline. Specifically, it runs the
+We provide the notebook [run.ipynb](run.ipynb) that runs a sample patient (id = 16) through our pipeline. Specifically, it runs the
 patient through our preprocessing, modeling, and validation sections of the pipeline.\
 The notebook defaults to loading a pretrained model to avoid the expensive autoencoder training step. **To get this pretrained model, 
 download the pretrained model weights from the TCH Box into the Working_Data directory (detailed instructions inside the notebook)**
