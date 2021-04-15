@@ -275,9 +275,9 @@ def load_and_concatenate_reconstructed_heartbeats(model_name, patient_num):
     :param patient_num: patient index
     :return: aggregate reconstruction of the heartbeats
     """
-    iter0 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter0.npy"))
-    iter1 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter1.npy"))
-    iter2 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}iter2.npy"))
+    iter0 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}_iter0.npy"))
+    iter1 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}_iter1.npy"))
+    iter2 = np.load(os.path.join("Working_Data", f"reconstructed_10hb_{model_name}_{patient_num}_iter2.npy"))
 
     reconstructed_signals = np.concatenate((iter0, iter1, iter2))
     return reconstructed_signals
