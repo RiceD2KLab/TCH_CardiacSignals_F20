@@ -209,27 +209,29 @@ if __name__ == "__main__":
 
     # setup logging basic configuration for logging to a file
     logging.basicConfig(filename="transfer.log")
-    all_patients = get_patient_ids(False) + get_patient_ids(True)
-    for patient_index in all_patients:  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
-        # if int(patient_index) < 22:
-        #     continue
-        file_index = patient_index
-        print("Starting training on patient ", patient_index)
-        filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
-        split_ratio = 0.3
-        train_, remaining = patient_split_adaptive(filepath, split_ratio)
-        # train_noise = noise(train_)
-        three, four, five, six = split(remaining, 4)
-        first_predict = np.concatenate((train_, three, four))
-        second_train = noise(three)
-        third_train = noise(four)
+    # all_patients = get_patient_ids(False) + get_patient_ids(True)
+    for patient_index in get_patient_ids(True):  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
         try:
+            # if int(patient_index) < 22:
+            #     continue
+            file_index = patient_index
+            print("Starting training on patient ", patient_index)
+            filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
+            split_ratio = 0.3
+            train_, remaining = patient_split_adaptive(filepath, split_ratio)
+            # train_noise = noise(train_)
+            three, four, five, six = split(remaining, 4)
+            first_predict = np.concatenate((train_, three, four))
+            second_train = noise(three)
+            third_train = noise(four)
+
             training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
             training_ae(30, 10, True, second_train, five, patient_index, 1, 0.001)
             training_ae(30,10,True, third_train, six, patient_index, 2, 0.001)
         except Exception as e:
             logging.critical(f"COULD NOT COMPLETE TRAINING FOR PATIENT {patient_index}")
             logging.info(e)
+
 
 
         # training_ae(30,10,True, train_3, five)
