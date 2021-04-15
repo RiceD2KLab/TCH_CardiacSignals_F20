@@ -369,15 +369,38 @@ def preprocess_sum(filename, curr_index, beats_per_datapoint = 1, file_prefix = 
 	hb_lengths = find_lengths(peaks)
 
 	writeout(str(curr_index), orig_num_hbs, four_lead, fixed_dimension_hbs, heartrate, peaks, hb_lengths, time, percent_unavaliable, prefix = file_prefix)
-if __name__ == "__main__":
-	control_patients = Truew
 
-	plotting_utils.set_font_size()
-	indicies = get_patient_ids(control=control_patients)
-	for idx, filename in zip(indicies, get_filenames(original=(not control_patients), control=control_patients)):
-		idx = str(idx)
-		try:
-			preprocess_sum(filename, idx, beats_per_datapoint=1, control=control_patients)
-		except:
-			print(idx+'bad')
+
+def preprocess_all(num_beats):
+	"""
+	Preprocess all patients
+	:return:
+	"""
+	flags = [True, False]
+
+	for control_patients in flags:
+		indicies = get_patient_ids(control=control_patients)
+		for idx, filename in zip(indicies, get_filenames(original=(not control_patients), control=control_patients)):
+			idx = str(idx)
+			try:
+				preprocess_sum(filename, idx, beats_per_datapoint=num_beats, control=control_patients)
+			except:
+				print(idx + 'bad')
+	# preprocess_seperate(filename, idx)
+
+
+if __name__ == "__main__":
+	# control_patients = True
+	#
+	# plotting_utils.set_font_size()
+	# indicies = get_patient_ids(control=control_patients)
+	# for idx, filename in zip(indicies, get_filenames(original=(not control_patients), control=control_patients)):
+	# 	idx = str(idx)
+	# 	try:
+	# 		preprocess_sum(filename, idx, beats_per_datapoint=10, control=control_patients)
+	# 	except:
+	# 		print(idx+'bad')
 		# preprocess_seperate(filename, idx)
+	preprocess_all(10)
+
+
