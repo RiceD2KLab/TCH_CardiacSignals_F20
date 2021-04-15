@@ -122,7 +122,7 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         reconstruction = decoder.predict(encoded)
 
         # save reconstruction and encoded files
-        reconstruction_save = "Working_Data/reconstructed_10hb_CDAE_" + str(file_index) + "_iter" + str(iteration) + ".npy"
+        reconstruction_save = "Working_Data/reconstructed_10hb_cdae_" + str(file_index) + "_iter" + str(iteration) + ".npy"
         # encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
         np.save(reconstruction_save, reconstruction)
         print("Reconstructed hbs saved for patient:" + str(file_index) + " iteration: " + str(iteration))
@@ -183,7 +183,7 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         reconstruction = decoder.predict(encoded)
 
         # save reconstruction and encoded files
-        reconstruction_save = "Working_Data/reconstructed_10hb_CDAE_" + str(file_index) + "_iter" + str(
+        reconstruction_save = "Working_Data/reconstructed_10hb_cdae_" + str(file_index) + "_iter" + str(
             iteration) + ".npy"
         # encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
         np.save(reconstruction_save, reconstruction)
@@ -205,7 +205,8 @@ if __name__ == "__main__":
     #                           'C186', 'C203', 'C205', 'C206', 'C207', 'C209', 'C213', 'C214', 'C218', 'C219', 'C221',
     #                           'C222', 'C225', 'C234', 'C238', 'C241', 'C248', 'C249', 'C251', 'C252']
     # patient_set = ["11"] # "4", "1", "5","C106", "C11", "C214", "C109"
-    for patient_index in get_patient_ids(True):  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
+    all_patients = get_patient_ids(False) + get_patient_ids(True)
+    for patient_index in all_patients:  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
         # if int(patient_index) < 22:
         #     continue
         file_index = patient_index
@@ -228,20 +229,3 @@ if __name__ == "__main__":
         ## try with the same amount of data every time
         ## make the y-axis the same everytime
         ##  can we keep updating the regularizer as we retrain to prevent overfitting
-
-    for patient_index in get_patient_ids(False):  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
-        # if int(patient_index) < 22:
-        #     continue
-        file_index = patient_index
-        print("Starting training on patient ", patient_index)
-        filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
-        split_ratio = 0.3
-        train_, remaining = patient_split_adaptive(filepath, split_ratio)
-        # train_noise = noise(train_)
-        three, four, five, six = split(remaining, 4)
-        first_predict = np.concatenate((train_, three, four))
-        second_train = noise(three)
-        third_train = noise(four)
-        training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
-        training_ae(30, 10, True, second_train, five, patient_index, 1, 0.001)
-        training_ae(30,10,True, third_train, six, patient_index, 2, 0.001)
