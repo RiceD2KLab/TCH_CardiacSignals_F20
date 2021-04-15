@@ -109,15 +109,15 @@ def roc_curve(plot=True, correction=None, annotate=True):
     :return: nothing
     """
 
-    thresholds = list(range(0, 101, 1)) # use this for LSTM
-    # thresholds = list(range(0, 2500, 20))  # use this for CDAE
+    # thresholds = list(range(0, 101, 1)) # use this for LSTM
+    thresholds = list(range(0, 2500, 20))  # use this for CDAE
 
     # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
     true_positive_rates = [1.0]
     false_positive_rates = [1.0]
 
-    annotations = list(range(0, 105, 5))  # use this for LSTM
-    # annotations = list(range(0,2600, 200))  # use this for CDAE
+    # annotations = list(range(0, 105, 5))  # use this for LSTM
+    annotations = list(range(0,2600, 200))  # use this for CDAE
     annotation_coords = [] # so we can annotate these points on the scatterplot
 
     for i in thresholds:
@@ -239,11 +239,39 @@ def plot_MSE_transform(patient_id):
     # plt.show()
 
 def save_roc_curve():
-    calculate_cusum_all_patients(0.6, "lstm", kl_divergence)
+    calculate_cusum_all_patients(0.29, "cdae", kl_divergence)
     auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.4, annotate=True)
     pairs = np.array([true_positive_rates, false_positive_rates])
-    np.save("Working_Data/lstm_kl_roc.npy", pairs)
+    np.save("Working_Data/cdae_kl_roc.npy", pairs)
 
+
+def compare_roc_curves():
+    """
+    Used to generate the figure comparing the best roc curves across the models/error metrics
+    ** This function requires that the files defined in the function body exist in the Working_Data folder
+
+    :return: nothing
+    """
+
+    models = ["cdae", "lstm"]
+    error_funcs = ["mse", "kl"]
+    legend_items = []
+    for model in models:
+        for func in error_funcs:
+            tpr_fpr = np.load(f"Working_Data/{model}_{func}_roc.npy")
+            legend_items.append(f"{model} model with {func} error metric")
+            tpr = tpr_fpr[0, :]
+            fpr = tpr_fpr[1, :]
+            plt.plot(fpr, tpr)
+
+    plt.legend(["CDAE Model With MSE Error Metric",
+                "CDAE Model With KL-Divergence Error Metric",
+                "LSTM Model With MSE Error Metric",
+                "LSTM Model With KL-Divergence Error Metric"])
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Comparison of ROC Curves for Model/Error Metric Pairs")
+    plt.show()
 
 
 
@@ -259,7 +287,8 @@ if __name__ == "__main__":
     # plot_sweep()
     # calculate_cusum_all_patients(0.4, "lstm", mean_squared_error)
     # roc_curve(True,  correction=0.4, annotate=True)
-    save_roc_curve()
+    # save_roc_curve()
+    compare_roc_curves()
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()
