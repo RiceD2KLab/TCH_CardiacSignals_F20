@@ -34,3 +34,4 @@ def normalize_heartbeats(control=False):
 
 if __name__ == "__main__":
     normalize_heartbeats(True)
+    normalize_heartbeats(False)
