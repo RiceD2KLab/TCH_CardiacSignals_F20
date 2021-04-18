@@ -253,7 +253,7 @@ def compare_roc_curves():
     :return: nothing
     """
 
-    models = ["cdae", "lstm"]
+    models = ["cdae", "transfer_cdae", "lstm"]
     error_funcs = ["mse", "kl"]
     legend_items = []
     for model in models:
@@ -265,12 +265,28 @@ def compare_roc_curves():
             plt.plot(fpr, tpr)
 
     plt.legend(["CDAE Model With MSE Error Metric",
-                "CDAE Model With KL-Divergence Error Metric",
+                "CDAE Model With KL-Div. Error Metric",
+                "CDAE Transfer Model With MSE Error Metric",
+                "CDAE Transfer Model With KL-Div. Error Metric",
                 "LSTM Model With MSE Error Metric",
-                "LSTM Model With KL-Divergence Error Metric"])
+                "LSTM Model With KL-Div. Error Metric"])
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("Comparison of ROC Curves for Model/Error Metric Pairs")
+    plt.show()
+
+def plot_roc_curve_from_disk():
+    """
+    Plots an ROC curve if the roc curve is saved out to disk as a zipped list
+    :return:
+    """
+    tpr_fpr = np.load(f"Working_Data/transfer_cdae_kl_roc.npy")
+    tpr = tpr_fpr[0, :]
+    fpr = tpr_fpr[1, :]
+    plt.plot(fpr, tpr)
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve For CDAE Transfer Learning Model with KL-Div. Error Metric")
     plt.show()
 
 
@@ -286,9 +302,10 @@ if __name__ == "__main__":
     # cusum_validation(25, control=True)
     # plot_sweep()
     # calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
-    # print(roc_curve(True,  correction=0.41, annotate=True))
-    save_roc_curve()
+    print(roc_curve(True,  correction=0.41, annotate=True)[0])
+    # save_roc_curve()
     # compare_roc_curves()
+    # plot_roc_curve_from_disk()
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()
