@@ -239,7 +239,7 @@ def plot_MSE_transform(patient_id):
     # plt.show()
 
 def save_roc_curve():
-    calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
+    # calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
     auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.36, annotate=True)
     pairs = np.array([true_positive_rates, false_positive_rates])
     np.save("Working_Data/transfer_cdae_kl_roc.npy", pairs)
