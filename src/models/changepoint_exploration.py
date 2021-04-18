@@ -200,7 +200,7 @@ def plot_sweep():
     Need to run the threshold_sweep() function beforehand to calculate the AUC score distribution
     :return:
     """
-    with open('Working_Data/sweep.pickle', 'rb') as handle:
+    with open('Working_Data/transfer_cdae_kl_sweep.pickle', 'rb') as handle:
         scores = pickle.load(handle)
     plt.plot(scores.keys(), scores.values())
     plt.xlabel("CUSUM Correction Parameter")
@@ -239,10 +239,10 @@ def plot_MSE_transform(patient_id):
     # plt.show()
 
 def save_roc_curve():
-    calculate_cusum_all_patients(0.29, "cdae", kl_divergence)
-    auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.4, annotate=True)
+    calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
+    auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.41, annotate=True)
     pairs = np.array([true_positive_rates, false_positive_rates])
-    np.save("Working_Data/cdae_kl_roc.npy", pairs)
+    np.save("Working_Data/transfer_cdae_mse_roc.npy", pairs)
 
 
 def compare_roc_curves():
@@ -277,16 +277,16 @@ def compare_roc_curves():
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    sweep = threshold_correction_sweep("cdae")
-    print(sweep)
-    with open('Working_Data/cdae_kl_sweep.pickle', 'wb') as handle:
-        pickle.dump(sweep, handle)
+    # sweep = threshold_correction_sweep("cdae")
+    # print(sweep)
+    # with open('Working_Data/cdae_kl_sweep.pickle', 'wb') as handle:
+    #     pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
     # plot_sweep()
-    # calculate_cusum_all_patients(0.4, "lstm", mean_squared_error)
-    # roc_curve(True,  correction=0.4, annotate=True)
+    # calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
+    # print(roc_curve(True,  correction=0.41, annotate=True))
     # save_roc_curve()
     # compare_roc_curves()
     # this compares the roc curves with different correction parameters
