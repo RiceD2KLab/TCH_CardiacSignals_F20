@@ -110,7 +110,7 @@ def roc_curve(plot=True, correction=None, annotate=True):
     """
 
     # thresholds = list(range(0, 101, 1)) # use this for LSTM
-    thresholds = list(range(0, 2500, 20))  # use this for CDAE
+    thresholds = list(range(0, 1000, 5))  # use this for CDAE
 
     # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
     true_positive_rates = [1.0]
@@ -302,7 +302,9 @@ if __name__ == "__main__":
     # cusum_validation(25, control=True)
     # plot_sweep()
     # calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
-    print(roc_curve(True,  correction=0.41, annotate=True)[0])
+    out = roc_curve(True,  correction=0.41, annotate=True)
+    print(out)
+    print(out[0])
     # save_roc_curve()
     # compare_roc_curves()
     # plot_roc_curve_from_disk()
