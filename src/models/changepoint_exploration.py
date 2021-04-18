@@ -287,7 +287,7 @@ if __name__ == "__main__":
     # plot_sweep()
     # calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
     # print(roc_curve(True,  correction=0.41, annotate=True))
-    # save_roc_curve()
+    save_roc_curve()
     # compare_roc_curves()
     # this compares the roc curves with different correction parameters
     # plt.clf()
