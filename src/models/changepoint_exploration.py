@@ -202,6 +202,7 @@ def plot_sweep():
     """
     with open('Working_Data/transfer_cdae_kl_sweep.pickle', 'rb') as handle:
         scores = pickle.load(handle)
+    plt.figure(dpi=800)
     plt.plot(scores.keys(), scores.values())
     plt.xlabel("CUSUM Correction Parameter")
     plt.ylabel("Area Under Curve")
@@ -329,7 +330,7 @@ if __name__ == "__main__":
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
-    # plot_sweep()
+    plot_sweep()
     # calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
     # out = roc_curve(True,  correction=0.41, annotate=True)
     # print(out)
@@ -338,5 +339,5 @@ if __name__ == "__main__":
     # compare_roc_curves()
     # plot_roc_curve_from_disk()
     # this compares the roc curves with different correction parameters
-    compare_fall_spr_semester_results()
+    # compare_fall_spr_semester_results()
     pass

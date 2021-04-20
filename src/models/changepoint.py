@@ -122,7 +122,8 @@ def calculate_cusum_all_patients(c, model_name, error_func):
 
 if __name__ == "__main__":
     # Uncomment the below two lines to reproduce the figures from the report
-    calculate_cusum_all_patients(0.05, "cdae")
+    calculate_cusum_all_patients(0.05, "cdae", kl_divergence_timedelay)
+    cusum_validation(0.36, control=False)
     # cusum_box_plot(get_patient_ids(), "cdae", 100)
     # generates the unwindowed_cusum files for each patient
     # for idx in get_patient_ids(control=True):
