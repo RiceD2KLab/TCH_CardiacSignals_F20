@@ -110,7 +110,7 @@ def roc_curve(plot=True, correction=None, annotate=True):
     """
 
     # thresholds = list(range(0, 101, 1)) # use this for LSTM
-    thresholds = list(range(0, 2500, 20))  # use this for CDAE
+    thresholds = list(range(0, 1000, 5))  # use this for CDAE
 
     # initialize the true/false postive rates with (1,1) since ROC curves must pass through (0,0) and (1,1)
     true_positive_rates = [1.0]
@@ -200,7 +200,7 @@ def plot_sweep():
     Need to run the threshold_sweep() function beforehand to calculate the AUC score distribution
     :return:
     """
-    with open('Working_Data/sweep.pickle', 'rb') as handle:
+    with open('Working_Data/transfer_cdae_kl_sweep.pickle', 'rb') as handle:
         scores = pickle.load(handle)
     plt.plot(scores.keys(), scores.values())
     plt.xlabel("CUSUM Correction Parameter")
@@ -239,10 +239,10 @@ def plot_MSE_transform(patient_id):
     # plt.show()
 
 def save_roc_curve():
-    calculate_cusum_all_patients(0.29, "cdae", kl_divergence)
-    auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.4, annotate=True)
+    # calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
+    auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.36, annotate=True)
     pairs = np.array([true_positive_rates, false_positive_rates])
-    np.save("Working_Data/cdae_kl_roc.npy", pairs)
+    np.save("Working_Data/transfer_cdae_kl_roc.npy", pairs)
 
 
 def compare_roc_curves():
@@ -253,7 +253,7 @@ def compare_roc_curves():
     :return: nothing
     """
 
-    models = ["cdae", "lstm"]
+    models = ["cdae", "transfer_cdae", "lstm"]
     error_funcs = ["mse", "kl"]
     legend_items = []
     for model in models:
@@ -265,30 +265,49 @@ def compare_roc_curves():
             plt.plot(fpr, tpr)
 
     plt.legend(["CDAE Model With MSE Error Metric",
-                "CDAE Model With KL-Divergence Error Metric",
+                "CDAE Model With KL-Div. Error Metric",
+                "CDAE Transfer Model With MSE Error Metric",
+                "CDAE Transfer Model With KL-Div. Error Metric",
                 "LSTM Model With MSE Error Metric",
-                "LSTM Model With KL-Divergence Error Metric"])
+                "LSTM Model With KL-Div. Error Metric"])
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("Comparison of ROC Curves for Model/Error Metric Pairs")
+    plt.show()
+
+def plot_roc_curve_from_disk():
+    """
+    Plots an ROC curve if the roc curve is saved out to disk as a zipped list
+    :return:
+    """
+    tpr_fpr = np.load(f"Working_Data/transfer_cdae_kl_roc.npy")
+    tpr = tpr_fpr[0, :]
+    fpr = tpr_fpr[1, :]
+    plt.plot(fpr, tpr)
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve For CDAE Transfer Learning Model with KL-Div. Error Metric")
     plt.show()
 
 
 
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
-    sweep = threshold_correction_sweep("cdae")
-    print(sweep)
-    with open('Working_Data/cdae_kl_sweep.pickle', 'wb') as handle:
-        pickle.dump(sweep, handle)
+    # sweep = threshold_correction_sweep("cdae")
+    # print(sweep)
+    # with open('Working_Data/cdae_kl_sweep.pickle', 'wb') as handle:
+    #     pickle.dump(sweep, handle)
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
     # plot_sweep()
-    # calculate_cusum_all_patients(0.4, "lstm", mean_squared_error)
-    # roc_curve(True,  correction=0.4, annotate=True)
-    # save_roc_curve()
+    # calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
+    # out = roc_curve(True,  correction=0.41, annotate=True)
+    # print(out)
+    # print(out[0])
+    save_roc_curve()
     # compare_roc_curves()
+    # plot_roc_curve_from_disk()
     # this compares the roc curves with different correction parameters
     # plt.clf()
     # plt.figure()
