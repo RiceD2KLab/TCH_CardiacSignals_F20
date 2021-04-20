@@ -239,7 +239,7 @@ def plot_MSE_transform(patient_id):
     # plt.show()
 
 def save_roc_curve():
-    # calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
+    calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
     auc, true_positive_rates, false_positive_rates = roc_curve(True, correction=0.36, annotate=True)
     pairs = np.array([true_positive_rates, false_positive_rates])
     np.save("Working_Data/transfer_cdae_kl_roc.npy", pairs)
@@ -283,12 +283,41 @@ def plot_roc_curve_from_disk():
     tpr_fpr = np.load(f"Working_Data/transfer_cdae_kl_roc.npy")
     tpr = tpr_fpr[0, :]
     fpr = tpr_fpr[1, :]
+    print(list(zip(tpr, fpr)))
     plt.plot(fpr, tpr)
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title("ROC Curve For CDAE Transfer Learning Model with KL-Div. Error Metric")
+    plt.title("ROC Curve For CDAsE Transfer Learning Model with KL-Div. Error Metric")
     plt.show()
 
+def compare_fall_spr_semester_results():
+    """
+    Compares the fall 2020 and spring 2021 results
+    :return:
+    """
+    plt.clf()
+    plt.figure(dpi=800)
+
+    # fall semester results
+    calculate_cusum_all_patients(0.05, "cdae", mean_squared_error)
+    auc, tpr, fpr = roc_curve(plot=False)
+    plt.plot(fpr, tpr)
+
+    # spring semster results
+    tpr_fpr = np.load(f"Working_Data/transfer_cdae_kl_roc.npy")
+    tpr = tpr_fpr[0, :]
+    fpr = tpr_fpr[1, :]
+    print(list(zip(tpr, fpr)))
+    plt.plot(fpr, tpr)
+
+    # plot
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend(["CDAE with MSE", "CDAE (Transfer) with KL-Div."])
+    plt.title("Best ROC Curve of Fall 2020 vs. Spr 2021")
+    plt.show()
+    print(f"fall semester auc is {auc}")
+    return
 
 
 if __name__ == "__main__":
@@ -305,21 +334,9 @@ if __name__ == "__main__":
     # out = roc_curve(True,  correction=0.41, annotate=True)
     # print(out)
     # print(out[0])
-    save_roc_curve()
+    # save_roc_curve()
     # compare_roc_curves()
     # plot_roc_curve_from_disk()
     # this compares the roc curves with different correction parameters
-    # plt.clf()
-    # plt.figure()
-    # # corrections = [0.05, 0.44]
-    # corrections = [0.05]
-    # for c in corrections:
-    #     calculate_cusum_all_patients(c)
-    #     auc, tpr, fpr = roc_curve(plot=False)
-    #     plt.plot(fpr, tpr)
-    # plt.xlabel("False Positive Rate")
-    # plt.ylabel("True Positive Rate")
-    # plt.legend(corrections)
-    # plt.title("ROC Comparison with tuned vs. untuned correction parameter")
-    # plt.show()
+    compare_fall_spr_semester_results()
     pass
