@@ -113,10 +113,13 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         # plt.show()
 
         if save_model:
-            # save out the model
+            # save out the model weights
             filename = 'Working_Data/CDAE_weights_' + str(file_index) + '_train' + str(iteration) + '_model'
             autoencoder.save_weights(filename, save_format = "tf")
             print('Model weights saved for patient: ' + str(file_index))
+
+            # also save out the entire model into one file
+            autoencoder.save(f"Working_Data/CDAE_timedelay_{patient_index}_iter{iteration}.h5")
 
         # using autoencoder to encode all of the patient data
         encoded = encoder.predict(predict_data)
@@ -174,10 +177,13 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         # plt.show()
 
         if save_model:
-            # save out the model
+            # save out the model weights
             filename = 'Working_Data/CDAE_weights_' + str(file_index) + '_train' + str(iteration) + '_model'
             autoencoder.save_weights(filename, save_format="tf")
             print('Model weights saved for patient: ' + str(file_index))
+
+            # also save out the entire model into one file
+            autoencoder.save(f"Working_Data/CDAE_timedelay_{patient_index}_iter{iteration}.h5")
 
         # using autoencoder to encode all of the patient data
         encoded = encoder.predict(predict_data)
@@ -210,7 +216,7 @@ if __name__ == "__main__":
     # setup logging basic configuration for logging to a file
     logging.basicConfig(filename="transfer.log")
     # all_patients = get_patient_ids(False) + get_patient_ids(True)
-    for patient_index in get_patient_ids(True):  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
+    for patient_index in [16]:  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
         try:
             # if int(patient_index) < 22:
             #     continue

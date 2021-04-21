@@ -285,10 +285,11 @@ def plot_roc_curve_from_disk():
     tpr = tpr_fpr[0, :]
     fpr = tpr_fpr[1, :]
     print(list(zip(tpr, fpr)))
+    plt.figure(dpi=500)
     plt.plot(fpr, tpr)
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title("ROC Curve For CDAsE Transfer Learning Model with KL-Div. Error Metric")
+    plt.title("True/False Positive Tradeoff")
     plt.show()
 
 def compare_fall_spr_semester_results():
@@ -321,6 +322,20 @@ def compare_fall_spr_semester_results():
     return
 
 
+def plot_confusion_matrix():
+    plt.figure(dpi=500)
+    conf_matrix = np.array([[88, 34],[12, 66]])
+    labels = ["Arrest", "No Arrest"]
+    # metrics.plot_confusion_matrix(conf_matrix)
+    disp = metrics.ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=labels)
+    disp.plot(include_values=True, cmap="Blues")
+    plt.show()
+
+
+
+
+
+
 if __name__ == "__main__":
     ## sweep through the correction parameter and save out to a file since this is an expensive computation
     # sweep = threshold_correction_sweep("cdae")
@@ -330,7 +345,7 @@ if __name__ == "__main__":
 
     # roc_curve(plot=False)
     # cusum_validation(25, control=True)
-    plot_sweep()
+    # plot_sweep()
     # calculate_cusum_all_patients(0.41, "cdae", mean_squared_error_timedelay)
     # out = roc_curve(True,  correction=0.41, annotate=True)
     # print(out)
@@ -338,6 +353,7 @@ if __name__ == "__main__":
     # save_roc_curve()
     # compare_roc_curves()
     # plot_roc_curve_from_disk()
+    plot_confusion_matrix()
     # this compares the roc curves with different correction parameters
     # compare_fall_spr_semester_results()
     pass

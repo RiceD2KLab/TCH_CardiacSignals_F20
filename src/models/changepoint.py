@@ -143,6 +143,15 @@ if __name__ == "__main__":
     #         pass
 
 
+    for patient in get_patient_ids(False):
+        filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
+        data = np.load(filename)
+        plt.plot(data)
+        plt.show()
+
+
+
+
 
     # for idx in [1, 5, 7, 8, 11, 12, 18, 27, 40, 41, 47, 49]:
     #     cusum(idx, "cdae", dimension=100, plot=True)

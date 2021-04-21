@@ -388,6 +388,21 @@ def preprocess_all(num_beats):
 				print(idx + 'bad')
 	# preprocess_seperate(filename, idx)
 
+def plot_heartbeat(patient, lead, beat_index):
+	"""
+	Plots a single heartbeat
+	:param patient: patient index
+	:param lead: lead number (0-3)
+	:param beat_index: index of the heartbeat into the array of heartbeats
+	:return:
+	"""
+	plt.figure(dpi=500)
+	data = np.load(f"Working_Data/Fixed_Dim_HBs_Idx{patient}.npy")
+	heartbeat = data[beat_index, :, lead]
+	plt.plot(heartbeat[50:150])
+	plt.show()
+	return
+
 
 if __name__ == "__main__":
 	# control_patients = True
@@ -401,6 +416,10 @@ if __name__ == "__main__":
 	# 	except:
 	# 		print(idx+'bad')
 		# preprocess_seperate(filename, idx)
-	preprocess_all(10)
+	# preprocess_all(10)
+	plot_heartbeat(1, 0, 100)
+	plot_heartbeat(1, 0, 1000)
+	plot_heartbeat(1, 0, 1200)
 
+	pass
 
