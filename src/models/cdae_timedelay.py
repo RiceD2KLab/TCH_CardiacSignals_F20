@@ -119,7 +119,7 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
             print('Model weights saved for patient: ' + str(file_index))
 
             # also save out the entire model into one file
-            autoencoder.save(f"Working_Data/CDAE_timedelay_{patient_index}_iter{iteration}.h5")
+            autoencoder.save(f"Working_Data/CDAE_timedelay_{file_index}_iter{iteration}.h5")
 
         # using autoencoder to encode all of the patient data
         encoded = encoder.predict(predict_data)
@@ -183,7 +183,7 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
             print('Model weights saved for patient: ' + str(file_index))
 
             # also save out the entire model into one file
-            autoencoder.save(f"Working_Data/CDAE_timedelay_{patient_index}_iter{iteration}.h5")
+            autoencoder.save(f"Working_Data/CDAE_timedelay_{file_index}_iter{iteration}.h5")
 
         # using autoencoder to encode all of the patient data
         encoded = encoder.predict(predict_data)
