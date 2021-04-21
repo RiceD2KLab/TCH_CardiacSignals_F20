@@ -31,7 +31,7 @@ NOTE: tensorflow is not yet available for Python 3.9; please use Python 3.8.5
 We provide the notebook [run.ipynb](run.ipynb) that runs a sample patient (id = 16) through our pipeline. Specifically, it runs the
 patient through our preprocessing, modeling, and validation sections of the pipeline.\
 The notebook defaults to loading a pretrained model to avoid the expensive autoencoder training step. **To get this pretrained model, 
-download the pretrained model weights from the TCH Box into the Working_Data directory (detailed instructions inside the notebook)**
+download the 3 pre-trained models from the TCH Box (in the folder called PATIENT 16 PRETRAINED MOELS) into the Working_Data directory in your cloned repo (detailed instructions inside the notebook)**
 
 
 For reproducibility, we add notes in the `README` for each module on how to reproduce our figures. Head to the [``src``directory](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/tree/master/src), for information on preprocessing, modeling and validation.
