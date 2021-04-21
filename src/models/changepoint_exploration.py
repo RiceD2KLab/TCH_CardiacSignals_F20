@@ -253,7 +253,7 @@ def compare_roc_curves():
 
     :return: nothing
     """
-
+    plt.figure(dpi=800)
     models = ["cdae", "transfer_cdae", "lstm"]
     error_funcs = ["mse", "kl"]
     legend_items = []
@@ -351,9 +351,9 @@ if __name__ == "__main__":
     # print(out)
     # print(out[0])
     # save_roc_curve()
-    # compare_roc_curves()
+    compare_roc_curves()
     # plot_roc_curve_from_disk()
-    plot_confusion_matrix()
+    # plot_confusion_matrix()
     # this compares the roc curves with different correction parameters
     # compare_fall_spr_semester_results()
     pass
