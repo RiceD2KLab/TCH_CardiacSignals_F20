@@ -12,7 +12,7 @@ from src.utils.plotting_utils import set_font_size
 from src.models.mse import mean_squared_error, mean_squared_error_timedelay, kl_divergence, bhattacharya, wasserstein
 from scipy.stats import sem
 import os
-from mse import *
+from src.models.mse import *
 
 
 def cusum(patient, model_name, dimension, error_function, save=False, correction=0.05, plot=False):

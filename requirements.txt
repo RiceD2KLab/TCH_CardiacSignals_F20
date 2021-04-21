@@ -19,3 +19,4 @@ ruptures~=1.0.6
 
 umap-learn
 seaborn
+jupyter
