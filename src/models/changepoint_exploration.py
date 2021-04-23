@@ -290,6 +290,7 @@ def plot_roc_curve_from_disk():
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("True/False Positive Tradeoff")
+    plt.savefig('images/transfer_cdae_kl_roc.png', dpi=1000)
     plt.show()
 
 def compare_fall_spr_semester_results():
@@ -351,9 +352,9 @@ if __name__ == "__main__":
     # print(out)
     # print(out[0])
     # save_roc_curve()
-    compare_roc_curves()
+    # compare_roc_curves()
     # plot_roc_curve_from_disk()
     # plot_confusion_matrix()
     # this compares the roc curves with different correction parameters
-    # compare_fall_spr_semester_results()
+    compare_fall_spr_semester_results()
     pass
