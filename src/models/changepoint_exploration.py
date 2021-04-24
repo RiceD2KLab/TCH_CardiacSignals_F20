@@ -66,7 +66,7 @@ def cusum_box_plot(patient_indices, model_name, dimension):
     plt.ylabel("CUSUM Score")
     plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
     plt.xlim(-4.2, 0.2)
-    plt.savefig('images/cusum_boxplot_test.png', dpi=800)
+    plt.savefig('images/cusum_boxplot_control.png', dpi=800)
     plt.show()
 
 
@@ -358,6 +358,6 @@ if __name__ == "__main__":
     # plot_confusion_matrix()
     # this compares the roc curves with different correction parameters
     # compare_fall_spr_semester_results()
-    cusum_box_plot(get_patient_ids(control=False), "cdae", 100)
+    cusum_box_plot(get_patient_ids(control=True), "cdae", 100)
     pass
 
