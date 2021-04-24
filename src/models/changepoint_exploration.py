@@ -7,6 +7,7 @@ import pickle
 from src.models.changepoint import calculate_cusum_all_patients
 from src.models.mse import mean_squared_error
 
+
 def cusum_box_plot(patient_indices, model_name, dimension):
     """
     Generates figure of boxplots over time of CUSUM scores across the entire patient cohort
@@ -65,7 +66,7 @@ def cusum_box_plot(patient_indices, model_name, dimension):
     plt.ylabel("CUSUM Score")
     plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
     plt.xlim(-4.2, 0.2)
-    # plt.savefig('images/cusum_boxplot.png', dpi=500)
+    plt.savefig('images/cusum_boxplot_test.png', dpi=800)
     plt.show()
 
 
@@ -356,5 +357,7 @@ if __name__ == "__main__":
     # plot_roc_curve_from_disk()
     # plot_confusion_matrix()
     # this compares the roc curves with different correction parameters
-    compare_fall_spr_semester_results()
+    # compare_fall_spr_semester_results()
+    cusum_box_plot(get_patient_ids(control=False), "cdae", 100)
     pass
+

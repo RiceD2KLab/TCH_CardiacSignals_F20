@@ -122,8 +122,8 @@ def calculate_cusum_all_patients(c, model_name, error_func):
 
 if __name__ == "__main__":
     # Uncomment the below two lines to reproduce the figures from the report
-    calculate_cusum_all_patients(0.05, "cdae", kl_divergence_timedelay)
-    cusum_validation(0.36, control=False)
+    calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
+    cusum_validation(15, control=False)
     # cusum_box_plot(get_patient_ids(), "cdae", 100)
     # generates the unwindowed_cusum files for each patient
     # for idx in get_patient_ids(control=True):
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     #     except Exception as e:
     #         print(e)
     #         pass
-    # print(cusum_validation(10, control=True))
+    # print(cusum_validation(15, control=True))
 
     # for idx in ["C106", "C11", "C214", "C109"]:
     #     print(idx)
@@ -143,11 +143,11 @@ if __name__ == "__main__":
     #         pass
 
 
-    for patient in get_patient_ids(False):
-        filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
-        data = np.load(filename)
-        plt.plot(data)
-        plt.show()
+    # for patient in get_patient_ids(False):
+    #     filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
+    #     data = np.load(filename)
+    #     plt.plot(data)
+    #     plt.show()
 
 
 
