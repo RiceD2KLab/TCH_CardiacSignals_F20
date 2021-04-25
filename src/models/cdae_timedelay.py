@@ -1,4 +1,12 @@
+"""
+Transfer Learning (Time Delayed) version of the Convolutional Denoising Autoencoder
+Contains functions to read in preprocessed data, split according to training parameters,
+train models, and save model outputs
+"""
+
+
 import os
+import logging
 from numpy.random import seed
 seed(1)
 import tensorflow
@@ -11,7 +19,19 @@ from src.models.patient_split import *
 from sklearn.model_selection import train_test_split
 from src.models.conv_denoising_ae import *
 from src.utils.file_indexer import get_patient_ids
-import logging
+
+
+def noise(data):
+    """
+    Pass through the data, adds two noised versions of the data to the original version and returns
+    :param data: preprocessed heartbeat data
+    :return: noise version of data
+    """
+    noise_factor = 0.5
+    noise_train = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
+    noise_train2 = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
+    train_ = np.concatenate((data, noise_train, noise_train2))
+    return train_
 
 
 def build_model(encode_size):
@@ -59,8 +79,12 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
     Training function for convolutional autoencoder model, saves encoded hbs, reconstructed hbs, and model files
     :param num_epochs: [int] number of epochs to use
     :param reduced_dim:  [int] encoded dimension that model will compress to
+    :param save_model: [boolean] save the model file (required for time delay)
+    :param fit_data: [array] data for the model to be trained on
+    :param predict_data: [array] data for the model to predict
     :param file_index: [int] patient id to run on
-    :param save_model: [boolean] if true saves model
+    :param iteration: [int] version of time delay to run (0: first run on patient, 1: second run on patient, 2: last run on patient)
+    :param lr: [float] learning rate to use for a particular run of the time delay model
     :return: None
     """
     if iteration == 0:
@@ -81,56 +105,25 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
                 if hasattr(layer, attr):
                     setattr(layer, attr, regularizer)
         autoencoder.compile(optimizer=opt, loss='mse')
-        # normal_train, normal_valid = train_test_split(fit_data, train_size=0.85, random_state=1)
+
         model = autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
-                                # validation_data=(normal_valid, normal_valid))
-
-        # autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
-
-        # if plot_loss:
-        # SMALLER_SIZE = 10
-        # MED_SIZE = 12
-        # BIG_SIZE = 18
-        # plt.figure()
-        # # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-        # plt.rc('axes', titlesize=MED_SIZE)  # fontsize of the axes title
-        # plt.rc('axes', labelsize=MED_SIZE)  # fontsize of the x and y labels
-        # plt.rc('xtick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        # plt.rc('ytick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        # plt.rc('legend', fontsize=MED_SIZE)  # legend fontsize
-        # plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
-        #
-        # plt.plot(model.history['loss'])
-        # plt.plot(model.history['val_loss'])
-        # # plt.title('Example of Training and Validation Loss')
-        # plt.ylabel('Mean Squared Error')
-        # plt.title("T/V: " + file_index)
-        # plt.xlabel('Epochs')
-        # plt.legend(['Train', 'Validation'], loc='upper right')
-        # plt.ylim(0,1)
-        # # plt.savefig("images/CDAE_" + file_index + "_loss.png", dpi=500)
-        #
-        # plt.show()
 
         if save_model:
-            # save out the model weights
+            # save out the model
             filename = 'Working_Data/CDAE_weights_' + str(file_index) + '_train' + str(iteration) + '_model'
             autoencoder.save_weights(filename, save_format = "tf")
             print('Model weights saved for patient: ' + str(file_index))
-
-            # also save out the entire model into one file
-            autoencoder.save(f"Working_Data/CDAE_timedelay_{file_index}_iter{iteration}.h5")
 
         # using autoencoder to encode all of the patient data
         encoded = encoder.predict(predict_data)
         reconstruction = decoder.predict(encoded)
 
-        # save reconstruction and encoded files
-        reconstruction_save = "Working_Data/reconstructed_10hb_cdae_" + str(file_index) + "_iter" + str(iteration) + ".npy"
-        # encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
+        # save reconstruction files only
+        reconstruction_save = "Working_Data/reconstructed_10hb_CDAE_" + str(file_index) + "_iter" + str(iteration) + ".npy"
+
         np.save(reconstruction_save, reconstruction)
         print("Reconstructed hbs saved for patient:" + str(file_index) + " iteration: " + str(iteration))
-        # np.save(encoded_save, encoded)
+
     else:
         signal_shape = fit_data.shape[1:]
         batch_size = round(len(fit_data) * 0.15)
@@ -146,64 +139,24 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
         opt = keras.optimizers.Adam(learning_rate=lr)
         autoencoder.compile(optimizer=opt, loss='mse')
 
-        # normal_train, normal_valid = train_test_split(fit_data, train_size=0.85, random_state=1)
         model = autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
-                                # validation_data=(normal_valid, normal_valid))
-
-        # autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
-
-        # if plot_loss:
-        # SMALLER_SIZE = 10
-        # MED_SIZE = 12
-        # BIG_SIZE = 18
-        # plt.figure()
-        # # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-        # plt.rc('axes', titlesize=MED_SIZE)  # fontsize of the axes title
-        # plt.rc('axes', labelsize=MED_SIZE)  # fontsize of the x and y labels
-        # plt.rc('xtick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        # plt.rc('ytick', labelsize=SMALLER_SIZE)  # fontsize of the tick labels
-        # plt.rc('legend', fontsize=MED_SIZE)  # legend fontsize
-        # plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
-        #
-        # plt.plot(model.history['loss'])
-        # plt.plot(model.history['val_loss'])
-        # # plt.title('Example of Training and Validation Loss')
-        # plt.ylabel('Mean Squared Error')
-        # plt.xlabel('Epochs')
-        # plt.title("T/V: " + file_index)
-        # plt.legend(['Train', 'Validation'], loc='upper right')
-        # # plt.savefig("images/CDAE_" + file_index + "_loss.png", dpi=500)
-        # plt.ylim(0, 1)
-        # plt.show()
 
         if save_model:
-            # save out the model weights
+            # save out the model
             filename = 'Working_Data/CDAE_weights_' + str(file_index) + '_train' + str(iteration) + '_model'
             autoencoder.save_weights(filename, save_format="tf")
             print('Model weights saved for patient: ' + str(file_index))
-
-            # also save out the entire model into one file
-            autoencoder.save(f"Working_Data/CDAE_timedelay_{file_index}_iter{iteration}.h5")
 
         # using autoencoder to encode all of the patient data
         encoded = encoder.predict(predict_data)
         reconstruction = decoder.predict(encoded)
 
-        # save reconstruction and encoded files
-        reconstruction_save = "Working_Data/reconstructed_10hb_cdae_" + str(file_index) + "_iter" + str(
+        # save reconstruction files only
+        reconstruction_save = "Working_Data/reconstructed_10hb_CDAE_" + str(file_index) + "_iter" + str(
             iteration) + ".npy"
-        # encoded_save = "Working_Data/encoded_10hb_cae_" + str(file_index) + ".npy"
+
         np.save(reconstruction_save, reconstruction)
         print("Reconstructed hbs saved for patient:" + str(file_index) + " iteration: " + str(iteration))
-        # np.save(encoded_save, encoded)
-
-
-def noise(data):
-    noise_factor = 0.5
-    noise_train = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
-    noise_train2 = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
-    train_ = np.concatenate((data, noise_train, noise_train2))
-    return train_
 
 
 def train_model(patient_index):
@@ -233,23 +186,11 @@ def train_model(patient_index):
         logging.critical(f"COULD NOT COMPLETE TRAINING FOR PATIENT {patient_index}")
         logging.info(e)
 
+
 # train a model, save reconstruction and then move to next time chunk training and reconstruction
 if __name__ == "__main__":
-    #  ['C172', 'C174', 'C176', 'C181',
-    #                           'C186', 'C203', 'C205', 'C206', 'C207', 'C209', 'C213', 'C214', 'C218', 'C219', 'C221',
-    #                           'C222', 'C225', 'C234', 'C238', 'C241', 'C248', 'C249', 'C251', 'C252']
-    # patient_set = ["11"] # "4", "1", "5","C106", "C11", "C214", "C109"
-
     # setup logging basic configuration for logging to a file
     logging.basicConfig(filename="transfer.log")
     all_patients = get_patient_ids(False) + get_patient_ids(True)
-    for idx in all_patients:  #,"C106", "C11", "C214", "4", "1", "11""C11", "C214"
+    for idx in all_patients:
         train_model(idx)
-
-        # training_ae(30,10,True, train_3, five)
-
-        ## add regularizers and also potentially try retrinaing only once
-        ## model is overfitting the data if I had scaled the axes correctly
-        ## try with the same amount of data every time
-        ## make the y-axis the same everytime
-        ##  can we keep updating the regularizer as we retrain to prevent overfitting
