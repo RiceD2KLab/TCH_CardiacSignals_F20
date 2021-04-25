@@ -61,7 +61,7 @@ def cusum_box_plot(patient_indices, model_name, dimension):
                 medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'),
                 capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
 
-    plt.title("CUSUM Score Distribution Over Time")
+    plt.title("CUSUM Score Distribution Over Time for Control Patients")
     plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("CUSUM Score")
     plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
