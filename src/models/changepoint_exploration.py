@@ -61,12 +61,13 @@ def cusum_box_plot(patient_indices, model_name, dimension):
                 medianprops=dict(color='red', linewidth=2.5), whiskerprops=dict(color='lightgrey'),
                 capprops=dict(color='lightgrey'), boxprops=dict(color='lightgrey'))
 
-    plt.title("CUSUM Score Distribution Over Time for Test Patients")
+    plt.title("CUSUM Score Distribution Over Time for Control Patients")
     plt.xlabel("Time before cardiac arrest (hours)")
     plt.ylabel("CUSUM Score")
     plt.xticks(np.arange(-4, 1, 1), np.arange(-4, 1, 1))
     plt.xlim(-4.2, 0.2)
-    plt.savefig('images/cusum_boxplot_test.png', dpi=800)
+    plt.ylim(0,5)
+    plt.savefig('images/cusum_boxplot_control.png', dpi=800)
     plt.show()
 
 
@@ -358,6 +359,6 @@ if __name__ == "__main__":
     # plot_confusion_matrix()
     # this compares the roc curves with different correction parameters
     # compare_fall_spr_semester_results()
-    cusum_box_plot(get_patient_ids(control=False), "cdae", 100)
+    cusum_box_plot(get_patient_ids(control=True), "cdae", 100)
     pass
 
