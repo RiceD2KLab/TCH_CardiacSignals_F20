@@ -57,6 +57,13 @@ def build_model(encode_size):
     encoder.add(Dense(200, activation = 'tanh', kernel_initializer='glorot_normal'))
     encoder.add(Dense(encode_size))
 
+    # tensorflow.keras.utils.plot_model(
+    #     encoder,
+    #     to_file="encoder.png",
+    #     dpi=600
+    # )
+    # print("MODEL FILE SAVED---------------------------------------")
+
     # Build the decoder
     decoder = Sequential()
     decoder.add(InputLayer((encode_size,)))
@@ -70,6 +77,13 @@ def build_model(encode_size):
     decoder.add(Reshape((1000, 10)))
     decoder.add(Conv1DTranspose(8, 11, activation="relu", padding="same"))
     decoder.add(Conv1DTranspose(4, 5, activation="linear", padding="same"))
+
+    # tensorflow.keras.utils.plot_model(
+    #     decoder,
+    #     to_file="decoder.png",
+    #     dpi=600
+    # )
+    # print("MODEL FILE SAVED---------------------------------------")
 
     return encoder, decoder
 
@@ -105,6 +119,8 @@ def training_ae(num_epochs, reduced_dim, save_model, fit_data, predict_data, fil
                 if hasattr(layer, attr):
                     setattr(layer, attr, regularizer)
         autoencoder.compile(optimizer=opt, loss='mse')
+
+
 
         model = autoencoder.fit(x=fit_data, y=fit_data, epochs=num_epochs, batch_size=batch_size)
 
@@ -163,34 +179,34 @@ def train_model(patient_index):
     """
     Run the transfer learning training procedure for an individual patient
     :param patient_index: patient index
-    :return: 
+    :return:
     """
-    try:
+    # try:
         # if int(patient_index) < 22:
         #     continue
-        file_index = patient_index
-        print("Starting training on patient ", patient_index)
-        filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
-        split_ratio = 0.3
-        train_, remaining = patient_split_adaptive(filepath, split_ratio)
-        # train_noise = noise(train_)
-        three, four, five, six = split(remaining, 4)
-        first_predict = np.concatenate((train_, three, four))
-        second_train = noise(three)
-        third_train = noise(four)
+    file_index = patient_index
+    print("Starting training on patient ", patient_index)
+    filepath = "Working_Data/Normalized_Fixed_Dim_HBs_Idx" + str(file_index) + ".npy"
+    split_ratio = 0.3
+    train_, remaining = patient_split_adaptive(filepath, split_ratio)
+    # train_noise = noise(train_)
+    three, four, five, six = split(remaining, 4)
+    first_predict = np.concatenate((train_, three, four))
+    second_train = noise(three)
+    third_train = noise(four)
 
-        training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
-        training_ae(30, 10, True, second_train, five, patient_index, 1, 0.001)
-        training_ae(30, 10, True, third_train, six, patient_index, 2, 0.001)
-    except Exception as e:
-        logging.critical(f"COULD NOT COMPLETE TRAINING FOR PATIENT {patient_index}")
-        logging.info(e)
+    training_ae(110, 10, True, train_, first_predict, patient_index, 0, 0.001)
+    training_ae(30, 10, True, second_train, five, patient_index, 1, 0.001)
+    training_ae(30, 10, True, third_train, six, patient_index, 2, 0.001)
+    # except Exception as e:
+    #     logging.critical(f"COULD NOT COMPLETE TRAINING FOR PATIENT {patient_index}")
+    #     logging.info(e)
 
 
 # train a model, save reconstruction and then move to next time chunk training and reconstruction
 if __name__ == "__main__":
     # setup logging basic configuration for logging to a file
-    logging.basicConfig(filename="transfer.log")
+    # logging.basicConfig(filename="transfer.log")
     all_patients = get_patient_ids(False) + get_patient_ids(True)
     for idx in all_patients:
         train_model(idx)
