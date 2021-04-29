@@ -148,6 +148,10 @@ def compare_fall_spr_semester_results():
 
 
 def plot_confusion_matrix():
+    """
+    Plots a confusion matrix for the final tpr/fpr
+    :return:
+    """
     plt.figure(dpi=500)
     conf_matrix = np.array([[88, 34],[12, 66]])
     labels = ["Arrest", "No Arrest"]
