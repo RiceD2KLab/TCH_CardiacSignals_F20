@@ -7,8 +7,9 @@ Mentors: Sebastian Acosta, PhD; Mubbasheer Ahmed, MD; Parag Jain, MD
 
 # The Project 
 
-This main goal of this project is to develop an algorithm for early detection of electrical instability of the heart, specifically in pediatric patients with hypoplastic left heart syndrome. To learn more about this project check out [this link!](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/blob/master/ReportPDF.pdf)
+This main goal of this project is to develop an algorithm for early detection of electrical instability of the heart, specifically in pediatric patients with hypoplastic left heart syndrome. To read our report for this project check out [this link!](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/blob/master/ReportPDF.pdf)
 
+We also created a [dashboard to simulate real-time patient monitoring](http://cardiacsignalsdashboard-env.eba-q69fm8hh.us-east-1.elasticbeanstalk.com/).
 
 # To use this Repository
 
