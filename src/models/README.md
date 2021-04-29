@@ -4,7 +4,7 @@ These files work to create the model and instability metrics on the preprocessed
 
 ## models/autoencoders
 The autoencoder is used to learn the patterns of normal heartbeats and then predict abnormal heartbeats to provide an error metric that is later used for determining instability metrics.
-- `cdae_timedelay.py` - Best Model: Contains functions to create, train, and save convolutional autoencoders with transfer learning with additional code to load pretrained models
+- `cdae_timedelay.py` - **Selected Model**: Contains functions to create, train, and save convolutional autoencoders with transfer learning with additional code to load pretrained models
 - `conv_denoising.py` - Contains functions to create, train, and save convolutional autoencoder models with additional code to load pretrained models
 - `isolation_forest.py` - Contains functions to train an Isolation Forest on reduced heartbeat data. See __main__ function to reproduce the plot in the report
 - `LSTMAE.py` - Contains functions to create, train, and save LSTM models
