@@ -14,7 +14,7 @@ import os
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout, Conv1D, Conv1DTranspose
 from tensorflow.keras.models import Sequential, Model
-from src.models.patient_split import *
+from src.models.autoencoders.patient_split import *
 
 
 def read_in(file_index, normalized, train, ratio):

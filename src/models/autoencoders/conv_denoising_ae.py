@@ -12,9 +12,8 @@ from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Conv1D, MaxPooling1D, Conv1DTranspose
 from tensorflow.keras.models import Sequential, Model
-from src.models.patient_split import *
+from src.models.autoencoders.patient_split import *
 from sklearn.model_selection import train_test_split
-from src.utils.file_indexer import get_patient_ids
 from src.utils.plotting_utils import *
 # set_font_size()
 

@@ -2,11 +2,11 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from src.models.mse import *
+from src.models.changepoint.error_metric import *
 from sklearn.model_selection import train_test_split
 
 from numpy.random import seed
-from src.models.patient_split import *
+from src.models.autoencoders.patient_split import *
 
 
 def read_in(file_index, normalized, train, ratio):

@@ -2,8 +2,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from src.models.mse import *
-from src.models.patient_split import *
+from src.models.changepoint.error_metric import *
+from src.models.autoencoders.patient_split import *
 
 """
 Created: 9/22/2020, by Frank Yang

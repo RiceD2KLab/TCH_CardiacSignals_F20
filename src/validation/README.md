@@ -1,6 +1,7 @@
 # Validation
-- `stat_tests.py` - Contains code for running statistical tests (Wilcoxon, paired t-test on instability metrics.
-Used for model validation and comparison across models.
+- `changepoint_evaluation.py` - Evaluates the performance of the changepoint algorithm
+- `model_evaluation` - Evaluates the performance of the model as a whole
+- `stat_tests.py` - Contains code for running statistical tests (Wilcoxon, paired t-test on instability metrics. Used for model validation and comparison across models.
 
 ### Running the Wilcoxon Signed-Rank Test
 This test is used to verify an increase in the mean MSE over time. To see how many patients in the cohort demonstrate significant increases in the MSE over time, do the following:

@@ -12,7 +12,7 @@ import os
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Input, InputLayer, Dropout
 from tensorflow.keras.models import Sequential, Model
-from src.models.patient_split import *
+from src.models.autoencoders.patient_split import *
 from src.preprocessing import heartbeat_split
 from sklearn.model_selection import train_test_split
 

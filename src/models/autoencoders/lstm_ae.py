@@ -1,3 +1,8 @@
+"""
+LSTM (Long Short Term Memory) Autoencoder
+
+Explored as a substitute for the convolutional autoencoder
+"""
 import tensorflow
 from tensorflow import keras
 from tensorflow.keras.models import Sequential

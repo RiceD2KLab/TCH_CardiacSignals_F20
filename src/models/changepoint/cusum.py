@@ -3,16 +3,8 @@ Contains functions to run the CUSUM change-point detection algorithm on the MSE 
 Also contains code for all CUSUM plots shown in our report.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import rcParams
-from src.utils.file_indexer import get_patient_ids 
-from src.utils.dsp_utils import get_windowed_time
-from src.utils.plotting_utils import set_font_size
-from src.models.mse import mean_squared_error, mean_squared_error_timedelay, kl_divergence, bhattacharya, wasserstein
-from scipy.stats import sem
-import os
-from src.models.mse import *
+from src.models.changepoint.error_metric import *
 
 
 def cusum(patient, model_name, dimension, error_function, save=False, correction=0.05, plot=False):
@@ -65,46 +57,6 @@ def cusum(patient, model_name, dimension, error_function, save=False, correction
     return cusum
 
 
-def cusum_validation(threshold, control=False):
-    """
-    Validation of CUSUM detection across the entire patient cohort.
-
-    :param threshold: [int] threshold value for CUSUM
-    :return: [(int, int, int)] (number of patients whose scores cross threshold, total valid patients, average detection time)
-    """
-    count = 0 # number of patients with cusum > threshold before cardiac arrest
-    total = 0 # total valid patients
-    detection_times = [] # detection time for each valid patient
-    # avg_time = 0 # average detection time
-    for idx in get_patient_ids(control):
-        try:
-            cusum_vals = np.load(f"Working_Data/unwindowed_cusum_100d_Idx{idx}.npy") # load cusum scores for this patient
-            patient_times = get_windowed_time(idx, num_hbs=10, window_size=1)[:-1]
-            cusum_vals = cusum_vals[len(cusum_vals)//2:] # grab the last half
-            patient_times = patient_times[len(patient_times)//2:] # grab the last half
-            if len(cusum_vals) > 500: # check if enough valid data
-                stop_index = next((i for i in range(len(cusum_vals)) if cusum_vals[i] > threshold), -1) # first index where cusum > threshold
-                stop_time = patient_times[stop_index]
-                if stop_index != -1:
-                # if stop_index > len(cusum_vals)/2: # make sure change is in last three hours of data (no false positives)
-                    count += 1
-                    detection_times.append(stop_time)
-                    # avg_time += stop_time
-                else:
-                    print(idx)
-                total += 1
-        except Exception as e:
-            print(f"error is {e}")
-            print("No File Found: Patient " + idx)
-            continue
-    # avg_time /= count
-    avg_time = np.mean(detection_times)
-    sem_time = sem(detection_times)
-    print(f"Threshold crossed within final 3 hours: {count}/{total}")
-    print(f"Average Detection Earliness: {avg_time} +- {1.96 * sem_time} hours")
-    return count, total, avg_time, sem_time
-
-
 def calculate_cusum_all_patients(c, model_name, error_func):
     """
     Recalculates and saves the cusum metric time series over all patients
@@ -122,8 +74,8 @@ def calculate_cusum_all_patients(c, model_name, error_func):
 
 if __name__ == "__main__":
     # Uncomment the below two lines to reproduce the figures from the report
-    calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
-    cusum_validation(15, control=False)
+    # calculate_cusum_all_patients(0.36, "cdae", kl_divergence_timedelay)
+    # cusum_validation(15, control=False)
     # cusum_box_plot(get_patient_ids(), "cdae", 100)
     # generates the unwindowed_cusum files for each patient
     # for idx in get_patient_ids(control=True):
@@ -143,11 +95,15 @@ if __name__ == "__main__":
     #         pass
 
 
-    # for patient in get_patient_ids(False):
-    #     filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
-    #     data = np.load(filename)
-    #     plt.plot(data)
-    #     plt.show()
+    for patient in get_patient_ids(True):
+        filename = os.path.join("Working_Data", f"unwindowed_cusum_100d_Idx{patient}.npy")
+        try:
+            data = np.load(filename)
+            plt.plot(data)
+            plt.title(f"patient {patient}")
+            plt.show()
+        except Exception as e:
+            continue
 
 
 

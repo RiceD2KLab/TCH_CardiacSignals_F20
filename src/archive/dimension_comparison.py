@@ -8,7 +8,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 
-from src.models.mse import mean_squared_error
+from src.models.changepoint.error_metric import mean_squared_error
 from src.utils.file_indexer import get_patient_ids
 
 def compare_dimensions(model_name, patient_list, plot=False, save_errors=False):

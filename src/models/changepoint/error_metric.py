@@ -1,11 +1,7 @@
 """"
-Library of functions to compute and plot reconstruction errors from various models
-Also includes transformations to reconstruction errors like windowing, etc.
+Library of different error metrics like mean squared error, KL-divergence, etc.
 
-Also contains a library of error visualization functions, such as
-- comparing original with reconstructed heartbeats
-- creating boxplots of the MSE over time
-- displaying a windowed version of the MSE over time
+Used to compute the reconstruction error of the autoencoder
 """
 
 import os

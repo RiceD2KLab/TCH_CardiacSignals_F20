@@ -1,9 +1,9 @@
 import pickle
 from collections import defaultdict
 
-from src.models.mse import *
+from src.models.changepoint.error_metric import *
 from src.archive.vae import train_vae
-from src.models.patient_split import *
+from src.models.autoencoders.patient_split import *
 
 
 def vae_alpha_dim_sweep(file_index, dim_rng, alpha_rng, learning_rate, num_epoch, save_results=False):
