@@ -35,8 +35,8 @@ download the 3 pre-trained models from the TCH Box (in the folder called [PATIEN
 
 
 For reproducibility, we add notes in the `README` for each module on how to reproduce our figures. Head to the [``src``directory](https://github.com/RiceD2KLab/TCH_CardiacSignals_F20/tree/master/src), for information on preprocessing, modeling and validation.
-The following diagram is an overview of the files associated with our data science pipeline
-![Data Science Pipeline Overview](images/pipelinediagram.svg) 
+The following diagram is an overview of our data science pipeline
+![Data Science Pipeline Overview](images/pipeline_diagram.png) 
 
 # In this directory
 * `Data_H5_Files/` - contains the raw ECG signals in the form of H5 files -> contains sample for patient 16
