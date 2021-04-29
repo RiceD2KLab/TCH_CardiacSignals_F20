@@ -6,7 +6,6 @@ import numpy as np
 from matplotlib import rcParams, pyplot as plt
 from scipy.stats import sem
 
-from src.models.changepoint.cusum import e
 from src.utils.dsp_utils import get_windowed_time
 from src.utils.file_indexer import get_patient_ids
 from src.utils.plotting_utils import set_font_size
